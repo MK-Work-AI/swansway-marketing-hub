@@ -1,6 +1,8 @@
 // Swansway Marketing Hub — Local configuration
-// This file is in .gitignore and never committed to GitHub
-// Add your API keys here after cloning
+// ⚠ NEVER commit this file with real keys — it is in .gitignore
+// After deploying, edit this file directly in GitHub (private repo only)
+// or paste keys here in your local copy.
 window.SWANSWAY_CONFIG = {
-  anthropicKey: 'sk-ant-api03-nbKDZouL2tadchuq...'
+  anthropicKey: 'PASTE_YOUR_ANTHROPIC_KEY_HERE',
+  serviceKey:   'PASTE_YOUR_SUPABASE_SERVICE_ROLE_KEY_HERE'
 };
