@@ -3111,7 +3111,7 @@ function bbGenerateBrief() {
 // ── ANTHROPIC API KEY ─────────────────────────────────────────
 // Set this to your Anthropic API key.
 // Keep this file private / use Vercel env vars for production.
-const ANTHROPIC_API_KEY = 'YOUR_ANTHROPIC_API_KEY';
+const ANTHROPIC_API_KEY = window.SWANSWAY_CONFIG?.anthropicKey || '';
 
 // In-memory cache: brandId → latest plan data
 const QPLAN_CACHE = {};
