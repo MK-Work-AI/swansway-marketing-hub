@@ -2964,7 +2964,17 @@ function bbGenerateBrief() {
   const saveBar = document.getElementById('bb-save-bar');
   const feedback = document.getElementById('bb-save-feedback');
   if(saveBar) {
-    saveBar.style.display = SB_USER ? 'flex' : 'none';
+    saveBar.style.display = 'flex';
+    const saveBtn = document.getElementById('bb-save-btn');
+    if(saveBtn) {
+      if(SB_USER) {
+        saveBtn.textContent = 'Save brief';
+        saveBtn.style.opacity = '1';
+      } else {
+        saveBtn.textContent = 'Sign in to save';
+        saveBtn.style.opacity = '1';
+      }
+    }
   }
   if(feedback) { feedback.style.display='none'; feedback.textContent=''; }
   // Auto-fill title
@@ -3691,6 +3701,18 @@ function sbHandleSession(session) {
   SB_USER = session.user;
   showUserState(SB_USER);
   loadBriefs();
+  // Refresh save bar if brief is open
+  const saveBar = document.getElementById('bb-save-bar');
+  const saveBtn = document.getElementById('bb-save-btn');
+  if(saveBar && saveBar.style.display !== 'none') {
+    if(saveBtn) { saveBtn.textContent = 'Save brief'; saveBtn.style.opacity = '1'; }
+  }
+  // If save bar is hidden (user signed in after generating brief), show it
+  const step6 = document.getElementById('bb-step-6');
+  if(step6 && step6.classList.contains('bb-active') && saveBar) {
+    saveBar.style.display = 'flex';
+    if(saveBtn) saveBtn.textContent = 'Save brief';
+  }
 }
 
 function sbHandleSignOut() {
@@ -3798,7 +3820,15 @@ function showAuthErr(el, msg) {
 
 /* ── SAVE BRIEF ── */
 async function bbSaveBrief() {
-  if(!SB_USER) { openAuth(); return; }
+  if(!SB_USER) {
+    openAuth();
+    // After sign-in, auth state change will update SB_USER - user clicks save again
+    return;
+  }
+  if(!SB) {
+    alert('Database not connected. Check your Supabase configuration in the deployment guide.');
+    return;
+  }
   const title = (document.getElementById('bb-brief-title')?.value || '').trim();
   if(!title) { alert('Please give this brief a title first.'); return; }
 
