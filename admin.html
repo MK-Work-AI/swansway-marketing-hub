@@ -235,6 +235,7 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
   </div>
   <div class="sidebar-section">
     <div class="sidebar-label">System</div>
+    <button class="snav" onclick="showPage('users',this)">👥 Users</button>
     <button class="snav" onclick="showPage('sheets',this)">🔗 Google Sheets Setup</button>
     <button class="snav" onclick="showPage('history',this)">🕐 History</button>
     <button class="snav" onclick="showPage('security',this)">🔒 Security</button>
@@ -511,6 +512,67 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
           <thead><tr><th>Date / Time</th><th>Label</th><th>Year</th><th>Budget</th><th>Units Target</th><th>Leads Target</th><th>Brands</th><th>Status</th></tr></thead>
           <tbody><tr><td colspan="8" style="text-align:center;color:var(--ink-faint);padding:20px">Click "Refresh" to load history from Google Sheets</td></tr></tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ USERS ══ -->
+  <div class="page" id="page-users">
+    <div class="page-title">Users</div>
+    <div class="page-sub">Manage team accounts — confirm, delete or view all registered users</div>
+
+    <div class="metrics-row" id="users-metrics">
+      <div class="metric" style="border-top-color:var(--sw)"><div class="metric-label">Total users</div><div class="metric-val" id="users-count">—</div><div class="metric-sub">Registered accounts</div></div>
+      <div class="metric" style="border-top-color:#15803D"><div class="metric-label">Confirmed</div><div class="metric-val" id="users-confirmed">—</div><div class="metric-sub">Email verified</div></div>
+      <div class="metric" style="border-top-color:#D97706"><div class="metric-label">Unconfirmed</div><div class="metric-val" id="users-unconfirmed">—</div><div class="metric-sub">Awaiting verification</div></div>
+      <div class="metric" style="border-top-color:#6B7280"><div class="metric-label">Last signup</div><div class="metric-val" id="users-last" style="font-size:14px">—</div><div class="metric-sub">Most recent</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">👥 All users</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm" onclick="loadUsers()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <table class="brand-table" id="users-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Signed up</th>
+              <th>Last sign in</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="6" style="text-align:center;color:var(--ink-faint);padding:24px">Click Refresh to load users</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="border-left:3px solid #D97706;margin-top:1rem">
+      <div class="card-header"><div class="card-title">⚠ Invite a new user</div></div>
+      <div class="card-body">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Email address</label>
+            <input class="form-input" id="invite-email" placeholder="name@swanswaygroup.com" type="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Full name</label>
+            <input class="form-input" id="invite-name" placeholder="Marcus Smith">
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+          <button class="btn btn-primary" onclick="inviteUser()">Send invite</button>
+          <span id="invite-status" style="font-size:12px;color:var(--ink-soft)"></span>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:var(--ink-soft)">Sends a magic link — user clicks it and is signed in immediately, no password needed.</div>
       </div>
     </div>
   </div>
@@ -923,6 +985,7 @@ function changePassword() {
    NAVIGATION
 ══════════════════════════════════════════ */
 function showPage(id, el) {
+  if(id === 'users') setTimeout(loadUsers, 100);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.snav').forEach(s=>s.classList.remove('active'));
   const page = document.getElementById('page-'+id);
@@ -1551,6 +1614,133 @@ async function loadHistoryPage() {
 /* ══════════════════════════════════════════
    INIT
 ══════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════
+   SUPABASE USER MANAGEMENT (admin only)
+   Uses service role key — never expose in index.html
+══════════════════════════════════════════ */
+const SB_ADMIN_URL     = 'https://humitzrleflxnlnodpde.supabase.co';
+const SB_SERVICE_KEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1bWl0enJsZWZseG5sbm9kcGRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTQzOTU1OSwiZXhwIjoyMDk1MDE1NTU5fQ.m8wV9tAaL9_5O5pZ0dtdNn_lsyFpLxFAnJGxbzX71IU';
+
+function sbAdminReq(path, method, body) {
+  return new Promise((resolve, reject) => {
+    const url = SB_ADMIN_URL + path;
+    const xhr = new XMLHttpRequest();
+    xhr.open(method || 'GET', url);
+    xhr.setRequestHeader('apikey', SB_SERVICE_KEY);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + SB_SERVICE_KEY);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onload = () => {
+      try { resolve(JSON.parse(xhr.responseText)); }
+      catch(e) { resolve(xhr.responseText); }
+    };
+    xhr.onerror = () => reject(new Error('Network error'));
+    xhr.send(body ? JSON.stringify(body) : null);
+  });
+}
+
+async function loadUsers() {
+  const tbody = document.getElementById('users-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--ink-soft)">Loading…</td></tr>';
+
+  try {
+    const data = await sbAdminReq('/auth/v1/admin/users?per_page=100', 'GET');
+    const users = data.users || [];
+
+    // Update metrics
+    const confirmed   = users.filter(u => u.email_confirmed_at);
+    const unconfirmed = users.filter(u => !u.email_confirmed_at);
+    const last        = users.sort((a,b) => new Date(b.created_at)-new Date(a.created_at))[0];
+
+    document.getElementById('users-count').textContent       = users.length;
+    document.getElementById('users-confirmed').textContent   = confirmed.length;
+    document.getElementById('users-unconfirmed').textContent = unconfirmed.length;
+    document.getElementById('users-last').textContent        = last ? new Date(last.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '—';
+
+    if(!users.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--ink-faint)">No users yet</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = users.map(u => {
+      const name      = u.user_metadata?.full_name || '—';
+      const confirmed = u.email_confirmed_at;
+      const created   = new Date(u.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      const lastSign  = u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'Never';
+      const statusPill = confirmed
+        ? '<span style="background:#DCFCE7;color:#14532D;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500">Confirmed</span>'
+        : '<span style="background:#FEF3C7;color:#78350F;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500">Unconfirmed</span>';
+
+      return `<tr>
+        <td style="font-weight:500">${name}</td>
+        <td style="font-family:var(--fm);font-size:12px">${u.email}</td>
+        <td>${statusPill}</td>
+        <td style="font-size:12px;color:var(--ink-soft)">${created}</td>
+        <td style="font-size:12px;color:var(--ink-soft)">${lastSign}</td>
+        <td>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${!confirmed ? `<button class="btn btn-sm" onclick="confirmUser('${u.id}','${u.email}')">Confirm</button>` : ''}
+            <button class="btn btn-sm" style="color:var(--accent);border-color:var(--accent)" onclick="deleteUser('${u.id}','${u.email}')">Delete</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--accent);padding:16px">${e.message}</td></tr>`;
+  }
+}
+
+async function confirmUser(userId, email) {
+  if(!confirm('Confirm email for ' + email + '?')) return;
+  try {
+    await sbAdminReq('/auth/v1/admin/users/' + userId, 'PUT', {
+      email_confirm: true
+    });
+    showToast('✓ ' + email + ' confirmed', 'success');
+    loadUsers();
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+}
+
+async function deleteUser(userId, email) {
+  if(!confirm('Permanently delete ' + email + '?\n\nThis also deletes all their briefs and Q-plans.')) return;
+  try {
+    await sbAdminReq('/auth/v1/admin/users/' + userId, 'DELETE');
+    showToast('✓ ' + email + ' deleted', 'success');
+    loadUsers();
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+}
+
+async function inviteUser() {
+  const email  = document.getElementById('invite-email').value.trim();
+  const name   = document.getElementById('invite-name').value.trim();
+  const status = document.getElementById('invite-status');
+  if(!email) { status.textContent = 'Please enter an email address'; status.style.color='var(--accent)'; return; }
+  status.textContent = 'Sending…'; status.style.color='var(--ink-soft)';
+  try {
+    await sbAdminReq('/auth/v1/admin/users', 'POST', {
+      email,
+      email_confirm: true,
+      user_metadata: { full_name: name || email.split('@')[0] },
+      send_magic_link: true
+    });
+    status.textContent = '✓ Invite sent to ' + email;
+    status.style.color = '#15803D';
+    document.getElementById('invite-email').value = '';
+    document.getElementById('invite-name').value  = '';
+    loadUsers();
+  } catch(e) {
+    status.textContent = 'Error: ' + e.message;
+    status.style.color = 'var(--accent)';
+  }
+}
+
+
 function init() {
   buildSidebarBrands();
   refreshDashboard();
