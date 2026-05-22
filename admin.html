@@ -1767,7 +1767,7 @@ async function inviteUser() {
     successDiv.style.cssText = 'margin-top:12px;padding:14px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:4px;';
 
     if(magicLink) {
-      successDiv.innerHTML = \`
+      successDiv.innerHTML = `
         <div style="font-size:12px;font-weight:600;color:#14532D;margin-bottom:8px">✓ Account created for \${email}</div>
         <div style="font-size:11px;color:#166534;margin-bottom:8px">Send this sign-in link via Teams, Slack or email — one click and they're in:</div>
         <div style="display:flex;gap:6px;align-items:center">
@@ -1779,12 +1779,12 @@ async function inviteUser() {
           </button>
         </div>
         <div style="font-size:10px;color:#166534;margin-top:6px">Link expires in 1 hour · single use only</div>
-      \`;
+      `;
     } else {
       // generate_link didn't return a link — show manual instructions
       successDiv.style.background = '#FFF7ED';
       successDiv.style.borderColor = '#FDE68A';
-      successDiv.innerHTML = \`
+      successDiv.innerHTML = `
         <div style="font-size:12px;font-weight:600;color:#78350F;margin-bottom:8px">✓ Account created for \${email}</div>
         <div style="font-size:11px;color:#92400E;margin-bottom:8px">
           Send them this link and ask them to click <strong>Sign in</strong> and enter their email — 
@@ -1799,7 +1799,7 @@ async function inviteUser() {
           </button>
         </div>
         <div style="font-size:10px;color:#92400E;margin-top:6px">Debug — generate_link returned: \${JSON.stringify(linkResult).substring(0,200)}</div>
-      \`;
+      `;
     }
 
     inviteSection.appendChild(successDiv);
