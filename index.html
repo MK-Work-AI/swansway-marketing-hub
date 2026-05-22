@@ -3678,13 +3678,31 @@ let SB_USER = null;
 let SB_BRIEFS_CACHE = [];
 let SB_ACTIVE_FILTER = 'all';
 
+function showToast(msg, type) {
+  const existing = document.getElementById('sb-toast');
+  if(existing) existing.remove();
+  const t = document.createElement('div');
+  t.id = 'sb-toast';
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:999;padding:12px 20px;border-radius:4px;font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,0.2);transition:opacity .3s;background:'+(type==='success'?'#15803D':'#C8102E');
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 3500);
+}
+
 function sbInit() {
   try {
     if(typeof supabase === 'undefined' || SUPABASE_URL === 'YOUR_SUPABASE_URL') {
       showSignInButton();
       return;
     }
-  SB = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  SB = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      redirectTo: 'https://mk-work-ai.github.io/swansway-marketing-hub/',
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
+  });
   // Restore session
   SB.auth.getSession().then(({ data:{ session } }) => {
     if(session) sbHandleSession(session);
@@ -3692,8 +3710,18 @@ function sbInit() {
   });
   // Listen for auth changes
   SB.auth.onAuthStateChange((_event, session) => {
-    if(session) sbHandleSession(session);
-    else sbHandleSignOut();
+    if(session) {
+      sbHandleSession(session);
+      // If user just confirmed email (arrived via confirmation link), close auth modal
+      if(_event === 'SIGNED_IN' && window.location.hash.includes('access_token')) {
+        closeAuth();
+        showToast('✓ Email confirmed — you are now signed in', 'success');
+        // Clean up the URL hash
+        history.replaceState(null, '', window.location.pathname);
+      }
+    } else {
+      sbHandleSignOut();
+    }
   });
   } catch(e) { showSignInButton(); }
 }
@@ -3803,14 +3831,17 @@ async function authSignUp() {
   btn.disabled = true; btn.textContent = 'Creating account…'; err.style.display='none';
   const { error } = await SB.auth.signUp({
     email, password:pw,
-    options:{ data:{ full_name:name } }
+    options:{
+      data:{ full_name:name },
+      emailRedirectTo: 'https://mk-work-ai.github.io/swansway-marketing-hub/'
+    }
   });
   btn.disabled = false; btn.textContent = 'Create account';
   if(error) showAuthErr(err, error.message);
   else {
     err.style.display='none';
     msg.style.display='block';
-    msg.textContent = 'Account created! Check your email to confirm, then sign in.';
+    msg.textContent = '✓ Account created! Check your email inbox for a confirmation link. Click it and you will be signed in automatically.';
     switchAuthTab('in');
   }
 }
