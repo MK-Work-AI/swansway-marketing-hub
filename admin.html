@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swansway Marketing Hub — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --ink:#111111; --ink-mid:#3D3D3D; --ink-soft:#6B6B6B; --ink-faint:#A8A8A8;
+  --surface:#F0EDE8; --surface-2:#E5E1DA; --white:#FEFEFE;
+  --border:rgba(0,0,0,0.09); --border-med:rgba(0,0,0,0.16);
+  --sw:#1A2E4A; --sw2:#2C4A73; --accent:#C8102E; --success:#15803D; --warn:#B45309;
+  --fd:'Playfair Display',serif; --fb:'DM Sans',sans-serif; --fm:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:var(--sw);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:0}
+.login-box{background:var(--white);border-radius:6px;padding:40px 48px;width:100%;max-width:400px;text-align:center}
+.login-logo{width:48px;height:48px;background:var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:22px;color:#fff;margin:0 auto 16px}
+.login-title{font-family:var(--fd);font-size:22px;color:var(--ink);margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--ink-soft);margin-bottom:28px}
+.login-input{width:100%;padding:10px 14px;border:1px solid var(--border-med);border-radius:3px;font-family:var(--fb);font-size:14px;margin-bottom:12px;background:var(--white);color:var(--ink);outline:none}
+.login-input:focus{border-color:var(--sw)}
+.login-btn{width:100%;padding:11px;background:var(--sw);color:#fff;border:none;border-radius:3px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--fb)}
+.login-btn:hover{background:var(--sw2)}
+.login-err{font-size:12px;color:var(--accent);margin-top:8px;display:none}
+.login-hint{font-size:11px;color:var(--ink-faint);margin-top:16px}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--sw);color:#fff;border-bottom:2px solid var(--accent);position:sticky;top:0;z-index:100}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:52px;max-width:1600px;margin:0 auto}
+.logo-wrap{display:flex;align-items:center;gap:12px}
+.logo-icon{width:30px;height:30px;background:var(--accent);border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:13px;font-weight:700;color:#fff}
+.logo-text{font-family:var(--fd);font-size:15px;color:#fff}
+.logo-sub{font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:0.08em;text-transform:uppercase;margin-top:1px}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.tbtn{padding:6px 14px;font-size:12px;font-weight:500;border:1px solid rgba(255,255,255,0.2);border-radius:2px;background:transparent;color:rgba(255,255,255,0.8);cursor:pointer;transition:all .2s;letter-spacing:0.02em}
+.tbtn:hover{background:rgba(255,255,255,0.1);color:#fff}
+.tbtn-accent{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn-accent:hover{background:#a00d26}
+.tbtn-success{background:var(--success);border-color:var(--success);color:#fff}
+.save-status{font-size:11px;color:rgba(255,255,255,0.5);display:flex;align-items:center;gap:5px}
+.save-dot{width:6px;height:6px;border-radius:50%;background:#4ADE80}
+
+/* ── SIDEBAR + CONTENT ── */
+.layout{display:grid;grid-template-columns:220px 1fr;max-width:1600px;margin:0 auto;min-height:calc(100vh - 52px)}
+.sidebar{background:var(--white);border-right:1px solid var(--border);padding:1rem 0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.sidebar-section{padding:0 0 12px;border-bottom:1px solid var(--border);margin-bottom:4px}
+.sidebar-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);padding:8px 16px 4px;font-weight:500}
+.snav{display:block;width:100%;padding:7px 16px;font-size:13px;color:var(--ink-soft);background:none;border:none;text-align:left;cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.snav:hover{color:var(--ink);background:var(--surface)}
+.snav.active{color:var(--sw);background:rgba(26,46,74,0.05);border-left-color:var(--sw);font-weight:500}
+.snav-brand{display:flex;align-items:center;gap:8px}
+.snav-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ── MAIN ── */
+.content{padding:1.5rem;overflow-y:auto}
+.page{display:none}
+.page.active{display:block}
+.page-title{font-family:var(--fd);font-size:22px;color:var(--ink);margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--ink-soft);margin-bottom:1.5rem}
+
+/* ── CARDS ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:4px;margin-bottom:1rem;overflow:hidden}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface)}
+.card-title{font-size:13px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px}
+.card-body{padding:18px}
+
+/* ── FORM ELEMENTS ── */
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.form-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.form-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11px;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-soft)}
+.form-input{padding:8px 12px;border:1px solid var(--border-med);border-radius:3px;font-family:var(--fb);font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border .15s}
+.form-input:focus{border-color:var(--sw)}
+.form-input[type=number]{font-family:var(--fm);font-size:13px}
+.form-select{padding:8px 12px;border:1px solid var(--border-med);border-radius:3px;font-family:var(--fb);font-size:13px;color:var(--ink);background:var(--white);outline:none;cursor:pointer}
+.form-select:focus{border-color:var(--sw)}
+.form-textarea{padding:8px 12px;border:1px solid var(--border-med);border-radius:3px;font-family:var(--fb);font-size:13px;color:var(--ink);background:var(--white);outline:none;resize:vertical;min-height:80px}
+.form-textarea:focus{border-color:var(--sw)}
+.form-hint{font-size:10px;color:var(--ink-faint)}
+.input-prefix{position:relative;display:flex;align-items:center}
+.prefix-symbol{position:absolute;left:10px;font-size:12px;color:var(--ink-soft);pointer-events:none;font-family:var(--fm)}
+.prefix-input{padding-left:22px}
+
+/* ── METRICS ROW ── */
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.metric{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--sw);padding:14px 16px;border-radius:3px}
+.metric-label{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px}
+.metric-val{font-family:var(--fd);font-size:24px;line-height:1;color:var(--ink);margin-bottom:2px}
+.metric-sub{font-size:11px;color:var(--ink-faint)}
+
+/* ── BRAND TABLE ── */
+.brand-table{width:100%;border-collapse:collapse;font-size:12px}
+.brand-table th{text-align:left;padding:8px 12px;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:500;background:var(--surface);border-bottom:1px solid var(--border)}
+.brand-table td{padding:6px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.brand-table tr:last-child td{border-bottom:none}
+.brand-table tr:hover td{background:var(--surface)}
+.brand-color-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0}
+
+/* ── INLINE EDITABLE ── */
+.editable{border:1px solid transparent;border-radius:2px;padding:3px 6px;cursor:pointer;transition:all .15s;font-family:var(--fm);font-size:12px;min-width:80px;text-align:right}
+.editable:hover{border-color:var(--border-med);background:var(--surface)}
+.editable:focus{border-color:var(--sw);background:var(--white);outline:none}
+.editable-text{border:1px solid transparent;border-radius:2px;padding:3px 6px;cursor:pointer;transition:all .15s;font-size:12px;min-width:120px}
+.editable-text:hover{border-color:var(--border-med);background:var(--surface)}
+.editable-text:focus{border-color:var(--sw);background:var(--white);outline:none}
+
+/* ── CHANNEL EDITOR ── */
+.channel-editor-row{display:grid;grid-template-columns:200px 1fr 90px 90px 24px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.channel-editor-row:last-child{border-bottom:none}
+.channel-name-input{font-size:12px;padding:5px 8px;border:1px solid transparent;border-radius:2px;background:transparent;cursor:pointer;font-family:var(--fb)}
+.channel-name-input:focus{border-color:var(--sw);background:var(--white);outline:none}
+.range-input{width:100%;accent-color:var(--sw)}
+.pct-display{font-family:var(--fm);font-size:12px;color:var(--ink-soft);text-align:center}
+.budget-calc{font-family:var(--fm);font-size:12px;color:var(--ink);text-align:right;font-weight:500}
+.remove-btn{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:16px;padding:0;line-height:1;transition:color .15s}
+.remove-btn:hover{color:var(--accent)}
+
+/* ── BUTTONS ── */
+.btn{padding:7px 16px;font-size:12px;font-weight:500;border:1px solid var(--border-med);border-radius:2px;background:var(--white);cursor:pointer;color:var(--ink);transition:all .2s;letter-spacing:0.02em}
+.btn:hover{background:var(--surface-2)}
+.btn-primary{background:var(--sw);color:#fff;border-color:var(--sw)}
+.btn-primary:hover{background:var(--sw2)}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-accent:hover{background:#a00d26}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-sm{padding:4px 10px;font-size:11px}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;margin-bottom:1.25rem;flex-wrap:wrap}
+.tab{padding:6px 14px;font-size:11px;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-soft);cursor:pointer;border:1px solid var(--border);border-radius:2px;background:var(--white)}
+.tab:hover{background:var(--surface-2)}
+.tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── PROGRESS BAR ── */
+.prog-bar-wrap{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.prog-bar{height:6px;border-radius:3px;transition:width .3s}
+
+/* ── KPI STATUS ── */
+.status-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;letter-spacing:0.04em}
+.status-green{background:#DCFCE7;color:#14532D}
+.status-amber{background:#FEF3C7;color:#78350F}
+.status-red{background:#FEE2E2;color:#7F1D1D}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:4px;font-size:13px;font-weight:500;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none;display:flex;align-items:center;gap:8px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-success{background:var(--success)}
+.toast-error{background:var(--accent)}
+
+/* ── DASHBOARD CHARTS ── */
+.chart-wrap{background:var(--white);border:1px solid var(--border);border-radius:4px;padding:16px;margin-bottom:1rem}
+.chart-title{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px}
+.chart-canvas-wrap{position:relative}
+
+/* ── COLOUR PICKER ── */
+.color-swatch{width:28px;height:28px;border-radius:3px;border:1px solid var(--border-med);cursor:pointer;padding:0;overflow:hidden}
+.color-swatch input[type=color]{width:200%;height:200%;border:none;cursor:pointer;transform:translate(-25%,-25%);padding:0;background:none}
+
+/* ── MISC ── */
+.divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
+.tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:2px;border:1px solid transparent}
+.t-blue{background:#EFF6FF;color:#1E3A8A;border-color:#BFDBFE}
+.t-green{background:#F0FDF4;color:#14532D;border-color:#BBF7D0}
+.t-amber{background:#FFFBEB;color:#78350F;border-color:#FDE68A}
+.t-red{background:#FFF0F0;color:#7F1D1D;border-color:#FECACA}
+.flex-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mb1{margin-bottom:0.75rem} .mb2{margin-bottom:1.5rem}
+@media(max-width:768px){.layout{grid-template-columns:1fr}.sidebar{display:none}.form-grid,.form-grid-4{grid-template-columns:1fr 1fr}.metrics-row{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">S</div>
+    <div class="login-title">Marketing Hub Admin</div>
+    <div class="login-sub">Swansway Motor Group · 2026 Plan Configuration</div>
+    <input type="password" class="login-input" id="login-pw" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')tryLogin()">
+    <button class="login-btn" onclick="tryLogin()">Sign in</button>
+    <div class="login-err" id="login-err">Incorrect password. Try again.</div>
+    <div class="login-hint">Default password: <strong>swansway2026</strong><br>Change this in Settings → Security</div>
+  </div>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div id="app" style="display:none">
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="logo-wrap">
+      <div class="logo-icon">S</div>
+      <div>
+        <div class="logo-text">Swansway Admin</div>
+        <div class="logo-sub">Marketing Hub Configuration</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div class="save-status" id="save-status"><span class="save-dot" style="background:#FCD34D"></span> Loading…</div>
+      <span id="conn-status" style="font-size:11px;color:rgba(255,255,255,0.5)">● Checking…</span>
+      <button class="tbtn" onclick="takeSnapshot()">📸 Snapshot</button>
+      <button class="tbtn" onclick="exportConfig()">Export JSON</button>
+      <button class="tbtn-accent tbtn" onclick="window.open('index.html','_blank')">View Live Plan →</button>
+      <button class="tbtn" onclick="logout()">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Overview</div>
+    <button class="snav active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
+    <button class="snav" onclick="showPage('group-settings',this)">⚙️ Group Settings</button>
+    <button class="snav" onclick="showPage('channels',this)">📡 Channel Mix</button>
+    <button class="snav" onclick="showPage('group-kpis',this)">🎯 Group KPIs</button>
+    <button class="snav" onclick="showPage('calendar',this)">📅 Campaign Calendar</button>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Brand Plans</div>
+    <div id="brand-sidebar-links"></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">System</div>
+    <button class="snav" onclick="showPage('sheets',this)">🔗 Google Sheets Setup</button>
+    <button class="snav" onclick="showPage('history',this)">🕐 History</button>
+    <button class="snav" onclick="showPage('security',this)">🔒 Security</button>
+    <button class="snav" onclick="showPage('data',this)">💾 Data & Export</button>
+  </div>
+</aside>
+
+<!-- CONTENT -->
+<main class="content">
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-title">Dashboard</div>
+    <div class="page-sub">Live overview of your configured 2026 marketing plan</div>
+
+    <div class="metrics-row" id="dash-metrics"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+      <div class="chart-wrap">
+        <div class="chart-title">Budget by brand</div>
+        <div class="chart-canvas-wrap" style="height:240px"><canvas id="dashBrandChart" role="img" aria-label="Budget by brand"></canvas></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-title">Budget by channel</div>
+        <div class="chart-canvas-wrap" style="height:240px"><canvas id="dashChannelChart" role="img" aria-label="Budget by channel"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">📋 All brands at a glance</div><button class="btn btn-sm" onclick="showPage('group-settings',document.querySelector('.snav:nth-child(2)'))">Edit group settings</button></div>
+      <div class="card-body" style="padding:0">
+        <table class="brand-table" id="dash-brand-table"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ GROUP SETTINGS ══ -->
+  <div class="page" id="page-group-settings">
+    <div class="page-title">Group Settings</div>
+    <div class="page-sub">Configure group-level details, budget and strategic priorities</div>
+
+    <div class="card mb2">
+      <div class="card-header"><div class="card-title">🏢 Group identity</div></div>
+      <div class="card-body">
+        <div class="form-grid-2">
+          <div class="form-group"><label class="form-label">Group name</label><input class="form-input" id="gs-name" placeholder="Swansway Motor Group"></div>
+          <div class="form-group"><label class="form-label">Plan year</label><input class="form-input" id="gs-year" placeholder="2026"></div>
+          <div class="form-group"><label class="form-label">Plan description</label><input class="form-input" id="gs-desc" placeholder="11 brands · 30 dealerships"></div>
+          <div class="form-group"><label class="form-label">Financial year start</label>
+            <select class="form-select" id="gs-fystart">
+              <option>January</option><option>April</option><option>October</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb2">
+      <div class="card-header"><div class="card-title">💰 Group budget</div></div>
+      <div class="card-body">
+        <div class="form-grid-4">
+          <div class="form-group">
+            <label class="form-label">Total annual budget (£)</label>
+            <div class="input-prefix"><span class="prefix-symbol">£</span><input type="number" class="form-input prefix-input" id="gs-budget" placeholder="4200000" oninput="onGroupBudgetChange()"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">EV-focused spend target (%)</label>
+            <input type="number" class="form-input" id="gs-ev-pct" min="0" max="100" placeholder="38">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Digital/traditional split</label>
+            <select class="form-select" id="gs-dig-split">
+              <option>60% digital / 40% traditional</option>
+              <option>70% digital / 30% traditional</option>
+              <option>80% digital / 20% traditional</option>
+              <option>50% digital / 50% traditional</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Manufacturer co-op target (%)</label>
+            <input type="number" class="form-input" id="gs-coop-pct" min="0" max="30" placeholder="15">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb2">
+      <div class="card-header"><div class="card-title">🎯 Group lead & sales targets</div></div>
+      <div class="card-body">
+        <div class="form-grid-4">
+          <div class="form-group"><label class="form-label">Total new car/van units</label><input type="number" class="form-input" id="gs-units" placeholder="8530"></div>
+          <div class="form-group"><label class="form-label">Digital leads per month</label><input type="number" class="form-input" id="gs-leads" placeholder="2400"></div>
+          <div class="form-group"><label class="form-label">EV/PHEV % of new sales</label><input type="number" class="form-input" id="gs-ev-sales" placeholder="35"></div>
+          <div class="form-group"><label class="form-label">Target lead-to-sale conv. (%)</label><input type="number" class="form-input" id="gs-conv" placeholder="11"></div>
+          <div class="form-group"><label class="form-label">Service retention target (%)</label><input type="number" class="form-input" id="gs-retention" placeholder="68"></div>
+          <div class="form-group"><label class="form-label">Approved Used + Motor Match units</label><input type="number" class="form-input" id="gs-used" placeholder="6000"></div>
+          <div class="form-group"><label class="form-label">Group NPS target</label><input type="number" class="form-input" id="gs-nps" placeholder="72"></div>
+          <div class="form-group"><label class="form-label">Max cost per lead (£)</label><div class="input-prefix"><span class="prefix-symbol">£</span><input type="number" class="form-input prefix-input" id="gs-cpl" placeholder="32"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb2">
+      <div class="card-header"><div class="card-title">📌 Strategic priorities</div><div style="font-size:12px;color:var(--ink-soft)">Edit the 6 group-wide pillars shown in the plan</div></div>
+      <div class="card-body" id="priority-editor"></div>
+    </div>
+
+    <div class="flex-row">
+      <button class="btn btn-success" onclick="saveAll()">✓ Save all group settings</button>
+      <button class="btn" onclick="resetGroupDefaults()">Reset to defaults</button>
+    </div>
+  </div>
+
+  <!-- ══ CHANNELS ══ -->
+  <div class="page" id="page-channels">
+    <div class="page-title">Channel Mix</div>
+    <div class="page-sub">Configure the group-level marketing channel budget allocation</div>
+
+    <div class="card mb2">
+      <div class="card-header">
+        <div class="card-title">📡 Channel allocation — Total: <span id="ch-total-budget" style="color:var(--sw)">£0</span></div>
+        <div class="flex-row"><span class="tag" id="ch-pct-total">0% allocated</span><button class="btn btn-sm" onclick="addChannel()">+ Add channel</button></div>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:200px 1fr 60px 90px 24px;gap:8px;padding:0 0 8px;border-bottom:1px solid var(--border)">
+          <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)">Channel name</div>
+          <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)">Split (%)</div>
+          <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);text-align:center">%</div>
+          <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);text-align:right">Budget</div>
+          <div></div>
+        </div>
+        <div id="channel-editor-rows"></div>
+        <div style="padding-top:12px;border-top:1px solid var(--border);margin-top:4px">
+          <div style="display:grid;grid-template-columns:200px 1fr 60px 90px 24px;gap:8px;align-items:center">
+            <div style="font-size:12px;font-weight:600">TOTAL</div>
+            <div class="prog-bar-wrap"><div class="prog-bar" id="ch-total-bar" style="background:var(--sw)"></div></div>
+            <div style="font-size:12px;font-family:var(--fm);text-align:center;font-weight:600" id="ch-pct-label">0%</div>
+            <div style="font-size:12px;font-family:var(--fm);text-align:right;font-weight:600" id="ch-budget-total">£0</div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-row">
+      <button class="btn btn-success" onclick="saveAll()">✓ Save channel settings</button>
+      <button class="btn" onclick="normaliseChannels()">Normalise to 100%</button>
+    </div>
+  </div>
+
+  <!-- ══ GROUP KPIs ══ -->
+  <div class="page" id="page-group-kpis">
+    <div class="page-title">Group KPI Framework</div>
+    <div class="page-sub">Set targets, actuals and ownership for all group-level measures</div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🎯 KPI targets & tracking</div><button class="btn btn-sm" onclick="addGroupKPI()">+ Add KPI</button></div>
+      <div class="card-body" style="padding:0">
+        <table class="brand-table" style="width:100%">
+          <thead><tr><th>KPI</th><th>Target</th><th>Actual / Current</th><th>% of target</th><th>Status</th><th>Owner</th><th></th></tr></thead>
+          <tbody id="group-kpi-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div style="margin-top:1rem"><button class="btn btn-success" onclick="saveAll()">✓ Save KPI settings</button></div>
+  </div>
+
+  <!-- ══ CALENDAR ══ -->
+  <div class="page" id="page-calendar">
+    <div class="page-title">Campaign Calendar</div>
+    <div class="page-sub">Manage group-wide campaign moments and key dates for 2026</div>
+    <div id="calendar-quarters"></div>
+    <div style="margin-top:1rem"><button class="btn btn-success" onclick="saveAll()">✓ Save calendar</button></div>
+  </div>
+
+  <!-- ══ BRAND PAGE (dynamic) ══ -->
+  <div class="page" id="page-brand">
+    <div id="brand-page-content"></div>
+  </div>
+
+  <!-- ══ GOOGLE SHEETS SETUP ══ -->
+  <div class="page" id="page-sheets">
+    <div class="page-title">Google Sheets Setup</div>
+    <div class="page-sub">Connect your admin to Google Sheets for persistent, year-on-year storage</div>
+
+    <div class="card mb2" style="border-left:4px solid var(--sw)">
+      <div class="card-header"><div class="card-title">🔗 Web App URL</div><span id="sheets-status-pill" class="tag t-amber">Not configured</span></div>
+      <div class="card-body">
+        <div class="form-group mb2">
+          <label class="form-label">Google Apps Script Web App URL</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input class="form-input" id="sheets-url-input" placeholder="https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec" style="flex:1;font-family:var(--fm);font-size:12px">
+            <button class="btn btn-primary" onclick="testAndSaveSheetsUrl()">Test & Save</button>
+            <button class="btn" onclick="clearSheetsUrl()">Clear</button>
+          </div>
+          <div class="form-hint" style="margin-top:4px">Paste the Web App URL from your Google Apps Script deployment here</div>
+        </div>
+        <div id="sheets-test-result" style="display:none;padding:10px 14px;border-radius:3px;font-size:13px;margin-top:8px"></div>
+      </div>
+    </div>
+
+    <div class="card mb2">
+      <div class="card-header"><div class="card-title">📋 Step-by-step setup guide</div></div>
+      <div class="card-body">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;gap:14px;align-items:flex-start">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--sw);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">1</div>
+            <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">Create a new Google Sheet</div><div style="font-size:12px;color:var(--ink-soft)">Go to <a href="https://sheets.google.com" target="_blank" style="color:var(--sw)">sheets.google.com</a> → create a blank spreadsheet → name it <strong>"Swansway Marketing Hub 2026"</strong></div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--sw);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">2</div>
+            <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">Open Apps Script</div><div style="font-size:12px;color:var(--ink-soft)">In the sheet: <strong>Extensions → Apps Script</strong>. Delete the default <code>myFunction()</code> code.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--sw);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">3</div>
+            <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">Paste Code.gs</div><div style="font-size:12px;color:var(--ink-soft)">Paste the entire contents of <strong>Code.gs</strong> (downloaded alongside this file) into the Apps Script editor. Click <strong>Save</strong>.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--sw);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">4</div>
+            <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">Run setupSpreadsheet()</div><div style="font-size:12px;color:var(--ink-soft)">In Apps Script: click the <strong>function dropdown → select "setupSpreadsheet" → click Run</strong>. Grant permissions when prompted. This creates all 7 tabs with headers and seeds default data.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--sw);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">5</div>
+            <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">Deploy as Web App</div><div style="font-size:12px;color:var(--ink-soft)"><strong>Deploy → New deployment → Type: Web App → Execute as: Me → Who has access: Anyone → Deploy</strong>. Copy the Web App URL.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--success);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">6</div>
+            <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">Paste URL above and test</div><div style="font-size:12px;color:var(--ink-soft)">Paste the Web App URL in the field above → click <strong>Test & Save</strong>. If it shows ✅ Connected, you're done. All saves will now go to Google Sheets.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb2">
+      <div class="card-header"><div class="card-title">📊 Google Sheet tabs created</div></div>
+      <div class="card-body">
+        <table class="brand-table">
+          <thead><tr><th>Tab</th><th>Purpose</th><th>Key fields</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Config</strong></td><td>Group-level settings and strategic priorities</td><td>name, year, budget, targets, priority1–6 titles/descriptions</td></tr>
+            <tr><td><strong>Brands</strong></td><td>All 12 brand plans with every configurable field</td><td>id, budget, leads, newUnits, evPct, convRate, cpl, retention, nps, q2Focus…</td></tr>
+            <tr><td><strong>Channels</strong></td><td>Marketing channel mix and budget allocation</td><td>name, pct, color, note</td></tr>
+            <tr><td><strong>KPIs</strong></td><td>Group KPI framework with targets and actuals</td><td>label, target, actual, unit, lowerBetter, owner</td></tr>
+            <tr><td><strong>Calendar</strong></td><td>All campaign calendar events by quarter</td><td>quarter, brand, label, color</td></tr>
+            <tr><td><strong>History</strong></td><td>Archived snapshots for year-on-year comparison</td><td>timestamp, label, year, budget, units, full JSON</td></tr>
+            <tr><td><strong>AuditLog</strong></td><td>Every save action logged with timestamp</td><td>timestamp, action, user, payload</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card mb2">
+      <div class="card-header"><div class="card-title">📅 Year-on-year archiving</div></div>
+      <div class="card-body">
+        <p style="font-size:13px;color:var(--ink-soft);margin-bottom:1rem">At the end of each year, run <code>archiveAndNewYear()</code> in Apps Script. This archives the full plan as a snapshot, increments the year, and resets KPI actuals to zero so you start fresh. All historical data is preserved in the History tab.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="takeSnapshot()">📸 Take snapshot now</button>
+          <button class="btn" onclick="showPage('history', document.querySelector(\'.snav:has(+ .snav)\'))">View history</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HISTORY ══ -->
+  <div class="page" id="page-history">
+    <div class="page-title">Plan History</div>
+    <div class="page-sub">Archived snapshots — full plan state saved at any point in time</div>
+    <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="takeSnapshot()">📸 Take snapshot now</button>
+      <button class="btn" onclick="loadHistoryPage()">↻ Refresh</button>
+    </div>
+    <div class="card">
+      <div class="card-body" style="padding:0">
+        <table class="brand-table" id="history-table">
+          <thead><tr><th>Date / Time</th><th>Label</th><th>Year</th><th>Budget</th><th>Units Target</th><th>Leads Target</th><th>Brands</th><th>Status</th></tr></thead>
+          <tbody><tr><td colspan="8" style="text-align:center;color:var(--ink-faint);padding:20px">Click "Refresh" to load history from Google Sheets</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECURITY ══ -->
+  <div class="page" id="page-security">
+    <div class="page-title">Security</div>
+    <div class="page-sub">Manage admin password and access settings</div>
+    <div class="card" style="max-width:500px">
+      <div class="card-header"><div class="card-title">🔒 Change admin password</div></div>
+      <div class="card-body">
+        <div class="form-group mb1"><label class="form-label">Current password</label><input type="password" class="form-input" id="sec-current"></div>
+        <div class="form-group mb1"><label class="form-label">New password</label><input type="password" class="form-input" id="sec-new"></div>
+        <div class="form-group mb2"><label class="form-label">Confirm new password</label><input type="password" class="form-input" id="sec-confirm"></div>
+        <button class="btn btn-primary" onclick="changePassword()">Update password</button>
+        <div style="margin-top:12px;font-size:12px;color:var(--ink-soft)">⚠️ The admin password must also be updated in <strong>Code.gs</strong> (ADMIN_SECRET constant) and redeployed, otherwise the Sheets API connection will reject saves.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DATA ══ -->
+  <div class="page" id="page-data">
+    <div class="page-title">Data & Export</div>
+    <div class="page-sub">Export your configuration, reset data or generate reports</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div class="card">
+        <div class="card-header"><div class="card-title">📤 Export configuration</div></div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--ink-soft);margin-bottom:1rem">Download your complete admin configuration as a JSON file. Import this on another device or share with your team.</p>
+          <div class="flex-row">
+            <button class="btn btn-primary" onclick="exportConfig()">Download JSON</button>
+            <button class="btn" onclick="exportCSV()">Export KPIs as CSV</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">📥 Import configuration</div></div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--ink-soft);margin-bottom:1rem">Import a previously exported JSON file to restore or migrate settings.</p>
+          <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
+          <button class="btn btn-primary" onclick="document.getElementById('import-file').click()">Choose JSON file</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🔄 Reset data</div></div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--ink-soft);margin-bottom:1rem">Reset all settings to factory defaults. This will erase all custom configuration (both local and Sheets if connected).</p>
+          <button class="btn btn-accent" onclick="confirmReset()">Reset all data</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">📋 Storage status</div></div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--ink-soft)" id="last-saved-info">Not yet saved this session.</p>
+          <div style="margin-top:10px;font-size:12px;color:var(--ink-faint)">
+            <div>Google Sheets: <span id="sheets-storage-status">checking…</span></div>
+            <div>Local storage: <span id="local-storage-status">checking…</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div><!-- end layout -->
+</div><!-- end app -->
+
+<div class="toast" id="toast"></div>
+<textarea id="export-area" style="position:absolute;left:-9999px"></textarea>
+
+<script>
+/* ══════════════════════════════════════════
+   DEFAULT DATA
+══════════════════════════════════════════ */
+const BRAND_DEFAULTS = [
+  {id:'audi',name:'Audi',color:'#CC0000',segment:'Premium',sites:6,budget:780000,leads:420,newUnits:1800,evPct:45,convRate:12,cpl:38,retention:70,usedUnits:960,fleetUnits:240,nps:75,q2Focus:'A6 e-tron Avant launch + Summer Drive VIP event',sitenames:'Blackburn · Carlisle · Crewe · Preston · Stafford · Stoke'},
+  {id:'vw',name:'Volkswagen',color:'#001E5A',segment:'Mainstream',sites:5,budget:590000,leads:380,newUnits:2400,evPct:35,convRate:10,cpl:26,retention:68,usedUnits:1200,fleetUnits:180,nps:70,q2Focus:'ID.3 summer finance push + Golf facelift media',sitenames:'Chester · Crewe · Oldham · Preston · Stafford'},
+  {id:'vwcv',name:'VW Commercial',color:'#1B4F72',segment:'Commercial',sites:2,budget:340000,leads:120,newUnits:600,evPct:20,convRate:14,cpl:45,retention:72,usedUnits:300,fleetUnits:280,nps:68,q2Focus:'Transporter T7 launch + fleet drive days',sitenames:'Oldham VW Van Centre · Preston VW Van Centre'},
+  {id:'seat',name:'SEAT',color:'#E2231A',segment:'Mainstream',sites:3,budget:210000,leads:250,newUnits:1100,evPct:25,convRate:9,cpl:22,retention:65,usedUnits:600,fleetUnits:60,nps:68,q2Focus:'Ibiza summer social push + Leon Cupra-lite crossover',sitenames:'Chester · Crewe · Stafford'},
+  {id:'cupra',name:'CUPRA',color:'#C8920A',segment:'Performance EV',sites:2,budget:190000,leads:180,newUnits:400,evPct:60,convRate:11,cpl:42,retention:70,usedUnits:200,fleetUnits:40,nps:78,q2Focus:'Born EV summer + padel tennis series Crewe',sitenames:'Crewe CUPRA · Stockport CUPRA'},
+  {id:'landrover',name:'Land Rover',color:'#1D4E1D',segment:'Premium Luxury',sites:2,budget:380000,leads:180,newUnits:500,evPct:40,convRate:18,cpl:55,retention:72,usedUnits:400,fleetUnits:80,nps:80,q2Focus:'Defender adventure camp + Range Rover lifestyle push',sitenames:'Chester · Crewe'},
+  {id:'jaguar',name:'Jaguar',color:'#1B2631',segment:'Premium Luxury',sites:1,budget:175000,leads:80,newUnits:180,evPct:50,convRate:15,cpl:52,retention:68,usedUnits:120,fleetUnits:30,nps:72,q2Focus:'Brand relaunch support + EV positioning',sitenames:'Crewe Jaguar'},
+  {id:'honda',name:'Honda',color:'#CC0000',segment:'Mainstream Hybrid',sites:4,budget:260000,leads:280,newUnits:1400,evPct:55,convRate:10,cpl:28,retention:70,usedUnits:700,fleetUnits:80,nps:74,q2Focus:'e:HEV hybrid summer campaign + HR-V push',sitenames:'Blackburn · Bolton · Stockport · Stafford'},
+  {id:'peugeot',name:'Peugeot',color:'#1B3A6B',segment:'Mainstream EV',sites:3,budget:215000,leads:240,newUnits:1200,evPct:40,convRate:9,cpl:24,retention:65,usedUnits:500,fleetUnits:70,nps:68,q2Focus:'E-308 summer lease push + 3008 PHEV launch',sitenames:'Chester · Crewe · Stockport'},
+  {id:'byd',name:'BYD',color:'#0066CC',segment:'EV-Led',sites:3,budget:175000,leads:180,newUnits:500,evPct:100,convRate:8,cpl:35,retention:60,usedUnits:100,fleetUnits:50,nps:68,q2Focus:'BYD Seal awareness push + EV education campaign',sitenames:'Cheshire · Cheshire 2 · Stoke'},
+  {id:'omoda',name:'OMODA / JAECOO',color:'#6B21A8',segment:'EV-Led New Brand',sites:1,budget:140000,leads:100,newUnits:250,evPct:55,convRate:7,cpl:30,retention:55,usedUnits:50,fleetUnits:20,nps:65,q2Focus:'OMODA 7 launch + Jaecoo 5 EV push + grand opening follow-up',sitenames:'Stockport (dual brand showroom)'},
+  {id:'motormatch',name:'Motor Match',color:'#374151',segment:'Used Car',sites:5,budget:160000,leads:600,newUnits:4000,evPct:15,convRate:6,cpl:14,retention:0,usedUnits:4000,fleetUnits:0,nps:70,q2Focus:'Top Value Dealer maintenance + summer stock push',sitenames:'Chester · Crewe · Stockport · Stoke · Fenton'},
+];
+
+const GROUP_DEFAULTS = {
+  name:'Swansway Motor Group', year:'2026', desc:'11 brands · 30 dealerships · North West, Midlands & North Wales',
+  fystart:'January', budget:4200000, evPct:38, digSplit:'70% digital / 30% traditional', coopPct:15,
+  units:8530, leads:2400, evSales:35, conv:11, retention:68, used:6000, nps:72, cpl:32,
+  priorities:[
+    {title:'EV Transition Leadership',desc:'Drive electric adoption across BYD, CUPRA, VW, Peugeot and OMODA/JAECOO. Education-first campaigns, home charger incentives, BIK savings calculators for fleet.'},
+    {title:'Digital Lead Generation',desc:'Group-level PPC, AutoTrader prominence, social-first content strategy. Target 2,400+ digital leads/month across all brands. Sub-£38 CPL for premium, sub-£22 mainstream.'},
+    {title:'Fleet & B2B Growth',desc:'Leverage Fleet Procure Group of the Year win. Cross-brand fleet proposition — VW Commercial, Audi, Land Rover and Peugeot. LinkedIn B2B outreach, Chamber partnerships.'},
+    {title:'Aftersales Revenue',desc:'Grow service retention to 68%+ across all brands via lifecycle CRM, service plan promotions and MOT reminder campaigns. Target lapsed customers 3+ years.'},
+    {title:'Community & Family Values',desc:'Amplify the Swansway family story — Smyth family 55+ years. Partnerships with Cheshire, Staffordshire and Lancashire community foundations.'},
+    {title:'Approved Used at Scale',desc:'Motor Match 5 sites plus approved used at all 30 franchised dealerships. Daily stock pricing discipline, AutoTrader Top Value Dealer status maintenance.'},
+  ]
+};
+
+const CHANNEL_DEFAULTS = [
+  {name:'Digital Paid (PPC/Display)',pct:30,color:'#1E3A8A',note:'Google, Bing, AutoTrader PPC — brand-specific ad sets per brand and dealership.'},
+  {name:'Social & Content',pct:20,color:'#14532D',note:'TikTok, Instagram, Facebook, YouTube — brand personality-led content.'},
+  {name:'Manufacturer Co-op',pct:15,color:'#78350F',note:'Leverage VW Group, JLR, Honda, Stellantis, OMODA UK central funds.'},
+  {name:'Email & CRM',pct:12,color:'#4C1D95',note:'Lifecycle nurture, conquest, retention — segmented by brand and lifecycle stage.'},
+  {name:'Events & Showroom',pct:10,color:'#831843',note:'VIP nights, test drive events, fleet drive days, padel events.'},
+  {name:'SEO & Local Search',pct:8,color:'#065F46',note:'Google Business Profile optimisation across all 30 sites.'},
+  {name:'OOH & Print',pct:5,color:'#92400E',note:'Regional press, radio, outdoor — plate-change bursts and new brand launches.'},
+];
+
+const KPI_DEFAULTS = [
+  {label:'Total new car/van units',target:8530,actual:0,owner:'All HoBs + Directors'},
+  {label:'EV/PHEV % of total new sales',target:35,actual:0,unit:'%',owner:'Sales + Marketing'},
+  {label:'Digital leads per month',target:2400,actual:0,owner:'Group digital team'},
+  {label:'Lead-to-sale conversion',target:11,actual:0,unit:'%',owner:'All sales managers'},
+  {label:'AutoTrader response time (mins)',target:30,actual:0,lowerBetter:true,owner:'All centre teams'},
+  {label:'Service retention rate',target:68,actual:0,unit:'%',owner:'All aftersales mgrs'},
+  {label:'Approved Used + Motor Match units',target:6000,actual:0,owner:'Used car managers'},
+  {label:'Group NPS',target:72,actual:0,owner:'All HoBs'},
+  {label:'Fleet accounts active',target:200,actual:0,owner:'Fleet team, Crewe'},
+  {label:'Social media follower growth',target:40,actual:0,unit:'%',owner:'Group social'},
+  {label:'Manufacturer co-op utilisation',target:90,actual:0,unit:'%',owner:'Marketing team'},
+  {label:'Group cost per lead (£)',target:32,actual:0,unit:'£',lowerBetter:true,owner:'Digital team'},
+];
+
+const CAL_DEFAULTS = [
+  {q:'Q1 — January to March',events:[
+    {brand:'All brands',label:'New Year finance reset — PCP/PCH lead generation across all brands',color:'#374151'},
+    {brand:'VW / OMODA',label:'Oldham VW + OMODA Stockport: new site awareness campaigns',color:'#001E5A'},
+    {brand:'Audi',label:'Q4 e-tron & Q5 PHEV winter finance push',color:'#CC0000'},
+    {brand:'🔴 ALL BRANDS',label:'MARCH PLATE CHANGE — Maximum investment all channels',color:'#DC2626'},
+  ]},
+  {q:'Q2 — April to June',events:[
+    {brand:'Audi',label:'A6 e-tron Avant launch — test drive events all 6 centres',color:'#CC0000'},
+    {brand:'Peugeot',label:'E-308 summer lease push — PCH from £XXX all-inclusive',color:'#1B3A6B'},
+    {brand:'BYD',label:'Seal awareness campaign — vs Tesla comparison content',color:'#0066CC'},
+    {brand:'CUPRA',label:'Born EV summer + padel tennis series Crewe (Apr–Sep)',color:'#C8920A'},
+    {brand:'Audi',label:'JUNE: Audi Summer Drive VIP event — all 6 Audi centres',color:'#CC0000'},
+    {brand:'Honda',label:'e:HEV "Never Plug In" summer campaign launch',color:'#CC0000'},
+  ]},
+  {q:'Q3 — July to September',events:[
+    {brand:'Land Rover',label:'Defender Adventure Camp — Snowdonia/Peak District',color:'#1D4E1D'},
+    {brand:'SEAT',label:'Ibiza summer social blitz — TikTok + Instagram',color:'#E2231A'},
+    {brand:'Motor Match',label:'Summer stock push — finance from £199/mo all sites',color:'#374151'},
+    {brand:'🔴 ALL BRANDS',label:'SEPTEMBER PLATE CHANGE — Maximum investment all channels',color:'#DC2626'},
+  ]},
+  {q:'Q4 — October to December',events:[
+    {brand:'Jaguar',label:'Brand relaunch support — new model preview, VIP evenings',color:'#1B2631'},
+    {brand:'All brands',label:'November: Black Friday finance deposit deals across all brands',color:'#374151'},
+    {brand:'All brands',label:'December: Year-end clearance + "Start 2027" preview campaigns',color:'#374151'},
+    {brand:'CUPRA',label:'CUPRA Urban Nights — monthly Oct–Mar',color:'#C8920A'},
+  ]},
+];
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let STATE = {
+  pw: 'swansway2026',
+  group: JSON.parse(JSON.stringify(GROUP_DEFAULTS)),
+  brands: JSON.parse(JSON.stringify(BRAND_DEFAULTS)),
+  channels: JSON.parse(JSON.stringify(CHANNEL_DEFAULTS)),
+  kpis: JSON.parse(JSON.stringify(KPI_DEFAULTS)),
+  calendar: JSON.parse(JSON.stringify(CAL_DEFAULTS)),
+};
+
+let currentBrandId = null;
+let charts = {};
+
+/* ══════════════════════════════════════════════════════
+   GOOGLE SHEETS API — Primary persistence layer
+   localStorage — Fallback when Sheets unavailable
+══════════════════════════════════════════════════════ */
+
+// ▼▼▼ PASTE YOUR WEB APP URL HERE AFTER DEPLOYING ▼▼▼
+const SHEETS_API_URL = localStorage.getItem('swansway_sheets_url') || '';
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+const ADMIN_SECRET = 'swansway2026'; // Must match Code.gs ADMIN_SECRET
+
+let sheetsAvailable = false;
+let isSaving = false;
+
+/* ── CONNECTION STATUS ── */
+function updateConnectionStatus(ok, msg) {
+  const el = document.getElementById('conn-status');
+  if (!el) return;
+  el.innerHTML = ok
+    ? `<span style="color:#4ADE80">● Sheets connected</span>`
+    : `<span style="color:#FCD34D">● ${msg || 'Sheets not configured'}</span>`;
+}
+
+/* ── PING SHEETS ── */
+async function pingSheets(url) {
+  if (!url) return false;
+  try {
+    const resp = await fetch(url + '?action=ping&secret=' + ADMIN_SECRET, { method:'GET' });
+    const data = await resp.json();
+    return data.ok === true;
+  } catch(e) {
+    return false;
+  }
+}
+
+/* ── LOAD FROM SHEETS ── */
+async function loadFromSheets(url) {
+  const resp = await fetch(url + '?action=load&secret=' + ADMIN_SECRET);
+  const data = await resp.json();
+  if (!data.ok) throw new Error(data.error || 'Load failed');
+  return data;
+}
+
+/* ── SAVE TO SHEETS ── */
+async function saveToSheets(payload) {
+  const url = getSheetsUrl();
+  if (!url) throw new Error('No Sheets URL configured');
+  const resp = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify({ action:'save_all', secret:ADMIN_SECRET, data:payload }),
+  });
+  const data = await resp.json();
+  if (!data.ok) throw new Error(data.error || 'Save failed');
+  return data;
+}
+
+/* ── GET SHEETS URL ── */
+function getSheetsUrl() {
+  const stored = localStorage.getItem('swansway_sheets_url');
+  const input  = document.getElementById('sheets-url-input');
+  return (input && input.value.trim()) || stored || SHEETS_API_URL || '';
+}
+
+/* ══════════════════════════════════════════
+   PRIMARY LOAD STATE
+══════════════════════════════════════════ */
+async function loadState() {
+  // Always load localStorage first (instant)
+  try {
+    const saved = localStorage.getItem('swansway_admin_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      STATE = { ...STATE, ...parsed };
+    }
+  } catch(e) {}
+
+  // Then try Sheets (async override)
+  const url = getSheetsUrl();
+  if (url) {
+    updateConnectionStatus(false, 'Connecting to Sheets…');
+    try {
+      const ok = await pingSheets(url);
+      if (ok) {
+        sheetsAvailable = true;
+        updateConnectionStatus(true);
+        const remote = await loadFromSheets(url);
+        // Merge remote data into STATE
+        if (remote.group)    STATE.group    = { ...STATE.group, ...remote.group };
+        if (remote.brands && remote.brands.length)   STATE.brands   = remote.brands;
+        if (remote.channels && remote.channels.length) STATE.channels = remote.channels;
+        if (remote.kpis && remote.kpis.length)     STATE.kpis     = remote.kpis;
+        if (remote.calendar && remote.calendar.length) STATE.calendar = remote.calendar;
+        showToast('✓ Loaded from Google Sheets', 'success');
+        buildSidebarBrands();
+        refreshDashboard();
+      } else {
+        updateConnectionStatus(false, 'Sheets unreachable — using local data');
+      }
+    } catch(e) {
+      updateConnectionStatus(false, 'Sheets error — using local data');
+      console.warn('Sheets load error:', e);
+    }
+  } else {
+    updateConnectionStatus(false, 'Sheets not configured');
+  }
+}
+
+/* ══════════════════════════════════════════
+   PRIMARY SAVE
+══════════════════════════════════════════ */
+async function saveAll() {
+  if (isSaving) return;
+  isSaving = true;
+
+  collectGroupForm();
+  collectChannelForm();
+  collectKPIForm();
+
+  setSaveStatus('saving');
+
+  const payload = {
+    group:    STATE.group,
+    brands:   STATE.brands,
+    channels: STATE.channels,
+    kpis:     STATE.kpis,
+    calendar: STATE.calendar,
+  };
+
+  // Always save to localStorage as fallback
+  try {
+    localStorage.setItem('swansway_admin_v2', JSON.stringify(STATE));
+    localStorage.setItem('swansway_config', JSON.stringify(payload));
+  } catch(e) {}
+
+  // Try Sheets
+  const url = getSheetsUrl();
+  if (url && sheetsAvailable) {
+    try {
+      await saveToSheets(payload);
+      setSaveStatus('saved-sheets');
+      showToast('✓ Saved to Google Sheets', 'success');
+    } catch(e) {
+      setSaveStatus('saved-local');
+      showToast('⚠ Sheets error — saved locally only', 'error');
+      console.warn('Sheets save error:', e);
+    }
+  } else {
+    setSaveStatus(url ? 'saved-local' : 'saved-local');
+    showToast(url ? '⚠ Sheets offline — saved locally' : '✓ Saved locally', url ? 'error' : 'success');
+  }
+
+  document.getElementById('last-saved-info').textContent = 'Last saved: ' + new Date().toLocaleString('en-GB') + (sheetsAvailable ? ' (Google Sheets)' : ' (local only)');
+  refreshDashboard();
+  isSaving = false;
+}
+
+function setSaveStatus(state) {
+  const el = document.getElementById('save-status');
+  if (!el) return;
+  const states = {
+    'saving':      '<span class="save-dot" style="background:#FCD34D;animation:blink 0.5s infinite"></span> Saving…',
+    'saved-sheets':'<span class="save-dot"></span> Saved to Sheets',
+    'saved-local': '<span class="save-dot" style="background:#FCD34D"></span> Saved locally only',
+    'unsaved':     '<span class="save-dot" style="background:#FCD34D"></span> Unsaved changes',
+  };
+  el.innerHTML = states[state] || states['unsaved'];
+}
+
+function autoSave() {
+  setSaveStatus('unsaved');
+}
+
+/* ── SNAPSHOT ── */
+async function takeSnapshot() {
+  const label = prompt('Snapshot label (e.g. "Q2 2026 review"):');
+  if (!label) return;
+  const url = getSheetsUrl();
+  if (!url || !sheetsAvailable) { showToast('Snapshots require Google Sheets connection','error'); return; }
+  try {
+    const resp = await fetch(url, {
+      method:'POST',
+      body: JSON.stringify({ action:'snapshot', secret:ADMIN_SECRET, label }),
+    });
+    const data = await resp.json();
+    if (data.ok) showToast('✓ Snapshot saved: ' + label, 'success');
+    else showToast('Snapshot failed: ' + data.error, 'error');
+  } catch(e) { showToast('Snapshot error: ' + e.message, 'error'); }
+}
+
+/* ── HISTORY ── */
+async function loadHistory() {
+  const url = getSheetsUrl();
+  if (!url) { showToast('Sheets not configured','error'); return []; }
+  try {
+    const resp = await fetch(url + '?action=history&secret=' + ADMIN_SECRET);
+    const data = await resp.json();
+    return data.snapshots || [];
+  } catch(e) { return []; }
+}
+
+/* ══════════════════════════════════════════
+   LOGIN
+══════════════════════════════════════════ */
+function tryLogin() {
+  const pw = document.getElementById('login-pw').value;
+  if(pw === STATE.pw) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    init();
+    loadState(); // async — fetches from Sheets in background
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+    document.getElementById('login-pw').value = '';
+    document.getElementById('login-pw').focus();
+  }
+}
+
+function logout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-pw').value = '';
+}
+
+function changePassword() {
+  const cur = document.getElementById('sec-current').value;
+  const nw = document.getElementById('sec-new').value;
+  const cf = document.getElementById('sec-confirm').value;
+  if(cur !== STATE.pw) { showToast('Current password incorrect','error'); return; }
+  if(nw !== cf) { showToast('New passwords do not match','error'); return; }
+  if(nw.length < 6) { showToast('Password must be at least 6 characters','error'); return; }
+  STATE.pw = nw;
+  saveAll();
+  showToast('Password updated successfully','success');
+  ['sec-current','sec-new','sec-confirm'].forEach(id=>document.getElementById(id).value='');
+}
+
+/* ══════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════ */
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.snav').forEach(s=>s.classList.remove('active'));
+  const page = document.getElementById('page-'+id);
+  if(page) { page.classList.add('active'); }
+  if(el) el.classList.add('active');
+  if(id === 'dashboard') refreshDashboard();
+  if(id === 'channels') renderChannelEditor();
+  if(id === 'group-kpis') renderKPIEditor();
+  if(id === 'calendar') renderCalendarEditor();
+  if(id === 'group-settings') populateGroupForm();
+}
+
+function showBrandPage(brandId) {
+  currentBrandId = brandId;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.snav').forEach(s=>s.classList.remove('active'));
+  const btn = document.querySelector(`.snav[data-brand="${brandId}"]`);
+  if(btn) btn.classList.add('active');
+  document.getElementById('page-brand').classList.add('active');
+  renderBrandEditor(brandId);
+}
+
+/* ══════════════════════════════════════════
+   SIDEBAR BRAND LINKS
+══════════════════════════════════════════ */
+function buildSidebarBrands() {
+  const container = document.getElementById('brand-sidebar-links');
+  container.innerHTML = STATE.brands.map(b=>`
+    <button class="snav snav-brand" data-brand="${b.id}" onclick="showBrandPage('${b.id}')">
+      <span class="snav-dot" style="background:${b.color}"></span>${b.name}
+    </button>
+  `).join('');
+}
+
+/* ══════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════ */
+function refreshDashboard() {
+  const totalBudget = STATE.brands.reduce((s,b)=>s+b.budget,0);
+  const totalUnits = STATE.brands.reduce((s,b)=>s+(b.id==='motormatch'?0:b.newUnits),0);
+  const totalLeads = STATE.brands.reduce((s,b)=>s+b.leads,0);
+  const avgEV = Math.round(STATE.brands.filter(b=>b.id!=='motormatch').reduce((s,b)=>s+b.evPct,0)/11);
+
+  document.getElementById('dash-metrics').innerHTML = `
+    <div class="metric" style="border-top-color:#1A2E4A"><div class="metric-label">Total configured budget</div><div class="metric-val">£${(totalBudget/1000000).toFixed(2)}M</div><div class="metric-sub">Across ${STATE.brands.length} brands</div></div>
+    <div class="metric" style="border-top-color:#C8102E"><div class="metric-label">New car/van target</div><div class="metric-val">${totalUnits.toLocaleString()}</div><div class="metric-sub">Excl. Motor Match used</div></div>
+    <div class="metric" style="border-top-color:#047857"><div class="metric-label">Total leads/month target</div><div class="metric-val">${totalLeads.toLocaleString()}</div><div class="metric-sub">All brands combined</div></div>
+    <div class="metric" style="border-top-color:#7C3AED"><div class="metric-label">Avg EV target</div><div class="metric-val">${avgEV}%</div><div class="metric-sub">Group EV mix target</div></div>
+  `;
+
+  // Brand table
+  document.getElementById('dash-brand-table').innerHTML = `
+    <thead><tr><th>Brand</th><th>Budget</th><th>New car target</th><th>Leads/mo</th><th>EV %</th><th>Conv %</th><th>CPL (£)</th><th>Sites</th><th></th></tr></thead>
+    <tbody>${STATE.brands.map(b=>`
+      <tr>
+        <td><span class="brand-color-dot" style="background:${b.color}"></span><strong>${b.name}</strong><br><span style="font-size:10px;color:var(--ink-soft)">${b.segment}</span></td>
+        <td style="font-family:var(--fm)">£${(b.budget/1000).toFixed(0)}K</td>
+        <td style="font-family:var(--fm)">${b.newUnits.toLocaleString()}</td>
+        <td style="font-family:var(--fm)">${b.leads}</td>
+        <td><div class="prog-bar-wrap" style="width:80px;display:inline-block"><div class="prog-bar" style="width:${b.evPct}%;background:${b.color}"></div></div> ${b.evPct}%</td>
+        <td style="font-family:var(--fm)">${b.convRate}%</td>
+        <td style="font-family:var(--fm)">£${b.cpl}</td>
+        <td style="font-family:var(--fm)">${b.sites}</td>
+        <td><button class="btn btn-sm" onclick="showBrandPage('${b.id}')">Edit</button></td>
+      </tr>
+    `).join('')}</tbody>
+  `;
+
+  renderDashCharts();
+}
+
+let brandChartInst, channelChartInst;
+function renderDashCharts() {
+  if(brandChartInst) brandChartInst.destroy();
+  if(channelChartInst) channelChartInst.destroy();
+  const bc = document.getElementById('dashBrandChart');
+  const cc = document.getElementById('dashChannelChart');
+  if(!bc||!cc||!window.Chart) return;
+  brandChartInst = new Chart(bc,{type:'doughnut',data:{labels:STATE.brands.map(b=>b.name),datasets:[{data:STATE.brands.map(b=>b.budget),backgroundColor:STATE.brands.map(b=>b.color),borderWidth:2,borderColor:'#F0EDE8'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+  const totalBudget = STATE.group.budget||4200000;
+  channelChartInst = new Chart(cc,{type:'doughnut',data:{labels:STATE.channels.map(c=>c.name),datasets:[{data:STATE.channels.map(c=>c.pct),backgroundColor:STATE.channels.map(c=>c.color),borderWidth:2,borderColor:'#F0EDE8'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+}
+
+/* ══════════════════════════════════════════
+   GROUP FORM
+══════════════════════════════════════════ */
+function populateGroupForm() {
+  const g = STATE.group;
+  document.getElementById('gs-name').value = g.name||'';
+  document.getElementById('gs-year').value = g.year||'';
+  document.getElementById('gs-desc').value = g.desc||'';
+  document.getElementById('gs-budget').value = g.budget||'';
+  document.getElementById('gs-ev-pct').value = g.evPct||'';
+  document.getElementById('gs-coop-pct').value = g.coopPct||'';
+  document.getElementById('gs-units').value = g.units||'';
+  document.getElementById('gs-leads').value = g.leads||'';
+  document.getElementById('gs-ev-sales').value = g.evSales||'';
+  document.getElementById('gs-conv').value = g.conv||'';
+  document.getElementById('gs-retention').value = g.retention||'';
+  document.getElementById('gs-used').value = g.used||'';
+  document.getElementById('gs-nps').value = g.nps||'';
+  document.getElementById('gs-cpl').value = g.cpl||'';
+  renderPriorityEditor();
+}
+
+function collectGroupForm() {
+  STATE.group.name = document.getElementById('gs-name').value;
+  STATE.group.year = document.getElementById('gs-year').value;
+  STATE.group.desc = document.getElementById('gs-desc').value;
+  STATE.group.budget = parseFloat(document.getElementById('gs-budget').value)||4200000;
+  STATE.group.evPct = parseFloat(document.getElementById('gs-ev-pct').value)||38;
+  STATE.group.coopPct = parseFloat(document.getElementById('gs-coop-pct').value)||15;
+  STATE.group.units = parseFloat(document.getElementById('gs-units').value)||8530;
+  STATE.group.leads = parseFloat(document.getElementById('gs-leads').value)||2400;
+  STATE.group.evSales = parseFloat(document.getElementById('gs-ev-sales').value)||35;
+  STATE.group.conv = parseFloat(document.getElementById('gs-conv').value)||11;
+  STATE.group.retention = parseFloat(document.getElementById('gs-retention').value)||68;
+  STATE.group.used = parseFloat(document.getElementById('gs-used').value)||6000;
+  STATE.group.nps = parseFloat(document.getElementById('gs-nps').value)||72;
+  STATE.group.cpl = parseFloat(document.getElementById('gs-cpl').value)||32;
+  // Priorities collected live
+}
+
+function onGroupBudgetChange() {
+  renderChannelEditor();
+}
+
+function renderPriorityEditor() {
+  document.getElementById('priority-editor').innerHTML = STATE.group.priorities.map((p,i)=>`
+    <div style="border:1px solid var(--border);border-radius:3px;padding:14px;margin-bottom:10px;background:var(--surface)">
+      <div class="form-grid-2" style="margin-bottom:8px">
+        <div class="form-group"><label class="form-label">Priority ${i+1} title</label><input class="form-input" value="${p.title}" oninput="STATE.group.priorities[${i}].title=this.value;autoSave()"></div>
+        <div></div>
+      </div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" oninput="STATE.group.priorities[${i}].desc=this.value;autoSave()">${p.desc}</textarea></div>
+    </div>
+  `).join('');
+}
+
+function resetGroupDefaults() {
+  if(!confirm('Reset group settings to defaults?')) return;
+  STATE.group = JSON.parse(JSON.stringify(GROUP_DEFAULTS));
+  populateGroupForm();
+  autoSave();
+}
+
+/* ══════════════════════════════════════════
+   BRAND EDITOR
+══════════════════════════════════════════ */
+function renderBrandEditor(id) {
+  const b = STATE.brands.find(x=>x.id===id);
+  if(!b) return;
+  const c = document.getElementById('brand-page-content');
+  c.innerHTML = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-family:var(--fd);font-size:22px;color:${b.color}">${b.name}</div>
+        <div style="font-size:13px;color:var(--ink-soft)">${b.segment} · ${b.sites} site${b.sites>1?'s':''} · ${b.sitenames}</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-success" onclick="saveBrand('${id}')">✓ Save ${b.name}</button>
+        <button class="btn" onclick="resetBrandDefaults('${id}')">Reset defaults</button>
+      </div>
+    </div>
+
+    <div class="tabs" id="btabs-${id}">
+      <button class="tab active" onclick="switchBrandTab('${id}','budget',this)">Budget & Targets</button>
+      <button class="tab" onclick="switchBrandTab('${id}','identity',this)">Identity & Focus</button>
+    </div>
+
+    <div class="tab-panel active" id="btab-${id}-budget">
+      <div class="card mb2">
+        <div class="card-header" style="border-top:3px solid ${b.color}"><div class="card-title">💰 Budget & financial targets</div></div>
+        <div class="card-body">
+          <div class="form-grid-4">
+            <div class="form-group"><label class="form-label">Annual budget (£)</label><div class="input-prefix"><span class="prefix-symbol">£</span><input type="number" class="form-input prefix-input" id="b-${id}-budget" value="${b.budget}" oninput="autoSave()"></div></div>
+            <div class="form-group"><label class="form-label">New car/van target (units)</label><input type="number" class="form-input" id="b-${id}-newUnits" value="${b.newUnits}" oninput="autoSave()"></div>
+            <div class="form-group"><label class="form-label">EV/PHEV target (%)</label><input type="number" class="form-input" id="b-${id}-evPct" value="${b.evPct}" min="0" max="100" oninput="autoSave()"></div>
+            <div class="form-group"><label class="form-label">Approved Used target (units)</label><input type="number" class="form-input" id="b-${id}-usedUnits" value="${b.usedUnits}" oninput="autoSave()"></div>
+            <div class="form-group"><label class="form-label">Fleet units target</label><input type="number" class="form-input" id="b-${id}-fleetUnits" value="${b.fleetUnits}" oninput="autoSave()"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb2">
+        <div class="card-header"><div class="card-title">🎯 Lead & conversion targets</div></div>
+        <div class="card-body">
+          <div class="form-grid-4">
+            <div class="form-group"><label class="form-label">Digital leads/month</label><input type="number" class="form-input" id="b-${id}-leads" value="${b.leads}" oninput="autoSave()"></div>
+            <div class="form-group"><label class="form-label">Lead-to-sale conv. (%)</label><input type="number" class="form-input" id="b-${id}-convRate" value="${b.convRate}" min="0" max="100" oninput="autoSave()"></div>
+            <div class="form-group"><label class="form-label">Max cost per lead (£)</label><div class="input-prefix"><span class="prefix-symbol">£</span><input type="number" class="form-input prefix-input" id="b-${id}-cpl" value="${b.cpl}" oninput="autoSave()"></div></div>
+            <div class="form-group"><label class="form-label">Service retention target (%)</label><input type="number" class="form-input" id="b-${id}-retention" value="${b.retention}" min="0" max="100" oninput="autoSave()"></div>
+            <div class="form-group"><label class="form-label">Customer NPS target</label><input type="number" class="form-input" id="b-${id}-nps" value="${b.nps}" oninput="autoSave()"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb2">
+        <div class="card-header"><div class="card-title">📊 Calculated metrics</div></div>
+        <div class="card-body">
+          <div class="form-grid-4">
+            <div class="metric" style="border-top-color:${b.color}"><div class="metric-label">Budget per lead</div><div class="metric-val" id="calc-${id}-bpl">-</div><div class="metric-sub">Annual budget ÷ (leads × 12)</div></div>
+            <div class="metric" style="border-top-color:${b.color}"><div class="metric-label">Budget per unit</div><div class="metric-val" id="calc-${id}-bpu">-</div><div class="metric-sub">Annual budget ÷ new units</div></div>
+            <div class="metric" style="border-top-color:${b.color}"><div class="metric-label">Monthly budget</div><div class="metric-val" id="calc-${id}-mb">-</div><div class="metric-sub">Annual ÷ 12</div></div>
+            <div class="metric" style="border-top-color:${b.color}"><div class="metric-label">Impl. monthly sales</div><div class="metric-val" id="calc-${id}-ms">-</div><div class="metric-sub">Leads × conv rate</div></div>
+          </div>
+          <script>updateCalcMetrics('${id}')<\/script>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="btab-${id}-identity">
+      <div class="card mb2">
+        <div class="card-header"><div class="card-title">🏷️ Brand identity</div></div>
+        <div class="card-body">
+          <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">Brand name</label><input class="form-input" id="b-${id}-name" value="${b.name}" oninput="autoSave()"></div>
+            <div class="form-group"><label class="form-label">Segment / category</label><input class="form-input" id="b-${id}-segment" value="${b.segment}" oninput="autoSave()"></div>
+            <div class="form-group"><label class="form-label">Brand colour</label>
+              <div style="display:flex;gap:8px;align-items:center">
+                <label class="color-swatch"><input type="color" value="${b.color}" oninput="STATE.brands.find(x=>x.id==='${id}').color=this.value;autoSave()"></label>
+                <input class="form-input" id="b-${id}-color" value="${b.color}" style="font-family:var(--fm)" oninput="autoSave()">
+              </div>
+            </div>
+            <div class="form-group"><label class="form-label">Number of sites</label><input type="number" class="form-input" id="b-${id}-sites" value="${b.sites}" oninput="autoSave()"></div>
+            <div class="form-group" style="grid-column:1/-1"><label class="form-label">Site names (shown in plan)</label><input class="form-input" id="b-${id}-sitenames" value="${b.sitenames}" oninput="autoSave()"></div>
+            <div class="form-group" style="grid-column:1/-1"><label class="form-label">Q2 focus / current headline</label><input class="form-input" id="b-${id}-q2Focus" value="${b.q2Focus}" oninput="autoSave()"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  updateCalcMetrics(id);
+}
+
+function switchBrandTab(brandId, tab, el) {
+  document.querySelectorAll(`#btabs-${brandId} .tab`).forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll(`#btab-${brandId}-budget, #btab-${brandId}-identity`).forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(`btab-${brandId}-${tab}`).classList.add('active');
+}
+
+function updateCalcMetrics(id) {
+  const b = STATE.brands.find(x=>x.id===id);
+  if(!b) return;
+  const budget = parseFloat(document.getElementById(`b-${id}-budget`)?.value)||b.budget;
+  const leads = parseFloat(document.getElementById(`b-${id}-leads`)?.value)||b.leads;
+  const units = parseFloat(document.getElementById(`b-${id}-newUnits`)?.value)||b.newUnits;
+  const conv = parseFloat(document.getElementById(`b-${id}-convRate`)?.value)||b.convRate;
+  const bpl = leads>0 ? Math.round(budget/(leads*12)) : 0;
+  const bpu = units>0 ? Math.round(budget/units) : 0;
+  const mb = Math.round(budget/12);
+  const ms = Math.round(leads * conv/100);
+  if(document.getElementById(`calc-${id}-bpl`)) {
+    document.getElementById(`calc-${id}-bpl`).textContent = '£'+bpl.toLocaleString();
+    document.getElementById(`calc-${id}-bpu`).textContent = '£'+bpu.toLocaleString();
+    document.getElementById(`calc-${id}-mb`).textContent = '£'+(mb/1000).toFixed(1)+'K';
+    document.getElementById(`calc-${id}-ms`).textContent = ms+'/mo';
+  }
+}
+
+function saveBrand(id) {
+  const b = STATE.brands.find(x=>x.id===id);
+  if(!b) return;
+  b.budget = parseFloat(document.getElementById(`b-${id}-budget`)?.value)||b.budget;
+  b.leads = parseFloat(document.getElementById(`b-${id}-leads`)?.value)||b.leads;
+  b.newUnits = parseFloat(document.getElementById(`b-${id}-newUnits`)?.value)||b.newUnits;
+  b.evPct = parseFloat(document.getElementById(`b-${id}-evPct`)?.value)||b.evPct;
+  b.usedUnits = parseFloat(document.getElementById(`b-${id}-usedUnits`)?.value)||b.usedUnits;
+  b.fleetUnits = parseFloat(document.getElementById(`b-${id}-fleetUnits`)?.value)||b.fleetUnits;
+  b.convRate = parseFloat(document.getElementById(`b-${id}-convRate`)?.value)||b.convRate;
+  b.cpl = parseFloat(document.getElementById(`b-${id}-cpl`)?.value)||b.cpl;
+  b.retention = parseFloat(document.getElementById(`b-${id}-retention`)?.value)||b.retention;
+  b.nps = parseFloat(document.getElementById(`b-${id}-nps`)?.value)||b.nps;
+  b.name = document.getElementById(`b-${id}-name`)?.value||b.name;
+  b.segment = document.getElementById(`b-${id}-segment`)?.value||b.segment;
+  b.color = document.getElementById(`b-${id}-color`)?.value||b.color;
+  b.sites = parseInt(document.getElementById(`b-${id}-sites`)?.value)||b.sites;
+  b.sitenames = document.getElementById(`b-${id}-sitenames`)?.value||b.sitenames;
+  b.q2Focus = document.getElementById(`b-${id}-q2Focus`)?.value||b.q2Focus;
+  saveAll();
+  updateCalcMetrics(id);
+}
+
+function resetBrandDefaults(id) {
+  if(!confirm(`Reset ${id} to default values?`)) return;
+  const def = BRAND_DEFAULTS.find(x=>x.id===id);
+  if(!def) return;
+  const idx = STATE.brands.findIndex(x=>x.id===id);
+  STATE.brands[idx] = JSON.parse(JSON.stringify(def));
+  renderBrandEditor(id);
+  autoSave();
+}
+
+/* ══════════════════════════════════════════
+   CHANNEL EDITOR
+══════════════════════════════════════════ */
+function renderChannelEditor() {
+  const totalBudget = STATE.group.budget || 4200000;
+  const container = document.getElementById('channel-editor-rows');
+  container.innerHTML = STATE.channels.map((c,i)=>`
+    <div class="channel-editor-row">
+      <input class="channel-name-input form-input" value="${c.name}" style="font-size:12px" oninput="STATE.channels[${i}].name=this.value;autoSave()">
+      <input type="range" class="range-input" min="0" max="60" value="${c.pct}" step="1" oninput="STATE.channels[${i}].pct=parseInt(this.value);updateChannelTotals();autoSave()" id="ch-range-${i}">
+      <div class="pct-display" id="ch-pct-${i}">${c.pct}%</div>
+      <div class="budget-calc" id="ch-budget-${i}">£${Math.round(totalBudget*c.pct/100/1000)}K</div>
+      <button class="remove-btn" onclick="removeChannel(${i})">×</button>
+    </div>
+  `).join('');
+  updateChannelTotals();
+  document.getElementById('ch-total-budget').textContent = '£'+(totalBudget/1000000).toFixed(2)+'M total';
+}
+
+function updateChannelTotals() {
+  const totalBudget = STATE.group.budget || 4200000;
+  let total = 0;
+  STATE.channels.forEach((c,i)=>{
+    const rangeEl = document.getElementById(`ch-range-${i}`);
+    if(rangeEl) c.pct = parseInt(rangeEl.value);
+    total += c.pct;
+    if(document.getElementById(`ch-pct-${i}`)) document.getElementById(`ch-pct-${i}`).textContent = c.pct+'%';
+    if(document.getElementById(`ch-budget-${i}`)) document.getElementById(`ch-budget-${i}`).textContent = '£'+Math.round(totalBudget*c.pct/100/1000)+'K';
+  });
+  const bar = document.getElementById('ch-total-bar');
+  const pctLabel = document.getElementById('ch-pct-label');
+  const budgetTotal = document.getElementById('ch-budget-total');
+  if(bar) bar.style.width = Math.min(total,100)+'%';
+  if(bar) bar.style.background = total===100 ? 'var(--success)' : total>100 ? 'var(--accent)' : 'var(--warn)';
+  if(pctLabel) { pctLabel.textContent=total+'%'; pctLabel.style.color = total===100?'var(--success)':total>100?'var(--accent)':'var(--warn)'; }
+  if(budgetTotal) budgetTotal.textContent = '£'+(totalBudget/1000000).toFixed(2)+'M';
+  const tag = document.getElementById('ch-pct-total');
+  if(tag) { tag.textContent = total+'% allocated'; tag.className='tag '+(total===100?'t-green':total>100?'t-red':'t-amber'); }
+}
+
+function addChannel() {
+  STATE.channels.push({name:'New channel',pct:0,color:'#6B7280',note:'Add description'});
+  renderChannelEditor();
+}
+
+function removeChannel(i) {
+  if(STATE.channels.length<=2){showToast('Must have at least 2 channels','error');return;}
+  STATE.channels.splice(i,1);
+  renderChannelEditor();
+  autoSave();
+}
+
+function normaliseChannels() {
+  const total = STATE.channels.reduce((s,c)=>s+c.pct,0);
+  if(total===0) return;
+  STATE.channels.forEach(c=>c.pct=Math.round(c.pct/total*100));
+  // Fix rounding
+  const newTotal = STATE.channels.reduce((s,c)=>s+c.pct,0);
+  STATE.channels[0].pct += (100-newTotal);
+  renderChannelEditor();
+  autoSave();
+}
+
+function collectChannelForm() {
+  STATE.channels.forEach((c,i)=>{
+    const rangeEl = document.getElementById(`ch-range-${i}`);
+    if(rangeEl) c.pct = parseInt(rangeEl.value);
+  });
+}
+
+/* ══════════════════════════════════════════
+   KPI EDITOR
+══════════════════════════════════════════ */
+function renderKPIEditor() {
+  const tbody = document.getElementById('group-kpi-tbody');
+  tbody.innerHTML = STATE.kpis.map((k,i)=>{
+    const pct = k.target>0 ? Math.round(k.actual/k.target*100) : 0;
+    const status = k.lowerBetter
+      ? (k.actual===0?'not set':k.actual<=k.target?'On track':k.actual<=k.target*1.2?'At risk':'Off track')
+      : (k.actual===0?'not set':pct>=100?'On track':pct>=80?'At risk':'Off track');
+    const statusClass = status==='On track'?'status-green':status==='At risk'?'status-amber':status==='Off track'?'status-red':'';
+    return `<tr>
+      <td><input class="editable-text" value="${k.label}" oninput="STATE.kpis[${i}].label=this.value;autoSave()" style="width:220px"></td>
+      <td><input type="number" class="editable" value="${k.target}" oninput="STATE.kpis[${i}].target=parseFloat(this.value)||0;updateKPIRow(${i});autoSave()" id="kpi-t-${i}"></td>
+      <td><input type="number" class="editable" value="${k.actual}" oninput="STATE.kpis[${i}].actual=parseFloat(this.value)||0;updateKPIRow(${i});autoSave()" id="kpi-a-${i}" style="border-color:var(--sw)"></td>
+      <td><div class="prog-bar-wrap" style="width:80px;display:inline-block"><div class="prog-bar" style="width:${Math.min(pct,100)}%;background:var(--sw)" id="kpi-bar-${i}"></div></div> <span id="kpi-pct-${i}">${pct}%</span></td>
+      <td><span class="status-pill ${statusClass}" id="kpi-status-${i}">${status}</span></td>
+      <td><input class="editable-text" value="${k.owner}" oninput="STATE.kpis[${i}].owner=this.value;autoSave()" style="width:150px"></td>
+      <td><button class="remove-btn" onclick="removeKPI(${i})">×</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function updateKPIRow(i) {
+  const k = STATE.kpis[i];
+  const pct = k.target>0 ? Math.round(k.actual/k.target*100) : 0;
+  if(document.getElementById(`kpi-bar-${i}`)) document.getElementById(`kpi-bar-${i}`).style.width=Math.min(pct,100)+'%';
+  if(document.getElementById(`kpi-pct-${i}`)) document.getElementById(`kpi-pct-${i}`).textContent=pct+'%';
+  const status = k.lowerBetter
+    ? (k.actual===0?'not set':k.actual<=k.target?'On track':k.actual<=k.target*1.2?'At risk':'Off track')
+    : (k.actual===0?'not set':pct>=100?'On track':pct>=80?'At risk':'Off track');
+  const el = document.getElementById(`kpi-status-${i}`);
+  if(el) { el.textContent=status; el.className='status-pill '+(status==='On track'?'status-green':status==='At risk'?'status-amber':status==='Off track'?'status-red':''); }
+}
+
+function addGroupKPI() {
+  STATE.kpis.push({label:'New KPI',target:100,actual:0,owner:'TBC'});
+  renderKPIEditor();
+}
+
+function removeKPI(i) {
+  STATE.kpis.splice(i,1);
+  renderKPIEditor();
+  autoSave();
+}
+
+function collectKPIForm() {
+  // Already collected live via oninput handlers
+}
+
+/* ══════════════════════════════════════════
+   CALENDAR EDITOR
+══════════════════════════════════════════ */
+function renderCalendarEditor() {
+  const container = document.getElementById('calendar-quarters');
+  container.innerHTML = STATE.calendar.map((q,qi)=>`
+    <div class="card mb2">
+      <div class="card-header">
+        <div class="card-title"><input class="editable-text" value="${q.q}" oninput="STATE.calendar[${qi}].q=this.value;autoSave()" style="width:250px;font-weight:600"></div>
+        <button class="btn btn-sm" onclick="addCalEvent(${qi})">+ Add event</button>
+      </div>
+      <div class="card-body" style="padding:8px 18px">
+        ${q.events.map((e,ei)=>`
+          <div style="display:grid;grid-template-columns:28px 140px 1fr 24px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
+            <label class="color-swatch" style="width:22px;height:22px"><input type="color" value="${e.color}" oninput="STATE.calendar[${qi}].events[${ei}].color=this.value;autoSave()"></label>
+            <input class="form-input" value="${e.brand}" placeholder="Brand" style="font-size:11px;padding:4px 8px" oninput="STATE.calendar[${qi}].events[${ei}].brand=this.value;autoSave()">
+            <input class="form-input" value="${e.label}" placeholder="Campaign/event" style="font-size:11px;padding:4px 8px" oninput="STATE.calendar[${qi}].events[${ei}].label=this.value;autoSave()">
+            <button class="remove-btn" onclick="removeCalEvent(${qi},${ei})">×</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function addCalEvent(qi) {
+  STATE.calendar[qi].events.push({brand:'All brands',label:'New campaign',color:'#374151'});
+  renderCalendarEditor();
+  autoSave();
+}
+
+function removeCalEvent(qi,ei) {
+  STATE.calendar[qi].events.splice(ei,1);
+  renderCalendarEditor();
+  autoSave();
+}
+
+/* ══════════════════════════════════════════
+   IMPORT / EXPORT
+══════════════════════════════════════════ */
+function exportConfig() {
+  collectGroupForm();
+  collectChannelForm();
+  const data = JSON.stringify({
+    exported: new Date().toISOString(),
+    version: '2',
+    group: STATE.group,
+    brands: STATE.brands,
+    channels: STATE.channels,
+    kpis: STATE.kpis,
+    calendar: STATE.calendar
+  }, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'swansway-config-'+new Date().toISOString().split('T')[0]+'.json';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Config exported successfully','success');
+}
+
+function exportCSV() {
+  const rows = [['KPI','Target','Actual','% of Target','Owner']];
+  STATE.kpis.forEach(k=>rows.push([k.label,k.target,k.actual,k.target>0?Math.round(k.actual/k.target*100)+'%':'0%',k.owner]));
+  const csv = rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='swansway-kpis-'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function importConfig() {
+  document.getElementById('import-file').click();
+}
+
+function handleImport(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if(data.group) STATE.group = data.group;
+      if(data.brands) STATE.brands = data.brands;
+      if(data.channels) STATE.channels = data.channels;
+      if(data.kpis) STATE.kpis = data.kpis;
+      if(data.calendar) STATE.calendar = data.calendar;
+      saveAll();
+      buildSidebarBrands();
+      showToast('Configuration imported successfully','success');
+    } catch(err) {
+      showToast('Invalid JSON file','error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function confirmReset() {
+  if(confirm('This will reset ALL settings to factory defaults. Are you sure?')) {
+    STATE.group = JSON.parse(JSON.stringify(GROUP_DEFAULTS));
+    STATE.brands = JSON.parse(JSON.stringify(BRAND_DEFAULTS));
+    STATE.channels = JSON.parse(JSON.stringify(CHANNEL_DEFAULTS));
+    STATE.kpis = JSON.parse(JSON.stringify(KPI_DEFAULTS));
+    STATE.calendar = JSON.parse(JSON.stringify(CAL_DEFAULTS));
+    saveAll();
+    buildSidebarBrands();
+    showToast('All data reset to defaults','success');
+  }
+}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type?' toast-'+type:'');
+  document.getElementById('save-status').innerHTML = '<span class="save-dot"></span> All changes saved';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+/* ══════════════════════════════════════════
+   SHEETS URL MANAGEMENT
+══════════════════════════════════════════ */
+async function testAndSaveSheetsUrl() {
+  const input = document.getElementById('sheets-url-input');
+  const url = input.value.trim();
+  const resultEl = document.getElementById('sheets-test-result');
+  const pillEl = document.getElementById('sheets-status-pill');
+  if (!url) { showToast('Please enter a URL first','error'); return; }
+
+  resultEl.style.display='block';
+  resultEl.style.background='#FFFBEB';
+  resultEl.style.border='1px solid #FDE68A';
+  resultEl.textContent='Testing connection…';
+
+  try {
+    const ok = await pingSheets(url);
+    if (ok) {
+      localStorage.setItem('swansway_sheets_url', url);
+      sheetsAvailable = true;
+      resultEl.style.background='#D1FAE5';
+      resultEl.style.border='1px solid #6EE7B7';
+      resultEl.textContent='✅ Connected successfully! All saves will now go to Google Sheets.';
+      pillEl.className='tag t-green'; pillEl.textContent='✅ Connected';
+      updateConnectionStatus(true);
+      showToast('✓ Google Sheets connected','success');
+      // Load fresh data from Sheets
+      const remote = await loadFromSheets(url);
+      if (remote.group)    STATE.group    = { ...STATE.group, ...remote.group };
+      if (remote.brands && remote.brands.length)   STATE.brands   = remote.brands;
+      if (remote.channels && remote.channels.length) STATE.channels = remote.channels;
+      if (remote.kpis && remote.kpis.length)     STATE.kpis     = remote.kpis;
+      if (remote.calendar && remote.calendar.length) STATE.calendar = remote.calendar;
+      buildSidebarBrands();
+      refreshDashboard();
+    } else {
+      resultEl.style.background='#FEE2E2';
+      resultEl.style.border='1px solid #FCA5A5';
+      resultEl.textContent='❌ Could not connect. Check the URL and that the Web App is deployed with "Anyone" access.';
+      pillEl.className='tag t-red'; pillEl.textContent='❌ Connection failed';
+    }
+  } catch(e) {
+    resultEl.style.background='#FEE2E2';
+    resultEl.style.border='1px solid #FCA5A5';
+    resultEl.textContent='❌ Error: ' + e.message + '. Check CORS — Web App must be deployed with "Anyone" access.';
+    pillEl.className='tag t-red'; pillEl.textContent='❌ Error';
+  }
+
+  // Update data page status
+  if(document.getElementById('sheets-storage-status'))
+    document.getElementById('sheets-storage-status').textContent = sheetsAvailable ? '✅ Connected' : '❌ Not connected';
+}
+
+function clearSheetsUrl() {
+  localStorage.removeItem('swansway_sheets_url');
+  document.getElementById('sheets-url-input').value='';
+  sheetsAvailable = false;
+  updateConnectionStatus(false, 'Sheets cleared');
+  document.getElementById('sheets-test-result').style.display='none';
+  document.getElementById('sheets-status-pill').className='tag t-amber';
+  document.getElementById('sheets-status-pill').textContent='Not configured';
+}
+
+/* ── HISTORY PAGE ── */
+async function loadHistoryPage() {
+  const tbody = document.getElementById('history-table')?.querySelector('tbody');
+  if (!tbody) return;
+  tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--ink-faint);padding:16px">Loading…</td></tr>';
+  const snapshots = await loadHistory();
+  if (!snapshots.length) {
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--ink-faint);padding:16px">No snapshots yet. Take a snapshot to start archiving.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = snapshots.map((s,i)=>`
+    <tr>
+      <td style="font-family:var(--fm);font-size:11px">${new Date(s.ts).toLocaleString('en-GB')}</td>
+      <td><strong>${s.label}</strong></td>
+      <td>${s.year || '—'}</td>
+      <td style="font-family:var(--fm)">£${s.budget ? Number(s.budget).toLocaleString() : '—'}</td>
+      <td style="font-family:var(--fm)">${s.units ? Number(s.units).toLocaleString() : '—'}</td>
+      <td style="font-family:var(--fm)">${s.leads || '—'}</td>
+      <td style="font-family:var(--fm)">${s.brandCount || '—'}</td>
+      <td><span class="tag t-blue">Archived</span></td>
+    </tr>
+  `).join('');
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+function init() {
+  buildSidebarBrands();
+  refreshDashboard();
+  // Populate sheets URL field if stored
+  const savedUrl = localStorage.getItem('swansway_sheets_url') || '';
+  const urlInput = document.getElementById('sheets-url-input');
+  if (urlInput && savedUrl) {
+    urlInput.value = savedUrl;
+    const pillEl = document.getElementById('sheets-status-pill');
+    if (pillEl) { pillEl.className='tag t-blue'; pillEl.textContent='Saved — testing…'; }
+  }
+  // Update storage status
+  const localStatus = document.getElementById('local-storage-status');
+  if (localStatus) localStatus.textContent = localStorage.getItem('swansway_admin_v2') ? '✅ Data present' : '⚠ No local data';
+  const sheetsStatus = document.getElementById('sheets-storage-status');
+  if (sheetsStatus) sheetsStatus.textContent = sheetsAvailable ? '✅ Connected' : (savedUrl ? 'Checking…' : '❌ Not configured');
+  document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el=>{
+    el.addEventListener('input', autoSave);
+    el.addEventListener('change', autoSave);
+  });
+}
+
+// Bootstrap
+(async () => {
+  // Load local state synchronously first
+  try {
+    const saved = localStorage.getItem('swansway_admin_v2');
+    if (saved) { const p = JSON.parse(saved); STATE = {...STATE,...p}; }
+  } catch(e) {}
+  document.getElementById('login-pw').focus();
+  // tryLogin will call init() which calls loadState() (async — fetches Sheets)
+})();
+</script>
+</body>
+</html>
