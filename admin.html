@@ -1732,48 +1732,83 @@ async function inviteUser() {
     const createResult = await sbAdminReq('/auth/v1/admin/users', 'POST', {
       email,
       email_confirm: true,
+      password: Math.random().toString(36).slice(-12) + 'Aa1!',
       user_metadata: { full_name: name || email.split('@')[0] }
     });
-    if(createResult.error) throw new Error(createResult.error.message || JSON.stringify(createResult));
 
-    // Step 2: Generate a magic link they can use to sign in
+    // User may already exist - that's OK
+    const userId = createResult.id || createResult.user?.id;
+    if(createResult.error && !createResult.error.message?.includes('already')) {
+      throw new Error(createResult.error.message || JSON.stringify(createResult));
+    }
+
+    // Step 2: Generate sign-in link
     const linkResult = await sbAdminReq('/auth/v1/admin/generate_link', 'POST', {
       type: 'magiclink',
       email,
       options: { redirect_to: 'https://mk-work-ai.github.io/swansway-marketing-hub/' }
     });
-    if(linkResult.error) throw new Error(linkResult.error.message || JSON.stringify(linkResult));
 
-    const magicLink = linkResult.properties?.action_link || linkResult.action_link || '';
+    // Log full response to console for debugging
+    console.log('generate_link response:', JSON.stringify(linkResult));
 
-    // Show the link so admin can share it directly
-    status.innerHTML = '';
-    const successDiv = document.createElement('div');
-    successDiv.style.cssText = 'margin-top:12px;padding:14px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:4px;';
-    successDiv.innerHTML = `
-      <div style="font-size:12px;font-weight:600;color:#14532D;margin-bottom:8px">✓ Account created for ${email}</div>
-      <div style="font-size:11px;color:#166534;margin-bottom:8px">Share this sign-in link with them via email, Teams or Slack:</div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <input id="magic-link-input" value="${magicLink}" readonly
-          style="flex:1;padding:6px 10px;font-size:11px;font-family:var(--fm);background:#fff;border:1px solid #86EFAC;border-radius:3px;color:#374151">
-        <button onclick="navigator.clipboard.writeText('${magicLink}').then(()=>{ this.textContent='✓ Copied'; setTimeout(()=>this.textContent='Copy link',2000); })"
-          style="padding:6px 12px;background:#15803D;color:#fff;border:none;border-radius:3px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">
-          Copy link
-        </button>
-      </div>
-      <div style="font-size:10px;color:#166534;margin-top:6px">⚠ Link expires in 24 hours. One use only.</div>
-    `;
+    // Supabase returns action_link at root level
+    const magicLink = linkResult.action_link
+      || linkResult.properties?.action_link
+      || linkResult.data?.action_link
+      || '';
+
     const inviteSection = document.getElementById('invite-email').closest('.card-body');
     const existing = inviteSection.querySelector('.invite-result');
     if(existing) existing.remove();
-    successDiv.classList.add('invite-result');
-    inviteSection.appendChild(successDiv);
 
+    const successDiv = document.createElement('div');
+    successDiv.classList.add('invite-result');
+    successDiv.style.cssText = 'margin-top:12px;padding:14px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:4px;';
+
+    if(magicLink) {
+      successDiv.innerHTML = \`
+        <div style="font-size:12px;font-weight:600;color:#14532D;margin-bottom:8px">✓ Account created for \${email}</div>
+        <div style="font-size:11px;color:#166534;margin-bottom:8px">Send this sign-in link via Teams, Slack or email — one click and they're in:</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input value="\${magicLink}" readonly
+            style="flex:1;padding:6px 10px;font-size:11px;font-family:var(--fm);background:#fff;border:1px solid #86EFAC;border-radius:3px;color:#374151">
+          <button onclick="navigator.clipboard.writeText('\${magicLink}').then(()=>{this.textContent='✓ Copied!';setTimeout(()=>this.textContent='Copy link',2000)})"
+            style="padding:6px 14px;background:#15803D;color:#fff;border:none;border-radius:3px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">
+            Copy link
+          </button>
+        </div>
+        <div style="font-size:10px;color:#166534;margin-top:6px">Link expires in 1 hour · single use only</div>
+      \`;
+    } else {
+      // generate_link didn't return a link — show manual instructions
+      successDiv.style.background = '#FFF7ED';
+      successDiv.style.borderColor = '#FDE68A';
+      successDiv.innerHTML = \`
+        <div style="font-size:12px;font-weight:600;color:#78350F;margin-bottom:8px">✓ Account created for \${email}</div>
+        <div style="font-size:11px;color:#92400E;margin-bottom:8px">
+          Send them this link and ask them to click <strong>Sign in</strong> and enter their email — 
+          a magic link will be sent to their inbox via your SMTP:
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input value="https://mk-work-ai.github.io/swansway-marketing-hub/" readonly
+            style="flex:1;padding:6px 10px;font-size:11px;font-family:var(--fm);background:#fff;border:1px solid #FDE68A;border-radius:3px">
+          <button onclick="navigator.clipboard.writeText('https://mk-work-ai.github.io/swansway-marketing-hub/')"
+            style="padding:6px 14px;background:#D97706;color:#fff;border:none;border-radius:3px;font-size:11px;font-weight:700;cursor:pointer">
+            Copy
+          </button>
+        </div>
+        <div style="font-size:10px;color:#92400E;margin-top:6px">Debug — generate_link returned: \${JSON.stringify(linkResult).substring(0,200)}</div>
+      \`;
+    }
+
+    inviteSection.appendChild(successDiv);
     document.getElementById('invite-email').value = '';
     document.getElementById('invite-name').value  = '';
+    status.textContent = '';
     loadUsers();
   } catch(e) {
-    status.textContent = '✗ Error: ' + e.message;
+    status.textContent = '✗ ' + e.message;
     status.style.color = 'var(--accent)';
   }
 }
