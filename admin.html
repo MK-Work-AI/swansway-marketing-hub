@@ -1696,9 +1696,10 @@ async function loadUsers() {
 async function confirmUser(userId, email) {
   if(!confirm('Confirm email for ' + email + '?')) return;
   try {
-    await sbAdminReq('/auth/v1/admin/users/' + userId, 'PUT', {
+    const result = await sbAdminReq('/auth/v1/admin/users/' + userId, 'PUT', {
       email_confirm: true
     });
+    if(result.error) throw new Error(result.error.message || JSON.stringify(result));
     showToast('✓ ' + email + ' confirmed', 'success');
     loadUsers();
   } catch(e) {
@@ -1707,9 +1708,11 @@ async function confirmUser(userId, email) {
 }
 
 async function deleteUser(userId, email) {
-  if(!confirm('Permanently delete ' + email + '?\n\nThis also deletes all their briefs and Q-plans.')) return;
+  if(!confirm('Permanently delete ' + email + '?\n\nThis also deletes all their saved briefs and Q-plans.')) return;
   try {
-    await sbAdminReq('/auth/v1/admin/users/' + userId, 'DELETE');
+    const result = await sbAdminReq('/auth/v1/admin/users/' + userId, 'DELETE');
+    // 204 No Content = success, result may be empty string
+    if(result && result.error) throw new Error(result.error.message || JSON.stringify(result));
     showToast('✓ ' + email + ' deleted', 'success');
     loadUsers();
   } catch(e) {
@@ -1724,13 +1727,14 @@ async function inviteUser() {
   if(!email) { status.textContent = 'Please enter an email address'; status.style.color='var(--accent)'; return; }
   status.textContent = 'Sending…'; status.style.color='var(--ink-soft)';
   try {
-    await sbAdminReq('/auth/v1/admin/users', 'POST', {
+    // /auth/v1/admin/invite is the correct endpoint that actually sends the email
+    const result = await sbAdminReq('/auth/v1/admin/invite', 'POST', {
       email,
-      email_confirm: true,
-      user_metadata: { full_name: name || email.split('@')[0] },
-      send_magic_link: true
+      data: { full_name: name || email.split('@')[0] },
+      redirect_to: 'https://mk-work-ai.github.io/swansway-marketing-hub/'
     });
-    status.textContent = '✓ Invite sent to ' + email;
+    if(result.error) throw new Error(result.error.message || result.msg || JSON.stringify(result));
+    status.textContent = '✓ Invite email sent to ' + email;
     status.style.color = '#15803D';
     document.getElementById('invite-email').value = '';
     document.getElementById('invite-name').value  = '';
