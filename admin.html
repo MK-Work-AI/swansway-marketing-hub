@@ -1727,14 +1727,35 @@ async function inviteUser() {
   if(!email) { status.textContent = 'Please enter an email address'; status.style.color='var(--accent)'; return; }
   status.textContent = 'Sending…'; status.style.color='var(--ink-soft)';
   try {
-    // /auth/v1/admin/invite is the correct endpoint that actually sends the email
-    const result = await sbAdminReq('/auth/v1/admin/invite', 'POST', {
+    // Step 1: Create user with admin API (confirmed, no email needed)
+    const createResult = await sbAdminReq('/auth/v1/admin/users', 'POST', {
       email,
-      data: { full_name: name || email.split('@')[0] },
-      redirect_to: 'https://mk-work-ai.github.io/swansway-marketing-hub/'
+      email_confirm: true,
+      user_metadata: { full_name: name || email.split('@')[0] }
     });
-    if(result.error) throw new Error(result.error.message || result.msg || JSON.stringify(result));
-    status.textContent = '✓ Invite email sent to ' + email;
+    if(createResult.error) throw new Error(createResult.error.message || JSON.stringify(createResult));
+
+    // Step 2: Send magic link so they can sign in (this goes through SMTP)
+    const magicResult = await sbAdminReq('/auth/v1/admin/generate_link', 'POST', {
+      type: 'magiclink',
+      email,
+      options: {
+        redirect_to: 'https://mk-work-ai.github.io/swansway-marketing-hub/'
+      }
+    });
+    if(magicResult.error) throw new Error(magicResult.error.message || JSON.stringify(magicResult));
+
+    // Step 3: Send the magic link email via our SMTP
+    const sendResult = await sbAdminReq('/auth/v1/otp', 'POST', {
+      email,
+      create_user: false,
+      options: {
+        should_create_user: false,
+        redirect_to: 'https://mk-work-ai.github.io/swansway-marketing-hub/'
+      }
+    });
+
+    status.textContent = '✓ Account created and sign-in link sent to ' + email;
     status.style.color = '#15803D';
     document.getElementById('invite-email').value = '';
     document.getElementById('invite-name').value  = '';
