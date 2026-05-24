@@ -193,6 +193,41 @@ create index if not exists brand_plans_created_at_idx on public.brand_plans(crea
 
 grant select, insert, update, delete on public.brand_plans to authenticated;
 
+
+-- ── CAMPAIGN AUTOPSIES ───────────────────────────────────────
+create table if not exists public.autopsies (
+  id          uuid primary key default uuid_generate_v4(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  brand_id    text, brand_name text,
+  data        jsonb not null default '{}',
+  created_at  timestamptz default now(), updated_at timestamptz default now()
+);
+alter table public.autopsies enable row level security;
+create policy "autopsies: own" on public.autopsies for all using (auth.uid() = user_id);
+grant select, insert, update, delete on public.autopsies to authenticated;
+
+-- ── BUDGET ACTUALS ───────────────────────────────────────────
+create table if not exists public.budget_actuals (
+  id          uuid primary key default uuid_generate_v4(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  data        jsonb not null default '{}',
+  updated_at  timestamptz default now()
+);
+alter table public.budget_actuals enable row level security;
+create policy "budget_actuals: own" on public.budget_actuals for all using (auth.uid() = user_id);
+grant select, insert, update, delete on public.budget_actuals to authenticated;
+
+-- ── COMPETITOR SCANS ─────────────────────────────────────────
+create table if not exists public.competitor_scans (
+  id          uuid primary key default uuid_generate_v4(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  data        jsonb not null default '{}',
+  created_at  timestamptz default now()
+);
+alter table public.competitor_scans enable row level security;
+create policy "competitor_scans: own" on public.competitor_scans for all using (auth.uid() = user_id);
+grant select, insert, update, delete on public.competitor_scans to authenticated;
+
 -- ── DONE ─────────────────────────────────────────────────────
 -- After running this schema:
 -- 1. Go to Authentication → Settings → enable Email auth
