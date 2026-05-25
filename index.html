@@ -3675,18 +3675,35 @@ function renderBudgetTracker() {
   var mPlanned = new Array(12).fill(0), mActual = new Array(12).fill(0);
   var rows = '';
   BUDGET_BRANDS.forEach(function(b) {
-    var monthly = Math.round(b.annual / 12);
+    // Get planned per month from site budgets
+    var sitesForBrand = HUB_SITES ? HUB_SITES.filter(function(s) { return s.brand_id === b.id; }) : [];
+    var monthlyPlanned = new Array(12).fill(0);
+    var monthlyActual  = new Array(12).fill(0);
+    if (sitesForBrand.length > 0 && Object.keys(SITE_BUDGETS).length > 0) {
+      sitesForBrand.forEach(function(site) {
+        var d = SITE_BUDGETS[site.site_id] || {};
+        for (var i = 0; i < 12; i++) {
+          monthlyPlanned[i] += d['m' + i + '_planned'] || 0;
+          monthlyActual[i]  += d['m' + i + '_actual']  || 0;
+        }
+      });
+    } else {
+      var fallback = Math.round(b.annual / 12);
+      for (var i = 0; i < 12; i++) monthlyPlanned[i] = fallback;
+    }
+    var monthly = monthlyPlanned[0] || Math.round(b.annual / 12);
     var brandActual = 0;
     var cells = '';
     for (var mi = 0; mi < 12; mi++) {
-      var actual = BUDGET_ACTUALS[b.id + '_' + mi] || 0;
+      var monthly = monthlyPlanned[mi] || Math.round(b.annual / 12);
+      var actual = monthlyActual[mi] || 0;
       brandActual += actual;
       mPlanned[mi] += monthly;
       mActual[mi] += actual;
       var diff = actual - monthly;
       var cls = actual === 0 ? '' : (diff > monthly * 0.1 ? ' budget-over' : diff < -monthly * 0.1 ? ' budget-under' : ' budget-on');
       var inner = actual > 0 ? ('&pound;' + actual.toLocaleString()) : ('<em style="color:var(--ink-faint)">&pound;' + monthly.toLocaleString() + '</em>');
-      cells += '<td class="budget-cell' + cls + '" onclick="budgetEditCell(\'' + b.id + '\',' + mi + ',this)">' + inner + '</td>';
+      cells += '<td class="budget-cell' + cls + '" title="Planned: &pound;' + monthly.toLocaleString() + '">' + inner + '</td>';
     }
     totalPlanned += b.annual;
     totalActual += brandActual;
