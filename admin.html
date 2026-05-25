@@ -686,19 +686,8 @@ function updateConnectionStatus(ok, msg) {} // Sheets removed
 
 
 /* ── SAVE TO SHEETS ── */
-),
-  });
-  const data = await resp.json();
-  if (!data.ok) throw new Error(data.error || 'Save failed');
-  return data;
-}
 
-/* ── GET SHEETS URL ── */
-function getSheetsUrl() {
-  const stored = null; // Sheets removed
-  const input  = document.getElementById('sheets-url-input');
-  return (input && input.value.trim()) || stored || SHEETS_API_URL || '';
-}
+/* getSheetsUrl removed */
 
 /* ══════════════════════════════════════════
    PRIMARY LOAD STATE
