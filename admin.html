@@ -715,7 +715,7 @@ function getSheetsUrl() {
    PRIMARY LOAD STATE
 ══════════════════════════════════════════ */
 async function loadState() {
-  // Always load localStorage first (instant)
+  // 1. Load localStorage first (instant, works offline)
   try {
     const saved = localStorage.getItem('swansway_admin_v2');
     if (saved) {
@@ -724,35 +724,32 @@ async function loadState() {
     }
   } catch(e) {}
 
-  // Then try Sheets (async override)
-  const url = getSheetsUrl();
-  if (url) {
-    updateConnectionStatus(false, 'Connecting to Sheets…');
-    try {
-      const ok = await pingSheets(url);
-      if (ok) {
-        sheetsAvailable = true;
-        updateConnectionStatus(true);
-        const remote = await loadFromSheets(url);
-        // Merge remote data into STATE
-        if (remote.group)    STATE.group    = { ...STATE.group, ...remote.group };
-        if (remote.brands && remote.brands.length)   STATE.brands   = remote.brands;
-        if (remote.channels && remote.channels.length) STATE.channels = remote.channels;
-        if (remote.kpis && remote.kpis.length)     STATE.kpis     = remote.kpis;
-        if (remote.calendar && remote.calendar.length) STATE.calendar = remote.calendar;
-        showToast('✓ Loaded from Google Sheets', 'success');
-        buildSidebarBrands();
-        refreshDashboard();
-      } else {
-        updateConnectionStatus(false, 'Sheets unreachable — using local data');
-      }
-    } catch(e) {
-      updateConnectionStatus(false, 'Sheets error — using local data');
-      console.warn('Sheets load error:', e);
-    }
-  } else {
-    updateConnectionStatus(false, 'Ready');
-  }
+  // 2. Load from Supabase (overrides localStorage with latest)
+  await loadFromSupabase();
+}
+
+async function loadFromSupabase() {
+  if (!SB_ADMIN || !SB_ADMIN_USER) return;
+  try {
+    const { data, error } = await SB_ADMIN
+      .from('admin_config')
+      .select('config')
+      .eq('user_id', SB_ADMIN_USER.id)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single();
+    if (error || !data) return;
+    const remote = data.config;
+    if (remote.group)    STATE.group    = { ...STATE.group,    ...remote.group };
+    if (remote.brands?.length)   STATE.brands   = remote.brands;
+    if (remote.channels?.length) STATE.channels = remote.channels;
+    if (remote.kpis?.length)     STATE.kpis     = remote.kpis;
+    if (remote.calendar?.length) STATE.calendar = remote.calendar;
+    // Also save to localStorage as cache
+    localStorage.setItem('swansway_admin_v2', JSON.stringify(STATE));
+    buildSidebarBrands();
+    refreshDashboard();
+  } catch(e) {}
 }
 
 /* ══════════════════════════════════════════
@@ -776,42 +773,53 @@ async function saveAll() {
     calendar: STATE.calendar,
   };
 
-  // Always save to localStorage as fallback
+  // 1. Always save to localStorage (instant, works offline)
   try {
     localStorage.setItem('swansway_admin_v2', JSON.stringify(STATE));
     localStorage.setItem('swansway_config', JSON.stringify(payload));
   } catch(e) {}
 
-  // Try Sheets
-  const url = getSheetsUrl();
-  if (url && sheetsAvailable) {
-    try {
-      await saveToSheets(payload);
-      setSaveStatus('saved-sheets');
-      showToast('✓ Saved to Google Sheets', 'success');
-    } catch(e) {
-      setSaveStatus('saved-local');
-      showToast('⚠ Sheets error — saved locally only', 'error');
-      console.warn('Sheets save error:', e);
-    }
-  } else {
-    setSaveStatus(url ? 'saved-local' : 'saved-local');
-    showToast(url ? '⚠ Sheets offline — saved locally' : '✓ Saved locally', url ? 'error' : 'success');
-  }
+  // 2. Save to Supabase
+  await saveToSupabase(payload);
 
-  document.getElementById('last-saved-info').textContent = 'Last saved: ' + new Date().toLocaleString('en-GB') + (sheetsAvailable ? ' (Google Sheets)' : ' (local only)');
+  const savedAt = 'Last saved: ' + new Date().toLocaleString('en-GB');
+  const el = document.getElementById('last-saved-info');
+  if (el) el.textContent = savedAt + ' (Supabase)';
   refreshDashboard();
   isSaving = false;
+}
+
+async function saveToSupabase(payload) {
+  if (!SB_ADMIN || !SB_ADMIN_USER) {
+    setSaveStatus('saved-local');
+    showToast('✓ Saved locally (sign in to sync across devices)', 'success');
+    return;
+  }
+  try {
+    const { error } = await SB_ADMIN
+      .from('admin_config')
+      .upsert({
+        user_id:    SB_ADMIN_USER.id,
+        config:     payload,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+    if (error) throw error;
+    setSaveStatus('saved-supabase');
+    showToast('✓ Saved to Supabase', 'success');
+  } catch(e) {
+    setSaveStatus('saved-local');
+    showToast('⚠ Supabase error — saved locally only', 'error');
+  }
 }
 
 function setSaveStatus(state) {
   const el = document.getElementById('save-status');
   if (!el) return;
   const states = {
-    'saving':      '<span class="save-dot" style="background:#FCD34D;animation:blink 0.5s infinite"></span> Saving…',
-    'saved-sheets':'<span class="save-dot"></span> Saved to Sheets',
-    'saved-local': '<span class="save-dot" style="background:#FCD34D"></span> Saved locally only',
-    'unsaved':     '<span class="save-dot" style="background:#FCD34D"></span> Unsaved changes',
+    'saving':         '<span class="save-dot" style="background:#FCD34D;animation:blink 0.5s infinite"></span> Saving…',
+    'saved-supabase': '<span class="save-dot" style="background:#22C55E"></span> Saved to Supabase',
+    'saved-local':    '<span class="save-dot" style="background:#FCD34D"></span> Saved locally only',
+    'unsaved':        '<span class="save-dot" style="background:#FCD34D"></span> Unsaved changes',
   };
   el.innerHTML = states[state] || states['unsaved'];
 }
@@ -824,27 +832,28 @@ function autoSave() {
 async function takeSnapshot() {
   const label = prompt('Snapshot label (e.g. "Q2 2026 review"):');
   if (!label) return;
-  const url = getSheetsUrl();
-  if (!url || !sheetsAvailable) { showToast('Snapshots require Google Sheets connection','error'); return; }
+  if (!SB_ADMIN || !SB_ADMIN_USER) { showToast('Sign in to save snapshots','error'); return; }
   try {
-    const resp = await fetch(url, {
-      method:'POST',
-      body: JSON.stringify({ action:'snapshot', secret:ADMIN_SECRET, label }),
+    const payload = { group:STATE.group, brands:STATE.brands, channels:STATE.channels, kpis:STATE.kpis, calendar:STATE.calendar };
+    const { error } = await SB_ADMIN.from('admin_snapshots').insert({
+      user_id: SB_ADMIN_USER.id, label, config: payload, created_at: new Date().toISOString()
     });
-    const data = await resp.json();
-    if (data.ok) showToast('✓ Snapshot saved: ' + label, 'success');
-    else showToast('Snapshot failed: ' + data.error, 'error');
+    if (error) throw error;
+    showToast('✓ Snapshot saved: ' + label, 'success');
   } catch(e) { showToast('Snapshot error: ' + e.message, 'error'); }
 }
 
 /* ── HISTORY ── */
 async function loadHistory() {
-  const url = getSheetsUrl();
-  if (!url) { return []; }
+  if (!SB_ADMIN || !SB_ADMIN_USER) return [];
   try {
-    const resp = await fetch(url + '?action=history&secret=' + ADMIN_SECRET);
-    const data = await resp.json();
-    return data.snapshots || [];
+    const { data, error } = await SB_ADMIN
+      .from('admin_snapshots')
+      .select('*')
+      .eq('user_id', SB_ADMIN_USER.id)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    return data || [];
   } catch(e) { return []; }
 }
 
@@ -1468,6 +1477,21 @@ async function loadHistoryPage() {
 const SB_ADMIN_URL     = 'https://humitzrleflxnlnodpde.supabase.co';
 const SB_SERVICE_KEY   = window.SWANSWAY_CONFIG?.serviceKey || '';
 
+// Supabase client for admin (uses service key for full access)
+let SB_ADMIN = null;
+let SB_ADMIN_USER = null;
+
+function initAdminSupabase() {
+  if (typeof supabase === 'undefined' || !SB_ADMIN_URL) return;
+  try {
+    SB_ADMIN = supabase.createClient(SB_ADMIN_URL, SB_SERVICE_KEY || window.SWANSWAY_CONFIG?.serviceKey || '');
+    // Get session from anon client if available
+    SB_ADMIN.auth.getSession().then(({ data: { session } }) => {
+      if (session) SB_ADMIN_USER = session.user;
+    });
+  } catch(e) {}
+}
+
 function sbAdminReq(path, method, body) {
   return new Promise((resolve, reject) => {
     const url = SB_ADMIN_URL + path;
@@ -1657,6 +1681,7 @@ async function inviteUser() {
 
 
 function init() {
+  initAdminSupabase();
   buildSidebarBrands();
   refreshDashboard();
   // Populate sheets URL field if stored
