@@ -3551,7 +3551,7 @@ async function competitorScan() {
   var si = 0;
   var st = setInterval(function() { if (si < steps.length) { msgEl.textContent = steps[si][0]; subEl.textContent = steps[si][1]; si++; } }, 5000);
   try {
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+    var resp = await fetch('https://swansway-marketing-hub.vercel.app/api/claude', {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:'Analyse the current marketing of Arnold Clark, Lookers, Evans Halshaw and Marshall Motors UK dealer groups. Return JSON only: {"competitors":[{"name":"Arnold Clark","current_push":"...","headline_offers":["..."],"featured_models":["..."],"channels_active":["..."],"tone":"...","swansway_threat":"...","insight":"..."}],"market_themes":["..."],"swansway_opportunity":"...","recommended_action":"..."}'}]})
     });
@@ -3622,7 +3622,7 @@ async function generateQuiz() {
   var ctx = brandData ? ('Brand: ' + brandData.name + '. Tone: ' + (brandData.tone||[]).join(', ') + '. Models: ' + (brandData.models||[]).join(', ') + '.') : 'All Swansway brands.';
   var topicMap = {tone:'tone of voice and brand personality',audience:'target audiences',models:'model range',channels:'marketing channels and PESO model',strategy:'2026 marketing strategy',competitor:'competitive landscape',mixed:'all topics'};
   try {
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+    var resp = await fetch('https://swansway-marketing-hub.vercel.app/api/claude', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:'Generate a 10-question multiple choice quiz for Swansway Motor Group marketing team. Context: ' + ctx + ' Topic: ' + (topicMap[topic]||topic) + '. Difficulty: ' + diff + '. Return JSON only: {"title":"...","questions":[{"question":"...","options":["A","B","C","D"],"correct":0,"explanation":"..."}]}'}]})
     });
@@ -3997,7 +3997,7 @@ Extract as much detail as possible. If a field is not mentioned in the document,
       throw new Error('Anthropic API key not configured. Add your API key to index.html where it says YOUR_ANTHROPIC_API_KEY.');
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://swansway-marketing-hub.vercel.app/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
