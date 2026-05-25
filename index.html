@@ -3248,18 +3248,26 @@ var BUDGET_BRANDS = [
 var BUDGET_ACTUALS = {}; // Loaded from Supabase on init
 
 function saveBudgetActuals() {
-  if (SB && SB_USER) {
-    SB.from('budget_actuals').upsert({ user_id: SB_USER.id, data: BUDGET_ACTUALS })
-      .then(function() {}).catch(function() {});
-  }
+  if (!SB || !SB_USER) return;
+  SB.from('budget_actuals')
+    .upsert({ user_id: SB_USER.id, data: BUDGET_ACTUALS, updated_at: new Date().toISOString() },
+            { onConflict: 'user_id' })
+    .then(function(r) {
+      if (r.error) console.error('Budget save error:', r.error);
+    })
+    .catch(function(e) { console.error('Budget save exception:', e); });
 }
 
 async function loadBudgetActuals() {
   if (!SB || !SB_USER) return;
   try {
-    var r = await SB.from('budget_actuals').select('data').eq('user_id', SB_USER.id).single();
-    if (r.data && r.data.data) { BUDGET_ACTUALS = r.data.data; renderBudgetTracker(); }
-  } catch(e) {}
+    var r = await SB.from('budget_actuals').select('data').eq('user_id', SB_USER.id).maybeSingle();
+    if (r.error) { console.error('Budget load error:', r.error); return; }
+    if (r.data && r.data.data) {
+      BUDGET_ACTUALS = r.data.data;
+      renderBudgetTracker();
+    }
+  } catch(e) { console.error('Budget load exception:', e); }
 }
 
 function renderBudgetTracker() {
@@ -3323,6 +3331,8 @@ function budgetEditCell(brandId, monthIdx, el) {
     BUDGET_ACTUALS[brandId + '_' + monthIdx] = val;
     saveBudgetActuals();
     renderBudgetTracker();
+    // Show save confirmation
+    showToast('✓ Budget saved', 'success');
   }
   input.addEventListener('blur', save);
   input.addEventListener('keydown', function(e) { if (e.key === 'Enter') save(); if (e.key === 'Escape') renderBudgetTracker(); });
