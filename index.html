@@ -2613,7 +2613,10 @@ function applyAdminConfig(cfg) {
       // Update BRANDS array (hub display)
       var brand = BRANDS.find(function(b) { return b.id === ab.id; });
       if (brand) {
-        if (ab.budget)    brand.budget    = '£' + Math.round(ab.budget / 1000) + 'K';
+        // Budget comes from site sums if available, otherwise admin config
+        if (Object.keys(SITE_BUDGETS).length === 0 && ab.budget) {
+          brand.budget = '£' + Math.round(ab.budget / 1000) + 'K';
+        }
         if (ab.newUnits)  brand.newTarget = ab.newUnits.toLocaleString() + ' units';
         if (ab.evPct)     brand.evTarget  = ab.evPct + '%';
         if (ab.leads)     brand.leads     = ab.leads;
@@ -2636,6 +2639,8 @@ function applyAdminConfig(cfg) {
 
     // Re-render budget tracker with updated planned figures
     if (typeof renderBudgetTracker === 'function') renderBudgetTracker();
+    // Update BRANDS array budget strings from site sums
+    updateBrandBudgetsFromSites();
 
     // Update group budget metric
     var total = BUDGET_BRANDS.reduce(function(s, b) { return s + (b.annual || 0); }, 0);
@@ -3614,6 +3619,30 @@ async function loadBudgetActuals() {
   } catch(e) { console.error('Budget load exception:', e); }
 }
 
+function updateBrandBudgetsFromSites() {
+  BRANDS.forEach(function(brand) {
+    var sites = HUB_SITES.filter(function(s) { return s.brand_id === brand.id; });
+    if (!sites.length) return;
+    var total = sites.reduce(function(sum, site) {
+      var d = SITE_BUDGETS[site.site_id] || {};
+      return sum + (d.annual_planned || 0);
+    }, 0);
+    if (total > 0) {
+      brand.budget = total >= 1000000
+        ? '£' + (total / 1000000).toFixed(2) + 'M'
+        : '£' + Math.round(total / 1000) + 'K';
+    }
+  });
+  // Update group budget metric
+  var groupTotal = Object.values(SITE_BUDGETS).reduce(function(s, d) { return s + (d.annual_planned || 0); }, 0);
+  if (groupTotal > 0) {
+    var el = document.getElementById('group-budget-val');
+    if (el) el.textContent = '£' + (groupTotal / 1000000).toFixed(2) + 'M';
+  }
+  // Re-render brand cards with updated budgets
+  if (typeof renderGroupBrandCards === 'function') renderGroupBrandCards();
+}
+
 function getBudgetFromSites(brandId) {
   var sites = HUB_SITES.filter(function(s) { return s.brand_id === brandId; });
   var planned = 0, actual = 0;
@@ -3626,6 +3655,13 @@ function getBudgetFromSites(brandId) {
 }
 
 function renderBudgetTracker() {
+  // Sync BUDGET_BRANDS annual from site sums if available
+  if (Object.keys(SITE_BUDGETS).length > 0) {
+    BUDGET_BRANDS.forEach(function(bb) {
+      var b = getBudgetFromSites(bb.id);
+      if (b.planned > 0) bb.annual = b.planned;
+    });
+  }
   var thead = document.getElementById('budget-thead');
   var tbody = document.getElementById('budget-tbody');
   var metricsEl = document.getElementById('budget-metrics');

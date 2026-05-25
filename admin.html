@@ -1947,6 +1947,23 @@ var SB_SITE_DATA = {};
 var SB_CURRENT_BRAND = 'audi';
 var SB_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+function sbSyncBrandBudgets() {
+  // Update each brand's budget field from sum of its site planned budgets
+  var BRAND_IDS = ['audi','vw','vwcv','seat','cupra','landrover','jaguar','honda','peugeot','byd','omoda','motormatch'];
+  BRAND_IDS.forEach(function(brandId) {
+    var sites = SB_SITES.filter(function(s) { return s.brand_id === brandId; });
+    var total = sites.reduce(function(sum, site) {
+      var d = SB_SITE_DATA[site.site_id] || {};
+      return sum + (d.annual_planned || 0);
+    }, 0);
+    // Update STATE.brands
+    var brand = STATE.brands.find(function(b) { return b.id === brandId; });
+    if (brand) brand.budget = total;
+  });
+  // Re-render dashboard to reflect new totals
+  refreshDashboard();
+}
+
 function sbSelectBrand(brandId) {
   SB_CURRENT_BRAND = brandId;
   document.querySelectorAll('[id^="sb-tab-"]').forEach(function(t) {
@@ -2098,6 +2115,7 @@ async function sbLoad() {
     var rows = await resp.json();
     rows.forEach(function(row) { SB_SITE_DATA[row.site_id] = row; });
     console.log('Site budgets loaded: ' + rows.length + ' sites');
+    sbSyncBrandBudgets();
     sbRenderTable(SB_CURRENT_BRAND);
     sbUpdateMetrics(SB_CURRENT_BRAND);
   } catch(e) { console.warn('sbLoad error:', e); }
