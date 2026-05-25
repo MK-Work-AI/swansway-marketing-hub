@@ -486,71 +486,49 @@ td strong{font-weight:600}
 .qplan-empty-sub { font-size:13px; }
 
 
-/* ── NEW FEATURES CSS ──────────────────────────────── */
-
-/* Cross-brand calendar */
-.crosscal-grid { display:grid; grid-template-columns:120px repeat(12,1fr); gap:1px; background:var(--border); border-radius:4px; overflow:hidden; }
-.crosscal-header { background:var(--swansway); color:#fff; padding:8px 6px; font-family:var(--font-m); font-size:10px; letter-spacing:0.08em; text-transform:uppercase; text-align:center; }
-.crosscal-brand-cell { background:var(--white); padding:8px 10px; font-size:12px; font-weight:600; display:flex; align-items:center; gap:6px; }
-.crosscal-month-cell { background:var(--white); padding:3px; min-height:48px; position:relative; }
-.crosscal-campaign-bar { border-radius:2px; padding:2px 5px; font-size:10px; color:#fff; font-weight:500; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; transition:opacity .15s; }
-.crosscal-campaign-bar:hover { opacity:0.85; }
-
-/* Budget tracker */
-.budget-cell { padding:6px 10px; text-align:right; font-family:var(--font-m); font-size:12px; cursor:pointer; position:relative; transition:background .15s; }
-.budget-cell:hover { background:var(--surface-2); }
-.budget-cell.editing { background:rgba(26,46,74,0.05); }
-.budget-cell input { width:80px; padding:2px 4px; border:1px solid var(--swansway); border-radius:2px; font-family:var(--font-m); font-size:12px; text-align:right; background:#fff; outline:none; }
-.budget-over { color:#DC2626; }
-.budget-under { color:#059669; }
-.budget-on { color:var(--swansway); }
-
-/* Autopsy */
-.autopsy-card { background:var(--white); border:1px solid var(--border); border-radius:4px; padding:16px 18px; margin-bottom:10px; }
-.autopsy-card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
-.autopsy-brand-dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px; }
-.autopsy-metric-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:10px 0; }
-.autopsy-metric { background:var(--surface); border-radius:3px; padding:10px 12px; }
-.autopsy-metric-label { font-size:10px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.06em; font-family:var(--font-m); margin-bottom:4px; }
-.autopsy-metric-row { display:flex; gap:8px; align-items:baseline; }
-.autopsy-planned { font-size:14px; font-weight:600; color:var(--ink-soft); }
-.autopsy-actual { font-size:18px; font-weight:700; font-family:var(--font-d); }
-.autopsy-actual.over { color:#DC2626; }
-.autopsy-actual.under { color:#059669; }
-.autopsy-actual.on { color:var(--swansway); }
-.autopsy-section-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-soft); margin:10px 0 5px; font-family:var(--font-m); }
-.autopsy-text { font-size:13px; color:var(--ink); line-height:1.65; }
-
-/* Competitor */
-.competitor-card { background:var(--white); border:1px solid var(--border); border-radius:4px; overflow:hidden; margin-bottom:1rem; }
-.competitor-header { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--surface); }
-.competitor-name { font-family:var(--font-d); font-size:16px; font-weight:700; }
-.competitor-body { padding:16px 18px; }
-.competitor-offers { display:flex; flex-direction:column; gap:6px; }
-.competitor-offer { padding:8px 12px; background:var(--surface); border-radius:3px; border-left:3px solid var(--swansway); }
-.competitor-offer-brand { font-family:var(--font-m); font-size:9px; color:var(--ink-soft); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:3px; }
-.competitor-offer-text { font-size:12px; color:var(--ink); line-height:1.5; }
-.competitor-models-grid { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
-.competitor-insight { padding:10px 14px; background:#FFF8E1; border:1px solid #FDE68A; border-radius:3px; font-size:12px; color:#78350F; margin-top:8px; line-height:1.6; }
-
-/* Training quiz */
-.quiz-question { background:var(--white); border:1px solid var(--border); border-radius:4px; padding:20px; margin-bottom:12px; }
-.quiz-q-num { font-family:var(--font-m); font-size:10px; color:var(--ink-soft); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:8px; }
-.quiz-q-text { font-size:15px; font-weight:600; color:var(--ink); margin-bottom:14px; line-height:1.5; }
-.quiz-options { display:flex; flex-direction:column; gap:6px; }
-.quiz-option { padding:10px 14px; border:1.5px solid var(--border); border-radius:3px; cursor:pointer; font-size:13px; color:var(--ink); transition:all .15s; background:var(--white); text-align:left; font-family:var(--font-b); }
-.quiz-option:hover { border-color:var(--swansway); background:rgba(26,46,74,0.03); }
-.quiz-option.correct { border-color:#059669; background:#F0FDF4; color:#14532D; }
-.quiz-option.wrong { border-color:#DC2626; background:#FEF2F2; color:#7F1D1D; }
-.quiz-option.reveal { border-color:#059669; background:#F0FDF4; color:#14532D; }
-.quiz-option:disabled { cursor:default; }
-.quiz-explanation { margin-top:10px; padding:10px 14px; background:var(--surface); border-radius:3px; font-size:12px; color:var(--ink-soft); line-height:1.6; display:none; }
-.quiz-explanation.show { display:block; }
-.quiz-score-card { background:var(--swansway); color:#fff; border-radius:6px; padding:2rem; text-align:center; }
-.quiz-score-num { font-family:var(--font-d); font-size:64px; font-weight:700; line-height:1; }
-.quiz-score-label { font-size:14px; color:rgba(255,255,255,0.7); margin-top:6px; }
-.quiz-score-bar-wrap { height:8px; background:rgba(255,255,255,0.2); border-radius:4px; margin:16px 0; }
-.quiz-score-bar { height:8px; border-radius:4px; background:#fff; transition:width 1s cubic-bezier(0.16,1,0.3,1); }
+/* ── NEW FEATURES CSS ── */
+.crosscal-grid{display:grid;grid-template-columns:120px repeat(12,1fr);gap:1px;background:var(--border);border-radius:4px;overflow:hidden}
+.crosscal-header{background:var(--swansway);color:#fff;padding:8px 6px;font-family:var(--font-m);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;text-align:center}
+.crosscal-brand-cell{background:var(--white);padding:8px 10px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.crosscal-month-cell{background:var(--white);padding:3px;min-height:48px}
+.crosscal-campaign-bar{border-radius:2px;padding:2px 5px;font-size:10px;color:#fff;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.budget-cell{padding:6px 10px;text-align:right;font-family:var(--font-m);font-size:12px;cursor:pointer;transition:background .15s}
+.budget-cell:hover{background:var(--surface-2)}
+.budget-over{color:#DC2626}.budget-under{color:#059669}.budget-on{color:var(--swansway)}
+.autopsy-card{background:var(--white);border:1px solid var(--border);border-radius:4px;padding:16px 18px;margin-bottom:10px}
+.autopsy-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.autopsy-brand-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px}
+.autopsy-metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+.autopsy-metric{background:var(--surface);border-radius:3px;padding:10px 12px}
+.autopsy-metric-label{font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.06em;font-family:var(--font-m);margin-bottom:4px}
+.autopsy-metric-row{display:flex;gap:8px;align-items:baseline}
+.autopsy-planned{font-size:14px;font-weight:600;color:var(--ink-soft)}
+.autopsy-actual{font-size:18px;font-weight:700;font-family:var(--font-d)}
+.autopsy-actual.over{color:#DC2626}.autopsy-actual.under{color:#059669}.autopsy-actual.on{color:var(--swansway)}
+.autopsy-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft);margin:10px 0 5px;font-family:var(--font-m)}
+.autopsy-text{font-size:13px;color:var(--ink);line-height:1.65}
+.competitor-card{background:var(--white);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:1rem}
+.competitor-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+.competitor-name{font-family:var(--font-d);font-size:16px;font-weight:700}
+.competitor-body{padding:16px 18px}
+.competitor-offer{padding:8px 12px;background:var(--surface);border-radius:3px;border-left:3px solid var(--swansway);margin-bottom:6px}
+.competitor-offer-text{font-size:12px;color:var(--ink);line-height:1.5}
+.competitor-insight{padding:10px 14px;background:#FFF8E1;border:1px solid #FDE68A;border-radius:3px;font-size:12px;color:#78350F;margin-top:8px;line-height:1.6}
+.quiz-question{background:var(--white);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:12px}
+.quiz-q-num{font-family:var(--font-m);font-size:10px;color:var(--ink-soft);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px}
+.quiz-q-text{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:14px;line-height:1.5}
+.quiz-options{display:flex;flex-direction:column;gap:6px}
+.quiz-option{padding:10px 14px;border:1.5px solid var(--border);border-radius:3px;cursor:pointer;font-size:13px;color:var(--ink);transition:all .15s;background:var(--white);text-align:left;font-family:var(--font-b);width:100%}
+.quiz-option:hover{border-color:var(--swansway)}
+.quiz-option.correct{border-color:#059669;background:#F0FDF4;color:#14532D}
+.quiz-option.wrong{border-color:#DC2626;background:#FEF2F2;color:#7F1D1D}
+.quiz-explanation{margin-top:10px;padding:10px 14px;background:var(--surface);border-radius:3px;font-size:12px;color:var(--ink-soft);line-height:1.6;display:none}
+.quiz-explanation.show{display:block}
+.quiz-score-card{background:var(--swansway);color:#fff;border-radius:6px;padding:2rem;text-align:center}
+.quiz-score-num{font-family:var(--font-d);font-size:64px;font-weight:700;line-height:1}
+.quiz-score-label{font-size:14px;color:rgba(255,255,255,0.7);margin-top:6px}
+.quiz-score-bar-wrap{height:8px;background:rgba(255,255,255,0.2);border-radius:4px;margin:16px 0}
+.quiz-score-bar{height:8px;border-radius:4px;background:#fff;transition:width 1s}
 
 </style>
 </head>
@@ -659,11 +637,11 @@ td strong{font-weight:600}
     </div>
     <button class="bnav-btn" data-view="brief" onclick="switchView('brief',this)" style="color:var(--accent);font-weight:700;border-left:1px solid var(--border);margin-left:6px;padding-left:18px">✏️ Brief Builder</button>
     <div style="width:1px;background:var(--border);margin:8px 6px"></div>
-    <button class="bnav-btn" data-view="crosscal" onclick="switchView('crosscal',this)" title="Cross-brand calendar">📆 Campaign Cal</button>
-    <button class="bnav-btn" data-view="budget" onclick="switchView('budget',this)" title="Budget tracker">💰 Budget</button>
-    <button class="bnav-btn" data-view="autopsy" onclick="switchView('autopsy',this)" title="Campaign autopsy">🔬 Autopsy</button>
-    <button class="bnav-btn" data-view="competitor" onclick="switchView('competitor',this)" title="Competitor monitor">👁 Competitors</button>
-    <button class="bnav-btn" data-view="training" onclick="switchView('training',this)" title="Training quiz">🎓 Training</button>
+    <button class="bnav-btn" data-view="crosscal" onclick="switchView('crosscal',this)">📆 Campaign Cal</button>
+    <button class="bnav-btn" data-view="budget" onclick="switchView('budget',this)">💰 Budget</button>
+    <button class="bnav-btn" data-view="autopsy" onclick="switchView('autopsy',this)">🔬 Autopsy</button>
+    <button class="bnav-btn" data-view="competitor" onclick="switchView('competitor',this)">👁 Competitors</button>
+    <button class="bnav-btn" data-view="training" onclick="switchView('training',this)">🎓 Training</button>
   </div>
 </nav>
 
@@ -791,155 +769,53 @@ td strong{font-weight:600}
   </div>
 </div>
 
-<!-- ══ CROSS-BRAND CAMPAIGN CALENDAR ══ -->
+<!-- CROSS-BRAND CALENDAR -->
 <div class="view" id="view-crosscal">
-  <div class="page-strip">
-    <div><div class="page-title">Campaign Calendar 2026</div><div class="page-subtitle">All brands · All campaigns · Full year view</div></div>
-    <div class="action-row">
-      <select id="cal-year-select" class="btn" onchange="renderCrossCalendar()" style="font-weight:500">
-        <option value="2026">2026</option><option value="2027">2027</option>
-      </select>
-      <button class="btn btn-accent" onclick="openBriefsPanel()">+ Add brief</button>
-    </div>
-  </div>
-  <div id="crosscal-content">
-    <div class="chart-wrap" style="overflow-x:auto">
-      <div id="crosscal-grid" style="min-width:900px"></div>
-    </div>
-    <div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:10px" id="crosscal-legend"></div>
-  </div>
+  <div class="page-strip"><div><div class="page-title">Campaign Calendar 2026</div><div class="page-subtitle">All brands &middot; All campaigns &middot; Full year view</div></div><div class="action-row"><button class="btn btn-accent" onclick="openBriefsPanel()">+ Add brief</button></div></div>
+  <div class="chart-wrap" style="overflow-x:auto"><div id="crosscal-grid" style="min-width:900px"></div></div>
+  <div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:10px" id="crosscal-legend"></div>
 </div>
 
-<!-- ══ BUDGET TRACKER ══ -->
+<!-- BUDGET TRACKER -->
 <div class="view" id="view-budget">
-  <div class="page-strip">
-    <div><div class="page-title">Budget Tracker</div><div class="page-subtitle">Planned vs actual spend · All brands · 2026</div></div>
-    <div class="action-row">
-      <button class="btn" onclick="budgetImportCSV()">↑ Import CSV</button>
-      <button class="btn btn-accent" onclick="budgetExportCSV()">↓ Export CSV</button>
-    </div>
-  </div>
+  <div class="page-strip"><div><div class="page-title">Budget Tracker</div><div class="page-subtitle">Planned vs actual &middot; Click any cell to enter actuals</div></div><div class="action-row"><button class="btn" onclick="budgetImportCSV()">&#8593; Import CSV</button><button class="btn btn-accent" onclick="budgetExportCSV()">&#8595; Export CSV</button></div></div>
   <div class="metrics-row" id="budget-metrics"></div>
-  <div class="sh"><div><div class="sh-title">Monthly spend by brand</div><div class="sh-sub">Click any cell to enter actual spend</div></div></div>
-  <div style="overflow-x:auto;margin-bottom:1.5rem">
-    <table class="plan-table" id="budget-table" style="min-width:1100px">
-      <thead id="budget-thead"></thead>
-      <tbody id="budget-tbody"></tbody>
-    </table>
-  </div>
-  <div class="chart-wrap">
-    <div class="chart-title">Planned vs actual — group total by month</div>
-    <div class="chart-canvas-wrap" style="height:240px"><canvas id="budgetChart" role="img" aria-label="Budget tracker chart"></canvas></div>
-  </div>
+  <div style="overflow-x:auto;margin-bottom:1.5rem"><table class="plan-table" id="budget-table" style="min-width:1100px"><thead id="budget-thead"></thead><tbody id="budget-tbody"></tbody></table></div>
+  <div class="chart-wrap"><div class="chart-title">Planned vs actual &mdash; group total by month</div><div class="chart-canvas-wrap" style="height:240px"><canvas id="budgetChart"></canvas></div></div>
 </div>
 
-<!-- ══ CAMPAIGN AUTOPSY ══ -->
+<!-- CAMPAIGN AUTOPSY -->
 <div class="view" id="view-autopsy">
-  <div class="page-strip">
-    <div><div class="page-title">Campaign Autopsy</div><div class="page-subtitle">Post-campaign debrief · Build your library of learning</div></div>
-    <div class="action-row">
-      <button class="btn btn-accent" onclick="autopsyNew()">+ New autopsy</button>
-      <button class="btn" onclick="autopsyLoadSaved()">📋 Saved autopsies</button>
-    </div>
-  </div>
-  <div id="autopsy-content">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.75rem">
-      <div class="card"><div class="card-header"><div class="card-title">🔬 What is an autopsy?</div></div><div class="card-body"><p style="font-size:13px;color:var(--ink-soft);line-height:1.7">A structured debrief after every campaign. What you planned vs what happened, why it worked or didn't, and what you'd do differently. Builds an institutional memory that makes every campaign smarter than the last.</p></div></div>
-      <div class="card"><div class="card-header"><div class="card-title">📊 Learning compounds</div></div><div class="card-body"><p style="font-size:13px;color:var(--ink-soft);line-height:1.7">Teams that run structured autopsies improve campaign ROI by 23% on average within 12 months (IPA Databank). The insight is already in your data — the autopsy just makes it visible.</p></div></div>
-      <div class="card"><div class="card-header"><div class="card-title">🎯 5 minutes per campaign</div></div><div class="card-body"><p style="font-size:13px;color:var(--ink-soft);line-height:1.7">The template is structured to be fast. Five key questions, planned vs actual numbers, one key lesson. That's it. The discipline matters more than the depth.</p></div></div>
-    </div>
-    <div id="autopsy-form" style="display:none"></div>
-    <div id="autopsy-list"></div>
-  </div>
+  <div class="page-strip"><div><div class="page-title">Campaign Autopsy</div><div class="page-subtitle">Post-campaign debrief &middot; Build your library of learning</div></div><div class="action-row"><button class="btn btn-accent" onclick="autopsyNew()">+ New autopsy</button><button class="btn" onclick="autopsyLoadSaved()">Saved autopsies</button></div></div>
+  <div id="autopsy-form" style="display:none"></div>
+  <div id="autopsy-list"></div>
 </div>
 
-<!-- ══ COMPETITOR MONITOR ══ -->
+<!-- COMPETITOR MONITOR -->
 <div class="view" id="view-competitor">
-  <div class="page-strip">
-    <div><div class="page-title">Competitor Monitor</div><div class="page-subtitle">Arnold Clark · Lookers · Evans Halshaw · Marshall Motors</div></div>
-    <div class="action-row">
-      <button class="btn btn-accent" id="competitor-scan-btn" onclick="competitorScan()">⚡ Run AI scan</button>
-    </div>
+  <div class="page-strip"><div><div class="page-title">Competitor Monitor</div><div class="page-subtitle">Arnold Clark &middot; Lookers &middot; Evans Halshaw &middot; Marshall Motors</div></div><div class="action-row"><button class="btn btn-accent" id="competitor-scan-btn" onclick="competitorScan()">&#9889; Run AI scan</button></div></div>
+  <div class="metrics-row">
+    <div class="metric" style="border-top-color:var(--swansway)"><div class="metric-label">Last scanned</div><div class="metric-val" id="comp-last-scan" style="font-size:16px">Never</div><div class="metric-sub">Click Run AI scan</div></div>
+    <div class="metric" style="border-top-color:#DC2626"><div class="metric-label">Active offers found</div><div class="metric-val" id="comp-offer-count">&mdash;</div></div>
+    <div class="metric" style="border-top-color:#D97706"><div class="metric-label">Models featured</div><div class="metric-val" id="comp-model-count">&mdash;</div></div>
+    <div class="metric" style="border-top-color:#059669"><div class="metric-label">Scans run</div><div class="metric-val" id="comp-scan-count">&mdash;</div></div>
   </div>
-  <div class="metrics-row" id="competitor-metrics">
-    <div class="metric" style="color:var(--swansway)"><div class="metric-label">Last scanned</div><div class="metric-val" id="comp-last-scan" style="font-size:16px;font-weight:600">Never</div><div class="metric-sub">Click "Run AI scan" to start</div></div>
-    <div class="metric" style="color:#DC2626"><div class="metric-label">Active competitor offers</div><div class="metric-val" id="comp-offer-count">—</div><div class="metric-sub">Across all 4 groups</div></div>
-    <div class="metric" style="color:#D97706"><div class="metric-label">Models featured</div><div class="metric-val" id="comp-model-count">—</div><div class="metric-sub">In current campaigns</div></div>
-    <div class="metric" style="color:#059669"><div class="metric-label">Scan history</div><div class="metric-val" id="comp-scan-count">—</div><div class="metric-sub">Total scans run</div></div>
-  </div>
-  <div id="competitor-scan-status" style="display:none" class="chart-wrap">
-    <div style="text-align:center;padding:2rem">
-      <div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--swansway);border-radius:50%;animation:qspin 0.8s linear infinite;margin:0 auto 14px"></div>
-      <div style="font-size:14px;font-weight:600;color:var(--ink)" id="comp-scan-msg">Scanning competitor websites…</div>
-      <div style="font-size:12px;color:var(--ink-soft);margin-top:4px" id="comp-scan-sub">This takes 30–60 seconds</div>
-    </div>
-  </div>
+  <div id="competitor-scan-status" style="display:none" class="chart-wrap"><div style="text-align:center;padding:2rem"><div class="qplan-spinner"></div><div style="font-size:14px;font-weight:600;margin-top:12px" id="comp-scan-msg">Scanning...</div><div style="font-size:12px;color:var(--ink-soft)" id="comp-scan-sub">This takes 30-60 seconds</div></div></div>
   <div id="competitor-results"></div>
 </div>
 
-<!-- ══ TRAINING QUIZ ══ -->
+<!-- TRAINING QUIZ -->
 <div class="view" id="view-training">
-  <div class="page-strip">
-    <div><div class="page-title">Training Quiz Generator</div><div class="page-subtitle">AI-generated brand knowledge quizzes for your team</div></div>
-  </div>
-  <div id="training-setup">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:800px">
-      <div class="card">
-        <div class="card-header"><div class="card-title">🎓 Generate a quiz</div></div>
-        <div class="card-body">
-          <div class="form-group mb1">
-            <label class="form-label">Select brand</label>
-            <select class="form-select" id="quiz-brand" style="width:100%">
-              <option value="all">All brands (mixed)</option>
-              <option value="audi">Audi</option>
-              <option value="byd">BYD</option>
-              <option value="cupra">CUPRA</option>
-              <option value="vw">Volkswagen</option>
-              <option value="landrover">Land Rover</option>
-              <option value="honda">Honda</option>
-              <option value="seat">SEAT</option>
-              <option value="peugeot">Peugeot</option>
-              <option value="vwcv">VW Commercial</option>
-              <option value="omoda">OMODA/JAECOO</option>
-              <option value="motormatch">Motor Match</option>
-            </select>
-          </div>
-          <div class="form-group mb1">
-            <label class="form-label">Quiz topic</label>
-            <select class="form-select" id="quiz-topic" style="width:100%">
-              <option value="tone">Tone of voice & brand personality</option>
-              <option value="audience">Target audiences & customer segments</option>
-              <option value="models">Current model range & key facts</option>
-              <option value="channels">Marketing channels & PESO model</option>
-              <option value="strategy">2026 strategy & priorities</option>
-              <option value="competitor">Competitive landscape</option>
-              <option value="mixed">Mixed — all topics</option>
-            </select>
-          </div>
-          <div class="form-group mb2">
-            <label class="form-label">Difficulty</label>
-            <select class="form-select" id="quiz-difficulty" style="width:100%">
-              <option value="beginner">Beginner — new starters</option>
-              <option value="intermediate">Intermediate — 3–6 months in role</option>
-              <option value="advanced">Advanced — senior team</option>
-            </select>
-          </div>
-          <button class="btn btn-primary" style="width:100%" onclick="generateQuiz()">⚡ Generate quiz</button>
-        </div>
+  <div class="page-strip"><div><div class="page-title">Training Quiz Generator</div><div class="page-subtitle">AI-generated brand knowledge quizzes for your team</div></div></div>
+  <div id="training-setup" style="max-width:800px">
+    <div class="card"><div class="card-header"><div class="card-title">Generate a quiz</div></div><div class="card-body">
+      <div class="form-grid-2 mb2">
+        <div class="form-group"><label class="form-label">Brand</label><select class="form-select" id="quiz-brand"><option value="all">All brands</option><option value="audi">Audi</option><option value="byd">BYD</option><option value="cupra">CUPRA</option><option value="vw">Volkswagen</option><option value="landrover">Land Rover</option><option value="honda">Honda</option><option value="seat">SEAT</option><option value="peugeot">Peugeot</option><option value="vwcv">VW Commercial</option><option value="omoda">OMODA/JAECOO</option><option value="motormatch">Motor Match</option></select></div>
+        <div class="form-group"><label class="form-label">Topic</label><select class="form-select" id="quiz-topic"><option value="tone">Tone of voice</option><option value="audience">Target audiences</option><option value="models">Model range</option><option value="channels">Marketing channels</option><option value="strategy">2026 strategy</option><option value="competitor">Competitive landscape</option><option value="mixed">Mixed</option></select></div>
+        <div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="quiz-difficulty"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></div>
       </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">📖 How it works</div></div>
-        <div class="card-body">
-          <div style="font-size:13px;color:var(--ink-soft);line-height:1.8">
-            <div style="margin-bottom:8px">1. Select brand, topic and difficulty</div>
-            <div style="margin-bottom:8px">2. Claude generates 10 multiple-choice questions based on actual Swansway brand data</div>
-            <div style="margin-bottom:8px">3. Team member answers — scored instantly with explanations</div>
-            <div style="margin-bottom:8px">4. Results summary shows strengths and gaps</div>
-            <div>5. Share results with Marcus for team development tracking</div>
-          </div>
-        </div>
-      </div>
-    </div>
+      <button class="btn btn-primary" onclick="generateQuiz()">&#9889; Generate quiz</button>
+    </div></div>
   </div>
   <div id="training-quiz-container" style="display:none;max-width:760px;margin-top:1.5rem"></div>
 </div>
@@ -3387,758 +3263,470 @@ function switchBrandView(id) {
   switchView(id, document.getElementById('brand-dd-btn'));
 }
 
-
 /* ════════════════════════════════════════════════════════════════
    FEATURE 7 — CROSS-BRAND CAMPAIGN CALENDAR
 ════════════════════════════════════════════════════════════════ */
-
 const CAL_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-// Built-in campaigns from all brands (supplement with saved briefs)
 const BUILT_IN_CAMPAIGNS = [
-  {brand:'All brands',color:'#374151',name:'March Plate Change',start:2,end:2,year:2026},
-  {brand:'All brands',color:'#374151',name:'September Plate Change',start:8,end:8,year:2026},
-  {brand:'All brands',color:'#374151',name:'Black Friday',start:10,end:10,year:2026},
-  {brand:'Audi',color:'#BB0A21',name:'A6 e-tron Launch',start:3,end:5,year:2026},
-  {brand:'Audi',color:'#BB0A21',name:'Summer Drive VIP',start:5,end:5,year:2026},
-  {brand:'Audi',color:'#BB0A21',name:'RS Experience Day',start:5,end:9,year:2026},
-  {brand:'BYD',color:'#0066CC',name:'Seal Awareness',start:4,end:7,year:2026},
-  {brand:'CUPRA',color:'#C8920A',name:'Born EV Summer',start:4,end:7,year:2026},
-  {brand:'CUPRA',color:'#C8920A',name:'Padel Tennis Series',start:3,end:8,year:2026},
-  {brand:'Land Rover',color:'#1D4E1D',name:'Defender Adventure Camp',start:5,end:7,year:2026},
-  {brand:'SEAT',color:'#E2231A',name:'Ibiza Summer Social',start:4,end:7,year:2026},
-  {brand:'Honda',color:'#CC0000',name:'e:HEV Summer Campaign',start:4,end:8,year:2026},
-  {brand:'Peugeot',color:'#1B3A6B',name:'E-308 Lease Push',start:3,end:5,year:2026},
-  {brand:'VW',color:'#001E50',name:'ID. Electric Summer',start:4,end:6,year:2026},
-  {brand:'VW Commercial',color:'#1B4F72',name:'T7 Transporter Launch',start:0,end:3,year:2026},
-  {brand:'OMODA/JAECOO',color:'#6B21A8',name:'Grand Opening Follow-through',start:0,end:2,year:2026},
-  {brand:'Jaguar',color:'#1B2631',name:'Brand Relaunch Support',start:0,end:11,year:2026},
+  {brand:'All brands',color:'#374151',name:'March Plate Change',start:2,end:2},
+  {brand:'All brands',color:'#374151',name:'September Plate Change',start:8,end:8},
+  {brand:'All brands',color:'#374151',name:'Black Friday',start:10,end:10},
+  {brand:'Audi',color:'#BB0A21',name:'A6 e-tron Launch',start:3,end:5},
+  {brand:'Audi',color:'#BB0A21',name:'Summer VIP Drive Day',start:5,end:5},
+  {brand:'BYD',color:'#0066CC',name:'Seal Awareness Push',start:4,end:7},
+  {brand:'CUPRA',color:'#C8920A',name:'Born EV Summer',start:4,end:7},
+  {brand:'CUPRA',color:'#C8920A',name:'Padel Tennis Series',start:3,end:8},
+  {brand:'Land Rover',color:'#1D4E1D',name:'Defender Adventure Camp',start:5,end:7},
+  {brand:'SEAT',color:'#E2231A',name:'Ibiza Summer Social',start:4,end:7},
+  {brand:'Honda',color:'#CC0000',name:'e:HEV Summer',start:4,end:8},
+  {brand:'Peugeot',color:'#1B3A6B',name:'E-308 Lease Push',start:3,end:5},
+  {brand:'VW',color:'#001E50',name:'ID. Electric Summer',start:4,end:6},
+  {brand:'VW Commercial',color:'#1B4F72',name:'T7 Launch',start:0,end:3},
+  {brand:'Jaguar',color:'#1B2631',name:'Brand Relaunch',start:0,end:11},
 ];
-
 const CAL_BRAND_ORDER = ['All brands','Audi','Volkswagen','VW Commercial','SEAT','CUPRA','Land Rover','Jaguar','Honda','Peugeot','BYD','OMODA/JAECOO','Motor Match'];
 
 function renderCrossCalendar() {
-  const el = document.getElementById('crosscal-grid');
-  const legendEl = document.getElementById('crosscal-legend');
-  if(!el) return;
-
-  // Build grid
-  let html = '<div class="crosscal-grid">';
-  // Header row
+  var el = document.getElementById('crosscal-grid');
+  var legendEl = document.getElementById('crosscal-legend');
+  if (!el) return;
+  var html = '<div class="crosscal-grid">';
   html += '<div class="crosscal-header" style="background:#0D1B2A">Brand</div>';
-  CAL_MONTHS.forEach(m => {
-    html += '<div class="crosscal-header">' + m + '</div>';
-  });
-
-  // Brand rows
-  CAL_BRAND_ORDER.forEach(brandName => {
-    const brandCampaigns = BUILT_IN_CAMPAIGNS.filter(c => c.brand === brandName);
-    const color = brandCampaigns[0]?.color || '#374151';
-    // Brand label cell
+  CAL_MONTHS.forEach(function(m) { html += '<div class="crosscal-header">' + m + '</div>'; });
+  CAL_BRAND_ORDER.forEach(function(brandName) {
+    var camps = BUILT_IN_CAMPAIGNS.filter(function(c) { return c.brand === brandName; });
+    var color = camps[0] ? camps[0].color : '#374151';
     html += '<div class="crosscal-brand-cell"><span style="width:8px;height:8px;border-radius:50%;background:' + color + ';flex-shrink:0;display:inline-block"></span>' + brandName + '</div>';
-    // Month cells
-    for(let m = 0; m < 12; m++) {
-      const monthCampaigns = brandCampaigns.filter(c => m >= c.start && m <= c.end);
+    for (var m = 0; m < 12; m++) {
+      var mc = camps.filter(function(c) { return m >= c.start && m <= c.end; });
       html += '<div class="crosscal-month-cell">';
-      monthCampaigns.forEach(c => {
-        const isStart = m === c.start;
-        const label = isStart ? c.name : '';
-        html += '<div class="crosscal-campaign-bar" style="background:' + c.color + '" title="' + c.name + '">' + label + '</div>';
-      });
+      mc.forEach(function(c) { html += '<div class="crosscal-campaign-bar" style="background:' + c.color + '" title="' + c.name + '">' + (m === c.start ? c.name : '') + '</div>'; });
       html += '</div>';
     }
   });
-
   html += '</div>';
   el.innerHTML = html;
-
-  // Legend
-  const seenColors = {};
-  legendEl.innerHTML = BUILT_IN_CAMPAIGNS.filter(c => {
-    if(seenColors[c.brand]) return false;
-    seenColors[c.brand] = true;
-    return true;
-  }).map(c => '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-soft)"><span style="width:10px;height:10px;border-radius:2px;background:' + c.color + ';display:inline-block"></span>' + c.brand + '</div>').join('');
+  var seen = {};
+  legendEl.innerHTML = BUILT_IN_CAMPAIGNS.filter(function(c) { if (seen[c.brand]) return false; seen[c.brand] = true; return true; }).map(function(c) {
+    return '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-soft)"><span style="width:10px;height:10px;border-radius:2px;background:' + c.color + ';display:inline-block"></span>' + c.brand + '</div>';
+  }).join('');
 }
-
 
 /* ════════════════════════════════════════════════════════════════
    FEATURE 8 — BUDGET TRACKER
 ════════════════════════════════════════════════════════════════ */
-
-const BUDGET_BRANDS = [
-  {id:'audi',     name:'Audi',          color:'#BB0A21', annual:780000},
-  {id:'vw',       name:'Volkswagen',    color:'#001E50', annual:590000},
-  {id:'vwcv',     name:'VW Commercial', color:'#1B4F72', annual:340000},
-  {id:'seat',     name:'SEAT',          color:'#E2231A', annual:210000},
-  {id:'cupra',    name:'CUPRA',         color:'#C8920A', annual:190000},
-  {id:'landrover',name:'Land Rover',    color:'#1D4E1D', annual:380000},
-  {id:'jaguar',   name:'Jaguar',        color:'#1B2631', annual:175000},
-  {id:'honda',    name:'Honda',         color:'#CC0000', annual:260000},
-  {id:'peugeot',  name:'Peugeot',       color:'#1B3A6B', annual:215000},
-  {id:'byd',      name:'BYD',           color:'#0066CC', annual:175000},
-  {id:'omoda',    name:'OMODA/JAECOO',  color:'#6B21A8', annual:140000},
+var BUDGET_BRANDS = [
+  {id:'audi',name:'Audi',color:'#BB0A21',annual:780000},
+  {id:'vw',name:'Volkswagen',color:'#001E50',annual:590000},
+  {id:'vwcv',name:'VW Commercial',color:'#1B4F72',annual:340000},
+  {id:'seat',name:'SEAT',color:'#E2231A',annual:210000},
+  {id:'cupra',name:'CUPRA',color:'#C8920A',annual:190000},
+  {id:'landrover',name:'Land Rover',color:'#1D4E1D',annual:380000},
+  {id:'jaguar',name:'Jaguar',color:'#1B2631',annual:175000},
+  {id:'honda',name:'Honda',color:'#CC0000',annual:260000},
+  {id:'peugeot',name:'Peugeot',color:'#1B3A6B',annual:215000},
+  {id:'byd',name:'BYD',color:'#0066CC',annual:175000},
+  {id:'omoda',name:'OMODA/JAECOO',color:'#6B21A8',annual:140000},
 ];
-
-// Budget actuals stored in localStorage (upgrade to Supabase later)
-let BUDGET_ACTUALS = JSON.parse(localStorage.getItem('swansway_budget_actuals') || '{}');
+var BUDGET_ACTUALS = JSON.parse(localStorage.getItem('swansway_budget_actuals') || '{}');
 
 function saveBudgetActuals() {
   localStorage.setItem('swansway_budget_actuals', JSON.stringify(BUDGET_ACTUALS));
-  if(SB && SB_USER) {
-    SB.from('budget_actuals').upsert({ user_id: SB_USER.id, data: BUDGET_ACTUALS }).then(() => {});
-  }
 }
 
 function renderBudgetTracker() {
-  const thead = document.getElementById('budget-thead');
-  const tbody = document.getElementById('budget-tbody');
-  const metricsEl = document.getElementById('budget-metrics');
-  if(!thead) return;
-
-  // Headers
-  thead.innerHTML = '<tr><th>Brand</th>' + CAL_MONTHS.map(m => '<th style="text-align:right">' + m + '</th>').join('') + '<th style="text-align:right">Total planned</th><th style="text-align:right">Total actual</th><th style="text-align:right">Variance</th></tr>';
-
-  // Per-brand rows
-  let totalPlanned = 0, totalActual = 0;
-  const monthlyPlanned = new Array(12).fill(0);
-  const monthlyActual  = new Array(12).fill(0);
-
-  tbody.innerHTML = BUDGET_BRANDS.map(b => {
-    const monthly = Math.round(b.annual / 12);
-    let brandActual = 0;
-    let cells = CAL_MONTHS.map((m, mi) => {
-      const actual = BUDGET_ACTUALS[b.id + '_' + mi] || 0;
+  var thead = document.getElementById('budget-thead');
+  var tbody = document.getElementById('budget-tbody');
+  var metricsEl = document.getElementById('budget-metrics');
+  if (!thead) return;
+  var hdr = '<tr><th>Brand</th>';
+  CAL_MONTHS.forEach(function(m) { hdr += '<th style="text-align:right">' + m + '</th>'; });
+  hdr += '<th style="text-align:right">Planned</th><th style="text-align:right">Actual</th><th style="text-align:right">Variance</th></tr>';
+  thead.innerHTML = hdr;
+  var totalPlanned = 0, totalActual = 0;
+  var mPlanned = new Array(12).fill(0), mActual = new Array(12).fill(0);
+  var rows = '';
+  BUDGET_BRANDS.forEach(function(b) {
+    var monthly = Math.round(b.annual / 12);
+    var brandActual = 0;
+    var cells = '';
+    for (var mi = 0; mi < 12; mi++) {
+      var actual = BUDGET_ACTUALS[b.id + '_' + mi] || 0;
       brandActual += actual;
-      monthlyPlanned[mi] += monthly;
-      monthlyActual[mi]  += actual;
-      const diff = actual - monthly;
-      const cls = actual === 0 ? '' : diff > monthly * 0.1 ? ' budget-over' : diff < -monthly * 0.1 ? ' budget-under' : ' budget-on';
-      return '<td class="budget-cell' + cls + '" onclick="budgetEditCell('' + b.id + '',' + mi + ',this)" title="Planned: £' + monthly.toLocaleString() + '">' + (actual > 0 ? '£' + actual.toLocaleString() : '<span style='color:var(--ink-faint)'>£' + monthly.toLocaleString() + '</span>') + '</td>';
-    }).join('');
+      mPlanned[mi] += monthly;
+      mActual[mi] += actual;
+      var diff = actual - monthly;
+      var cls = actual === 0 ? '' : (diff > monthly * 0.1 ? ' budget-over' : diff < -monthly * 0.1 ? ' budget-under' : ' budget-on');
+      var inner = actual > 0 ? ('&pound;' + actual.toLocaleString()) : ('<em style="color:var(--ink-faint)">&pound;' + monthly.toLocaleString() + '</em>');
+      cells += '<td class="budget-cell' + cls + '" onclick="budgetEditCell(\'' + b.id + '\',' + mi + ',this)">' + inner + '</td>';
+    }
     totalPlanned += b.annual;
-    totalActual  += brandActual;
-    const variance = brandActual - b.annual;
-    const varStr = brandActual === 0 ? '—' : (variance >= 0 ? '+' : '') + '£' + Math.abs(variance).toLocaleString();
-    const varCls = brandActual === 0 ? '' : variance > 0 ? ' style="color:#DC2626"' : ' style="color:#059669"';
-    return '<tr><td style="font-weight:600;display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:' + b.color + ';display:inline-block;flex-shrink:0"></span>' + b.name + '</td>' + cells + '<td style="text-align:right;font-family:var(--font-m);font-size:11px;color:var(--ink-soft)">£' + b.annual.toLocaleString() + '</td><td style="text-align:right;font-family:var(--font-m);font-size:12px;font-weight:600">' + (brandActual > 0 ? '£' + brandActual.toLocaleString() : '—') + '</td><td' + varCls + ' style="text-align:right;font-family:var(--font-m);font-size:11px">' + varStr + '</td></tr>';
+    totalActual += brandActual;
+    var variance = brandActual - b.annual;
+    var varStr = brandActual === 0 ? '&mdash;' : (variance >= 0 ? '+' : '') + '&pound;' + Math.abs(variance).toLocaleString();
+    var varStyle = brandActual === 0 ? '' : (variance > 0 ? 'color:#DC2626' : 'color:#059669');
+    rows += '<tr><td><div style="display:flex;align-items:center;gap:6px;font-weight:600"><span style="width:8px;height:8px;border-radius:50%;background:' + b.color + ';display:inline-block;flex-shrink:0"></span>' + b.name + '</div></td>' + cells + '<td style="text-align:right;font-size:11px;color:var(--ink-soft)">&pound;' + b.annual.toLocaleString() + '</td><td style="text-align:right;font-size:12px;font-weight:600">' + (brandActual > 0 ? '&pound;' + brandActual.toLocaleString() : '&mdash;') + '</td><td style="text-align:right;font-size:11px;' + varStyle + '">' + varStr + '</td></tr>';
+  });
+  tbody.innerHTML = rows;
+  var pct = totalActual > 0 ? Math.round(totalActual / totalPlanned * 100) : 0;
+  var mData = [
+    {label:'Total planned 2026',val:'&pound;' + (totalPlanned/1000000).toFixed(2) + 'M',sub:'Across all 11 brands',color:'var(--swansway)'},
+    {label:'Total actual entered',val:totalActual > 0 ? '&pound;' + (totalActual/1000000).toFixed(2) + 'M' : '&pound;0',sub:'Click cells to enter actuals',color:'#059669'},
+    {label:'Budget utilisation',val:pct + '%',sub:'Of annual plan',color:'#D97706'},
+    {label:'Remaining',val:'&pound;' + ((totalPlanned-totalActual)/1000000).toFixed(2) + 'M',sub:'To year end',color:'#6B7280'},
+  ];
+  metricsEl.innerHTML = mData.map(function(m) {
+    return '<div class="metric" style="border-top-color:' + m.color + '"><div class="metric-label">' + m.label + '</div><div class="metric-val" style="color:' + m.color + '">' + m.val + '</div><div class="metric-sub">' + m.sub + '</div></div>';
   }).join('');
-
-  // Metrics row
-  const pct = totalActual > 0 ? Math.round(totalActual / totalPlanned * 100) : 0;
-  metricsEl.innerHTML = [
-    {label:'Total planned 2026', val:'£' + (totalPlanned/1000000).toFixed(2) + 'M', sub:'Across all 11 brands', color:'var(--swansway)'},
-    {label:'Total actual entered', val: totalActual > 0 ? '£' + (totalActual/1000000).toFixed(2) + 'M' : '£0', sub:'Click cells to enter actuals', color:'#059669'},
-    {label:'Budget utilisation', val: pct + '%', sub:'Of annual plan', color:'#D97706'},
-    {label:'Remaining', val:'£' + ((totalPlanned - totalActual)/1000000).toFixed(2) + 'M', sub:'To year end', color:'#6B7280'},
-  ].map(m => '<div class="metric" style="border-top-color:' + m.color + '"><div class="metric-label">' + m.label + '</div><div class="metric-val" style="color:' + m.color + '">' + m.val + '</div><div class="metric-sub">' + m.sub + '</div></div>').join('');
-
-  // Render chart
-  renderBudgetChart(monthlyPlanned, monthlyActual);
+  renderBudgetChart(mPlanned, mActual);
 }
 
 function budgetEditCell(brandId, monthIdx, el) {
-  if(el.querySelector('input')) return;
-  const current = BUDGET_ACTUALS[brandId + '_' + monthIdx] || 0;
-  const planned = BUDGET_BRANDS.find(b => b.id === brandId)?.annual / 12 || 0;
+  if (el.querySelector('input')) return;
+  var current = BUDGET_ACTUALS[brandId + '_' + monthIdx] || 0;
+  var brand = BUDGET_BRANDS.find(function(b) { return b.id === brandId; });
+  var planned = brand ? Math.round(brand.annual / 12) : 0;
   el.classList.add('editing');
-  el.innerHTML = '<input type="number" value="' + current + '" placeholder="' + Math.round(planned) + '" min="0" style="width:90px;padding:3px 6px;border:1px solid var(--swansway);border-radius:2px;font-family:var(--font-m);font-size:12px">';
-  const input = el.querySelector('input');
+  el.innerHTML = '<input type="number" value="' + current + '" placeholder="' + planned + '" min="0" style="width:90px;padding:3px 6px;border:1px solid var(--swansway);border-radius:2px;font-size:12px">';
+  var input = el.querySelector('input');
   input.focus(); input.select();
   function save() {
-    const val = parseInt(input.value) || 0;
+    var val = parseInt(input.value) || 0;
     BUDGET_ACTUALS[brandId + '_' + monthIdx] = val;
     saveBudgetActuals();
     renderBudgetTracker();
   }
   input.addEventListener('blur', save);
-  input.addEventListener('keydown', e => { if(e.key === 'Enter') save(); if(e.key === 'Escape') renderBudgetTracker(); });
+  input.addEventListener('keydown', function(e) { if (e.key === 'Enter') save(); if (e.key === 'Escape') renderBudgetTracker(); });
 }
 
-let budgetChartInstance;
+var budgetChartInst;
 function renderBudgetChart(planned, actual) {
-  const ctx = document.getElementById('budgetChart');
-  if(!ctx || !window.Chart) return;
-  if(budgetChartInstance) budgetChartInstance.destroy();
-  budgetChartInstance = new Chart(ctx, {
+  var ctx = document.getElementById('budgetChart');
+  if (!ctx || !window.Chart) return;
+  if (budgetChartInst) budgetChartInst.destroy();
+  budgetChartInst = new Chart(ctx, {
     type: 'bar',
-    data: {
-      labels: CAL_MONTHS,
-      datasets: [
-        { label: 'Planned', data: planned, backgroundColor: 'rgba(26,46,74,0.15)', borderColor: 'rgba(26,46,74,0.4)', borderWidth: 1 },
-        { label: 'Actual', data: actual, backgroundColor: 'rgba(200,16,46,0.7)', borderColor: 'rgba(200,16,46,1)', borderWidth: 1 }
-      ]
-    },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'top' } }, scales:{ y:{ ticks:{ callback: v => '£' + (v/1000).toFixed(0) + 'K' } } } }
+    data: { labels: CAL_MONTHS, datasets: [
+      {label:'Planned',data:planned,backgroundColor:'rgba(26,46,74,0.15)',borderColor:'rgba(26,46,74,0.4)',borderWidth:1},
+      {label:'Actual',data:actual,backgroundColor:'rgba(200,16,46,0.7)',borderColor:'rgba(200,16,46,1)',borderWidth:1}
+    ]},
+    options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{ticks:{callback:function(v){return '&pound;'+(v/1000).toFixed(0)+'K';}}}}}
   });
 }
 
 function budgetExportCSV() {
-  let csv = 'Brand,' + CAL_MONTHS.join(',') + ',Annual Planned,Total Actual
-';
-  BUDGET_BRANDS.forEach(b => {
-    const monthly = Math.round(b.annual / 12);
-    let brandActual = 0;
-    const cells = CAL_MONTHS.map((m, mi) => {
-      const actual = BUDGET_ACTUALS[b.id + '_' + mi] || monthly;
-      brandActual += actual;
-      return actual;
-    });
-    csv += b.name + ',' + cells.join(',') + ',' + b.annual + ',' + brandActual + '
-';
+  var rows = ['Brand,' + CAL_MONTHS.join(',') + ',Annual Planned,Total Actual'];
+  BUDGET_BRANDS.forEach(function(b) {
+    var cells = [];
+    var brandActual = 0;
+    for (var mi = 0; mi < 12; mi++) {
+      var v = BUDGET_ACTUALS[b.id + '_' + mi] || Math.round(b.annual / 12);
+      brandActual += v;
+      cells.push(v);
+    }
+    rows.push(b.name + ',' + cells.join(',') + ',' + b.annual + ',' + brandActual);
   });
-  const blob = new Blob([csv], {type:'text/csv'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'swansway-budget-2026.csv'; a.click();
+  var blob = new Blob([rows.join('\n')], {type:'text/csv'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'swansway-budget-2026.csv'; a.click();
 }
 
 function budgetImportCSV() {
-  const input = document.createElement('input'); input.type = 'file'; input.accept = '.csv';
-  input.onchange = e => {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const lines = ev.target.result.split('
-').slice(1);
-      lines.forEach(line => {
-        const parts = line.split(',');
-        if(parts.length < 14) return;
-        const brandName = parts[0];
-        const brand = BUDGET_BRANDS.find(b => b.name === brandName);
-        if(!brand) return;
-        for(let mi = 0; mi < 12; mi++) {
-          const val = parseInt(parts[mi+1]);
-          if(!isNaN(val)) BUDGET_ACTUALS[brand.id + '_' + mi] = val;
+  var input = document.createElement('input'); input.type = 'file'; input.accept = '.csv';
+  input.onchange = function(e) {
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var lines = ev.target.result.split('\n').slice(1);
+      lines.forEach(function(line) {
+        var parts = line.split(',');
+        if (parts.length < 14) return;
+        var brand = BUDGET_BRANDS.find(function(b) { return b.name === parts[0]; });
+        if (!brand) return;
+        for (var mi = 0; mi < 12; mi++) {
+          var val = parseInt(parts[mi+1]);
+          if (!isNaN(val)) BUDGET_ACTUALS[brand.id + '_' + mi] = val;
         }
       });
-      saveBudgetActuals();
-      renderBudgetTracker();
+      saveBudgetActuals(); renderBudgetTracker();
     };
     reader.readAsText(e.target.files[0]);
   };
   input.click();
 }
 
-
 /* ════════════════════════════════════════════════════════════════
    FEATURE 3 — CAMPAIGN AUTOPSY
 ════════════════════════════════════════════════════════════════ */
-
-let AUTOPSY_LIST = JSON.parse(localStorage.getItem('swansway_autopsies') || '[]');
+var AUTOPSY_LIST = JSON.parse(localStorage.getItem('swansway_autopsies') || '[]');
+var autopsyScore = 0;
 
 function autopsyNew() {
-  const formEl = document.getElementById('autopsy-form');
-  if(!formEl) return;
+  var formEl = document.getElementById('autopsy-form');
+  if (!formEl) return;
   formEl.style.display = 'block';
-  formEl.innerHTML = `
-    <div class="card mb2">
-      <div class="card-header" style="border-top:3px solid var(--accent)">
-        <div class="card-title">🔬 New Campaign Autopsy</div>
-        <button class="btn btn-sm" onclick="document.getElementById('autopsy-form').style.display='none'">Cancel</button>
-      </div>
-      <div class="card-body">
-        <div class="form-grid-2 mb2">
-          <div class="form-group"><label class="form-label">Campaign name</label><input class="form-input" id="aut-name" placeholder="e.g. Audi March Plate Change 2026"></div>
-          <div class="form-group"><label class="form-label">Brand</label><select class="form-select" id="aut-brand">${BUDGET_BRANDS.map(b => '<option value="'+b.id+'" data-color="'+b.color+'">'+b.name+'</option>').join('')}</select></div>
-          <div class="form-group"><label class="form-label">Campaign type</label><select class="form-select" id="aut-type"><option>Plate change</option><option>Model launch</option><option>EV education</option><option>Aftersales</option><option>Fleet & B2B</option><option>Brand awareness</option><option>Event</option><option>Used car</option></select></div>
-          <div class="form-group"><label class="form-label">Date range</label><input class="form-input" id="aut-dates" placeholder="e.g. 1 Mar – 31 Mar 2026"></div>
-        </div>
-        <div class="sh"><div><div class="sh-title" style="font-size:15px">Planned vs Actual</div></div></div>
-        <div class="form-grid-4 mb2">
-          <div class="form-group"><label class="form-label">Budget planned (£)</label><input type="number" class="form-input" id="aut-budget-plan" placeholder="5000"></div>
-          <div class="form-group"><label class="form-label">Budget actual (£)</label><input type="number" class="form-input" id="aut-budget-act" placeholder="5200"></div>
-          <div class="form-group"><label class="form-label">Leads planned</label><input type="number" class="form-input" id="aut-leads-plan" placeholder="120"></div>
-          <div class="form-group"><label class="form-label">Leads actual</label><input type="number" class="form-input" id="aut-leads-act" placeholder="94"></div>
-          <div class="form-group"><label class="form-label">CPL planned (£)</label><input type="number" class="form-input" id="aut-cpl-plan" placeholder="42"></div>
-          <div class="form-group"><label class="form-label">CPL actual (£)</label><input type="number" class="form-input" id="aut-cpl-act" placeholder="55"></div>
-          <div class="form-group"><label class="form-label">Units planned</label><input type="number" class="form-input" id="aut-units-plan" placeholder="12"></div>
-          <div class="form-group"><label class="form-label">Units actual</label><input type="number" class="form-input" id="aut-units-act" placeholder="9"></div>
-        </div>
-        <div class="sh"><div><div class="sh-title" style="font-size:15px">Learning</div></div></div>
-        <div class="form-grid mb2" style="grid-template-columns:1fr">
-          <div class="form-group"><label class="form-label">What worked well?</label><textarea class="form-textarea" id="aut-worked" placeholder="e.g. Google Search drove 60% of leads at below-target CPL. AutoTrader featured listings converted well."></textarea></div>
-          <div class="form-group"><label class="form-label">What didn't work?</label><textarea class="form-textarea" id="aut-didnt" placeholder="e.g. Meta audience was too broad — reached non-local buyers. Creative fatigue by week 3."></textarea></div>
-          <div class="form-group"><label class="form-label">Key lesson — what would you do differently?</label><textarea class="form-textarea" id="aut-lesson" placeholder="e.g. Tighten Meta radius to 25 miles from dealership. Refresh creative at week 2 not week 4."></textarea></div>
-          <div class="form-group"><label class="form-label">Score this campaign (1–10)</label>
-            <div style="display:flex;gap:8px;margin-top:4px">
-              ${[1,2,3,4,5,6,7,8,9,10].map(n => '<button type="button" class="btn btn-sm" id="aut-score-'+n+'" onclick="autopsySetScore('+n+')" style="min-width:36px">'+n+'</button>').join('')}
-            </div>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="autopsySave()" style="margin-right:8px">Save autopsy</button>
-      </div>
-    </div>
-  `;
+  var brandOpts = BUDGET_BRANDS.map(function(b) { return '<option value="' + b.id + '" data-color="' + b.color + '">' + b.name + '</option>'; }).join('');
+  var scoreButtons = '';
+  for (var n = 1; n <= 10; n++) { scoreButtons += '<button type="button" class="btn btn-sm" id="aut-score-' + n + '" onclick="autopsySetScore(' + n + ')">' + n + '</button> '; }
+  formEl.innerHTML = '<div class="card mb2"><div class="card-header" style="border-top:3px solid var(--accent)"><div class="card-title">New Campaign Autopsy</div><button class="btn btn-sm" onclick="document.getElementById(\'autopsy-form\').style.display=\'none\'">Cancel</button></div><div class="card-body"><div class="form-grid-2 mb2"><div class="form-group"><label class="form-label">Campaign name</label><input class="form-input" id="aut-name" placeholder="e.g. Audi March Plate Change 2026"></div><div class="form-group"><label class="form-label">Brand</label><select class="form-select" id="aut-brand">' + brandOpts + '</select></div><div class="form-group"><label class="form-label">Campaign type</label><select class="form-select" id="aut-type"><option>Plate change</option><option>Model launch</option><option>EV education</option><option>Aftersales</option><option>Fleet</option><option>Brand awareness</option><option>Event</option></select></div><div class="form-group"><label class="form-label">Date range</label><input class="form-input" id="aut-dates" placeholder="1 Mar - 31 Mar 2026"></div></div><div class="sh"><div><div class="sh-title" style="font-size:15px">Planned vs Actual</div></div></div><div class="form-grid-4 mb2"><div class="form-group"><label class="form-label">Budget planned</label><input type="number" class="form-input" id="aut-bp"></div><div class="form-group"><label class="form-label">Budget actual</label><input type="number" class="form-input" id="aut-ba"></div><div class="form-group"><label class="form-label">Leads planned</label><input type="number" class="form-input" id="aut-lp"></div><div class="form-group"><label class="form-label">Leads actual</label><input type="number" class="form-input" id="aut-la"></div><div class="form-group"><label class="form-label">CPL planned</label><input type="number" class="form-input" id="aut-cp"></div><div class="form-group"><label class="form-label">CPL actual</label><input type="number" class="form-input" id="aut-ca"></div><div class="form-group"><label class="form-label">Units planned</label><input type="number" class="form-input" id="aut-up"></div><div class="form-group"><label class="form-label">Units actual</label><input type="number" class="form-input" id="aut-ua"></div></div><div class="form-group mb1"><label class="form-label">What worked?</label><textarea class="form-textarea" id="aut-worked" placeholder="What performed well..."></textarea></div><div class="form-group mb1"><label class="form-label">What did not work?</label><textarea class="form-textarea" id="aut-didnt" placeholder="What underperformed..."></textarea></div><div class="form-group mb1"><label class="form-label">Key lesson</label><textarea class="form-textarea" id="aut-lesson" placeholder="What would you do differently..."></textarea></div><div class="form-group mb2"><label class="form-label">Score (1-10)</label><div style="display:flex;gap:6px;margin-top:4px">' + scoreButtons + '</div></div><button class="btn btn-primary" onclick="autopsySave()">Save autopsy</button></div></div>';
+  autopsyScore = 0;
   formEl.scrollIntoView({behavior:'smooth'});
 }
 
-let autopsyScore = 0;
 function autopsySetScore(n) {
   autopsyScore = n;
-  for(let i=1;i<=10;i++){
-    const btn = document.getElementById('aut-score-'+i);
-    if(btn) btn.style.background = i <= n ? 'var(--swansway)' : '';
-    if(btn) btn.style.color = i <= n ? '#fff' : '';
+  for (var i = 1; i <= 10; i++) {
+    var btn = document.getElementById('aut-score-' + i);
+    if (btn) { btn.style.background = i <= n ? 'var(--swansway)' : ''; btn.style.color = i <= n ? '#fff' : ''; }
   }
 }
 
+function g(id) { var el = document.getElementById(id); return el ? el.value : ''; }
+
 function autopsySave() {
-  const brand = BUDGET_BRANDS.find(b => b.id === document.getElementById('aut-brand').value);
-  const autopsy = {
-    id: Date.now(),
-    name: document.getElementById('aut-name').value || 'Unnamed campaign',
-    brand: brand?.name || '',
-    brandId: brand?.id || '',
-    brandColor: brand?.color || '#374151',
-    type: document.getElementById('aut-type').value,
-    dates: document.getElementById('aut-dates').value,
-    budget: { planned: parseInt(document.getElementById('aut-budget-plan').value)||0, actual: parseInt(document.getElementById('aut-budget-act').value)||0 },
-    leads:  { planned: parseInt(document.getElementById('aut-leads-plan').value)||0,  actual: parseInt(document.getElementById('aut-leads-act').value)||0 },
-    cpl:    { planned: parseInt(document.getElementById('aut-cpl-plan').value)||0,    actual: parseInt(document.getElementById('aut-cpl-act').value)||0 },
-    units:  { planned: parseInt(document.getElementById('aut-units-plan').value)||0,  actual: parseInt(document.getElementById('aut-units-act').value)||0 },
-    worked: document.getElementById('aut-worked').value,
-    didnt:  document.getElementById('aut-didnt').value,
-    lesson: document.getElementById('aut-lesson').value,
-    score:  autopsyScore,
-    created: new Date().toISOString()
+  var brand = BUDGET_BRANDS.find(function(b) { return b.id === g('aut-brand'); }) || BUDGET_BRANDS[0];
+  var autopsy = {
+    id: Date.now(), name: g('aut-name') || 'Unnamed', brand: brand.name, brandId: brand.id, brandColor: brand.color,
+    type: g('aut-type'), dates: g('aut-dates'),
+    budget: {planned: parseInt(g('aut-bp'))||0, actual: parseInt(g('aut-ba'))||0},
+    leads:  {planned: parseInt(g('aut-lp'))||0, actual: parseInt(g('aut-la'))||0},
+    cpl:    {planned: parseInt(g('aut-cp'))||0, actual: parseInt(g('aut-ca'))||0},
+    units:  {planned: parseInt(g('aut-up'))||0, actual: parseInt(g('aut-ua'))||0},
+    worked: g('aut-worked'), didnt: g('aut-didnt'), lesson: g('aut-lesson'),
+    score: autopsyScore, created: new Date().toISOString()
   };
   AUTOPSY_LIST.unshift(autopsy);
   localStorage.setItem('swansway_autopsies', JSON.stringify(AUTOPSY_LIST));
-  if(SB && SB_USER) {
-    SB.from('autopsies').insert({user_id:SB_USER.id, brand_id:autopsy.brandId, brand_name:autopsy.brand, data:autopsy}).then(()=>{});
-  }
+  if (SB && SB_USER) { SB.from('autopsies').insert({user_id:SB_USER.id,brand_id:brand.id,brand_name:brand.name,data:autopsy}).then(function(){}); }
   document.getElementById('autopsy-form').style.display = 'none';
   autopsyScore = 0;
   renderAutopsyList();
 }
 
+function autopsyMetric(label, plan, actual, lowerBetter) {
+  var diff = actual - plan;
+  var good = lowerBetter ? diff <= 0 : diff >= 0;
+  var cls = actual === 0 ? '' : (good ? 'on' : (Math.abs(diff/plan) > 0.2 ? 'over' : 'under'));
+  var arrow = actual === 0 ? '' : (diff > 0 ? ' &#8593;' : ' &#8595;');
+  return '<div class="autopsy-metric"><div class="autopsy-metric-label">' + label + '</div><div class="autopsy-metric-row"><div class="autopsy-planned">&pound;' + plan.toLocaleString() + '</div><div class="autopsy-actual ' + cls + '">' + (actual > 0 ? '&pound;' + actual.toLocaleString() + arrow : '&mdash;') + '</div></div></div>';
+}
+
 function renderAutopsyList() {
-  const el = document.getElementById('autopsy-list');
-  if(!el) return;
-  if(!AUTOPSY_LIST.length) {
-    el.innerHTML = '<div class="qplan-empty"><div class="qplan-empty-icon">🔬</div><div class="qplan-empty-title">No autopsies yet</div><div class="qplan-empty-sub">Click "New autopsy" after any campaign closes to capture what you learned.</div></div>';
+  var el = document.getElementById('autopsy-list');
+  if (!el) return;
+  if (!AUTOPSY_LIST.length) {
+    el.innerHTML = '<div class="qplan-empty"><div class="qplan-empty-icon">&#128302;</div><div class="qplan-empty-title">No autopsies yet</div><div class="qplan-empty-sub">Click "New autopsy" after any campaign closes.</div></div>';
     return;
   }
-  el.innerHTML = AUTOPSY_LIST.map(a => {
-    function metric(label, plan, actual, lowerBetter) {
-      const diff = actual - plan;
-      const pct = plan > 0 ? Math.round(Math.abs(diff)/plan*100) : 0;
-      const good = lowerBetter ? diff <= 0 : diff >= 0;
-      const cls = actual === 0 ? '' : good ? 'on' : (Math.abs(pct) > 20 ? 'over' : 'under');
-      const arrow = actual === 0 ? '' : diff > 0 ? ' ↑' : ' ↓';
-      return '<div class="autopsy-metric"><div class="autopsy-metric-label">'+label+'</div><div class="autopsy-metric-row"><div class="autopsy-planned">£'+plan.toLocaleString()+'</div><div class="autopsy-actual '+cls+'">'+(actual>0?'£'+actual.toLocaleString()+arrow:'—')+'</div></div></div>';
-    }
-    const scoreColor = a.score >= 7 ? '#059669' : a.score >= 5 ? '#D97706' : '#DC2626';
-    return '<div class="autopsy-card"><div class="autopsy-card-header"><div><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span class="autopsy-brand-dot" style="background:'+a.brandColor+'"></span><span style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft);letter-spacing:0.08em;text-transform:uppercase">'+a.brand+' · '+a.type+'</span></div><div style="font-family:var(--font-d);font-size:16px;font-weight:700">'+a.name+'</div><div style="font-size:11px;color:var(--ink-soft);margin-top:2px">'+a.dates+'</div></div><div style="text-align:center"><div style="font-family:var(--font-d);font-size:32px;font-weight:700;color:'+scoreColor+'">'+( a.score||'—')+'</div><div style="font-size:10px;color:var(--ink-soft)">/10</div></div></div><div class="autopsy-metric-grid">'+metric('Budget',a.budget.planned,a.budget.actual,false)+metric('Leads',a.leads.planned,a.leads.actual,false)+metric('CPL',a.cpl.planned,a.cpl.actual,true)+metric('Units',a.units.planned,a.units.actual,false)+'</div>'+(a.worked?'<div class="autopsy-section-title">✓ What worked</div><div class="autopsy-text">'+a.worked+'</div>':'')+(a.didnt?'<div class="autopsy-section-title">✗ What didn't</div><div class="autopsy-text">'+a.didnt+'</div>':'')+(a.lesson?'<div class="autopsy-section-title">💡 Key lesson</div><div class="autopsy-text" style="font-weight:500;color:var(--swansway)">'+a.lesson+'</div>':'')+'<div style="margin-top:10px;display:flex;justify-content:flex-end"><button class="btn btn-sm" style="color:var(--accent)" onclick="autopsyDelete('+a.id+')">Delete</button></div></div>';
+  el.innerHTML = AUTOPSY_LIST.map(function(a) {
+    var sc = a.score || 0;
+    var scColor = sc >= 7 ? '#059669' : sc >= 5 ? '#D97706' : '#DC2626';
+    var metrics = autopsyMetric('Budget',a.budget.planned,a.budget.actual,false) + autopsyMetric('Leads',a.leads.planned,a.leads.actual,false) + autopsyMetric('CPL',a.cpl.planned,a.cpl.actual,true) + autopsyMetric('Units',a.units.planned,a.units.actual,false);
+    var worked = a.worked ? '<div class="autopsy-section-title">What worked</div><div class="autopsy-text">' + a.worked + '</div>' : '';
+    var didnt = a.didnt ? '<div class="autopsy-section-title">What did not work</div><div class="autopsy-text">' + a.didnt + '</div>' : '';
+    var lesson = a.lesson ? '<div class="autopsy-section-title">Key lesson</div><div class="autopsy-text" style="font-weight:500;color:var(--swansway)">' + a.lesson + '</div>' : '';
+    return '<div class="autopsy-card"><div class="autopsy-card-header"><div><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span class="autopsy-brand-dot" style="background:' + a.brandColor + '"></span><span style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em">' + a.brand + ' &middot; ' + a.type + '</span></div><div style="font-family:var(--font-d);font-size:16px;font-weight:700">' + a.name + '</div><div style="font-size:11px;color:var(--ink-soft)">' + a.dates + '</div></div><div style="text-align:center"><div style="font-family:var(--font-d);font-size:32px;font-weight:700;color:' + scColor + '">' + (sc || '&mdash;') + '</div><div style="font-size:10px;color:var(--ink-soft)">/10</div></div></div><div class="autopsy-metric-grid">' + metrics + '</div>' + worked + didnt + lesson + '<div style="margin-top:10px;display:flex;justify-content:flex-end"><button class="btn btn-sm" style="color:var(--accent)" onclick="autopsyDelete(' + a.id + ')">Delete</button></div></div>';
   }).join('');
 }
 
 function autopsyDelete(id) {
-  if(!confirm('Delete this autopsy?')) return;
-  AUTOPSY_LIST = AUTOPSY_LIST.filter(a => a.id !== id);
+  if (!confirm('Delete this autopsy?')) return;
+  AUTOPSY_LIST = AUTOPSY_LIST.filter(function(a) { return a.id !== id; });
   localStorage.setItem('swansway_autopsies', JSON.stringify(AUTOPSY_LIST));
   renderAutopsyList();
 }
-
 function autopsyLoadSaved() { renderAutopsyList(); }
-
 
 /* ════════════════════════════════════════════════════════════════
    FEATURE 9 — COMPETITOR MONITOR
 ════════════════════════════════════════════════════════════════ */
-
-const COMPETITORS = [
-  { name:'Arnold Clark', url:'https://www.arnoldclark.com', focus:'UK's largest dealer group — strong PPC, heavy AutoTrader presence, finance-first messaging' },
-  { name:'Lookers',      url:'https://www.lookers.co.uk',   focus:'Premium and volume mix — strong digital, VW Group and JLR franchises competing directly' },
-  { name:'Evans Halshaw',url:'https://www.evanshalshaw.com',focus:'Volume mainstream — Ford, Vauxhall, Kia focus. Aggressive PCP offers, national TV.' },
-  { name:'Marshall Motors',url:'https://www.marshall.co.uk',focus:'Similar geographic footprint — premium brands including Audi, BMW, Mercedes. Direct competitor.' },
-];
-
-let COMP_SCANS = JSON.parse(localStorage.getItem('swansway_comp_scans') || '[]');
+var COMP_SCANS = JSON.parse(localStorage.getItem('swansway_comp_scans') || '[]');
 
 async function competitorScan() {
-  const statusEl = document.getElementById('competitor-scan-status');
-  const resultsEl = document.getElementById('competitor-results');
-  const btn = document.getElementById('competitor-scan-btn');
-  const msgEl = document.getElementById('comp-scan-msg');
-  const subEl = document.getElementById('comp-scan-sub');
-
-  if(!ANTHROPIC_API_KEY) {
-    alert('Anthropic API key not configured. Add it to config.js.');
-    return;
-  }
-
-  statusEl.style.display = 'block';
-  resultsEl.innerHTML = '';
-  btn.disabled = true;
-
-  const scanSteps = [
-    ['Fetching competitor websites…','Scanning Arnold Clark, Lookers, Evans Halshaw, Marshall'],
-    ['Analysing offers & campaigns…','Identifying current promotions and featured models'],
-    ['Extracting key insights…','Comparing messaging and positioning'],
-    ['Building digest…','Surfacing strategic implications for Swansway'],
-  ];
-  let step = 0;
-  const stepTimer = setInterval(() => {
-    if(step < scanSteps.length) {
-      msgEl.textContent = scanSteps[step][0];
-      subEl.textContent = scanSteps[step][1];
-      step++;
-    }
-  }, 4000);
-
+  var statusEl = document.getElementById('competitor-scan-status');
+  var resultsEl = document.getElementById('competitor-results');
+  var btn = document.getElementById('competitor-scan-btn');
+  var msgEl = document.getElementById('comp-scan-msg');
+  var subEl = document.getElementById('comp-scan-sub');
+  if (!ANTHROPIC_API_KEY) { alert('Anthropic API key not configured.'); return; }
+  statusEl.style.display = 'block'; resultsEl.innerHTML = ''; btn.disabled = true;
+  var steps = [['Scanning Arnold Clark...','arnoldclark.com'],['Scanning Lookers...','lookers.co.uk'],['Scanning Evans Halshaw...','evanshalshaw.com'],['Scanning Marshall Motors...','marshall.co.uk']];
+  var si = 0;
+  var st = setInterval(function() { if (si < steps.length) { msgEl.textContent = steps[si][0]; subEl.textContent = steps[si][1]; si++; } }, 5000);
   try {
-    const prompt = `You are a senior automotive retail marketing strategist. Analyse the marketing and offers from these four UK dealer groups and provide a structured competitive intelligence digest for Swansway Motor Group.
-
-Competitors to analyse:
-1. Arnold Clark (arnoldclark.com) — UK's largest dealer, strong PPC/AutoTrader
-2. Lookers (lookers.co.uk) — premium and volume, VW Group & JLR franchises
-3. Evans Halshaw (evanshalshaw.com) — volume mainstream, Ford/Vauxhall/Kia
-4. Marshall Motors (marshall.co.uk) — premium brands, similar geography to Swansway
-
-Based on your knowledge of these groups' typical marketing approaches in 2025-2026, provide:
-
-Return ONLY valid JSON in this structure:
-{
-  "scan_date": "today",
-  "competitors": [
-    {
-      "name": "Arnold Clark",
-      "current_push": "What they are currently pushing hard (models, offers, channels)",
-      "headline_offers": ["Offer 1", "Offer 2", "Offer 3"],
-      "featured_models": ["Model 1", "Model 2"],
-      "channels_active": ["Google PPC", "AutoTrader", "TV"],
-      "tone": "How they are positioning (e.g. value-led, family-focused, EV-forward)",
-      "swansway_threat": "Specific threat or opportunity this creates for Swansway",
-      "insight": "One strategic insight Swansway should act on"
-    }
-  ],
-  "market_themes": ["Theme 1 emerging across all groups", "Theme 2"],
-  "swansway_opportunity": "The biggest gap or opportunity vs competitors right now",
-  "recommended_action": "The one thing Swansway should do in response this month"
-}`;
-
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        messages: [{ role:'user', content: prompt }]
-      })
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:'Analyse the current marketing of Arnold Clark, Lookers, Evans Halshaw and Marshall Motors UK dealer groups. Return JSON only: {"competitors":[{"name":"Arnold Clark","current_push":"...","headline_offers":["..."],"featured_models":["..."],"channels_active":["..."],"tone":"...","swansway_threat":"...","insight":"..."}],"market_themes":["..."],"swansway_opportunity":"...","recommended_action":"..."}'}]})
     });
-
-    const data = await resp.json();
-    const raw = data.content?.[0]?.text || '';
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    const scan = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
+    var data = await resp.json();
+    var raw = data.content && data.content[0] ? data.content[0].text : '';
+    var match = raw.match(/\{[\s\S]*\}/);
+    var scan = JSON.parse(match ? match[0] : raw);
     scan._timestamp = new Date().toISOString();
-
     COMP_SCANS.unshift(scan);
-    if(COMP_SCANS.length > 10) COMP_SCANS = COMP_SCANS.slice(0, 10);
+    if (COMP_SCANS.length > 10) COMP_SCANS = COMP_SCANS.slice(0, 10);
     localStorage.setItem('swansway_comp_scans', JSON.stringify(COMP_SCANS));
-
     renderCompetitorResults(scan);
     updateCompetitorMetrics();
-  } catch(e) {
-    resultsEl.innerHTML = '<div style="color:var(--accent);padding:16px">Error: ' + e.message + '</div>';
-  }
-
-  clearInterval(stepTimer);
-  statusEl.style.display = 'none';
-  btn.disabled = false;
+  } catch(e) { resultsEl.innerHTML = '<div style="color:var(--accent);padding:16px">Error: ' + e.message + '</div>'; }
+  clearInterval(st); statusEl.style.display = 'none'; btn.disabled = false;
 }
 
 function renderCompetitorResults(scan) {
-  const el = document.getElementById('competitor-results');
-  if(!el || !scan) return;
-
-  const compColors = {'Arnold Clark':'#1A2E4A','Lookers':'#2C4A73','Evans Halshaw':'#C8102E','Marshall Motors':'#1D4E1D'};
-
-  let html = '';
-
-  // Market themes + big opportunity
-  if(scan.market_themes?.length || scan.swansway_opportunity) {
-    html += '<div class="chart-wrap" style="margin-bottom:1rem;border-left:4px solid var(--accent)">';
-    html += '<div class="chart-title">⚡ Strategic opportunity for Swansway</div>';
-    html += '<div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px">' + (scan.swansway_opportunity||'') + '</div>';
-    if(scan.recommended_action) html += '<div style="padding:10px 14px;background:rgba(200,16,46,0.06);border-radius:3px;font-size:13px;font-weight:500;color:var(--accent)">→ ' + scan.recommended_action + '</div>';
-    if(scan.market_themes?.length) html += '<div style="margin-top:12px"><div style="font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Market themes</div>' + scan.market_themes.map(t => '<div style="font-size:12px;color:var(--ink-soft);padding:4px 0;border-bottom:1px solid var(--border)">• ' + t + '</div>').join('') + '</div>';
+  var el = document.getElementById('competitor-results');
+  if (!el || !scan) return;
+  var colors = {'Arnold Clark':'#1A2E4A','Lookers':'#2C4A73','Evans Halshaw':'#C8102E','Marshall Motors':'#1D4E1D'};
+  var html = '';
+  if (scan.swansway_opportunity) {
+    html += '<div class="chart-wrap" style="margin-bottom:1rem;border-left:4px solid var(--accent)"><div class="chart-title">Strategic opportunity</div><div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px">' + scan.swansway_opportunity + '</div>';
+    if (scan.recommended_action) html += '<div style="padding:10px 14px;background:rgba(200,16,46,0.06);border-radius:3px;font-size:13px;font-weight:500;color:var(--accent)">&rarr; ' + scan.recommended_action + '</div>';
     html += '</div>';
   }
-
-  // Per-competitor cards
-  (scan.competitors || []).forEach(c => {
-    const color = compColors[c.name] || '#374151';
-    html += '<div class="competitor-card">';
-    html += '<div class="competitor-header"><div><div class="competitor-name" style="color:' + color + '">' + c.name + '</div><div style="font-size:11px;color:var(--ink-soft);margin-top:2px">' + (c.tone||'') + '</div></div><div style="display:flex;gap:6px;flex-wrap:wrap">' + (c.channels_active||[]).map(ch => '<span class="tag t-slate">' + ch + '</span>').join('') + '</div></div>';
-    html += '<div class="competitor-body">';
-    if(c.current_push) html += '<div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:10px">' + c.current_push + '</div>';
-    if(c.headline_offers?.length) {
-      html += '<div class="competitor-offers">' + c.headline_offers.map(o => '<div class="competitor-offer"><div class="competitor-offer-brand">Current offer</div><div class="competitor-offer-text">' + o + '</div></div>').join('') + '</div>';
-    }
-    if(c.featured_models?.length) {
-      html += '<div class="competitor-models-grid">' + c.featured_models.map(m => '<span class="tag t-blue">' + m + '</span>').join('') + '</div>';
-    }
-    if(c.swansway_threat) html += '<div class="competitor-insight"><strong>Swansway implication:</strong> ' + c.swansway_threat + '</div>';
-    if(c.insight) html += '<div style="margin-top:8px;padding:10px 14px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:3px;font-size:12px;color:#14532D"><strong>Action:</strong> ' + c.insight + '</div>';
+  (scan.competitors || []).forEach(function(c) {
+    var color = colors[c.name] || '#374151';
+    html += '<div class="competitor-card"><div class="competitor-header"><div><div class="competitor-name" style="color:' + color + '">' + c.name + '</div><div style="font-size:11px;color:var(--ink-soft)">' + (c.tone||'') + '</div></div></div><div class="competitor-body">';
+    if (c.current_push) html += '<div style="font-size:13px;font-weight:600;margin-bottom:10px">' + c.current_push + '</div>';
+    (c.headline_offers||[]).forEach(function(o) { html += '<div class="competitor-offer"><div class="competitor-offer-text">' + o + '</div></div>'; });
+    if (c.swansway_threat) html += '<div class="competitor-insight"><strong>Implication:</strong> ' + c.swansway_threat + '</div>';
+    if (c.insight) html += '<div style="margin-top:8px;padding:10px 14px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:3px;font-size:12px;color:#14532D"><strong>Action:</strong> ' + c.insight + '</div>';
     html += '</div></div>';
   });
-
-  // Timestamp
   html += '<div style="font-size:11px;color:var(--ink-faint);text-align:right;margin-top:8px;font-family:var(--font-m)">Scanned: ' + new Date(scan._timestamp).toLocaleString('en-GB') + '</div>';
-
   el.innerHTML = html;
 }
 
 function updateCompetitorMetrics() {
-  if(!COMP_SCANS.length) return;
-  const latest = COMP_SCANS[0];
+  if (!COMP_SCANS.length) return;
+  var latest = COMP_SCANS[0];
   document.getElementById('comp-last-scan').textContent = new Date(latest._timestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-  const offerCount = (latest.competitors||[]).reduce((s,c) => s + (c.headline_offers?.length||0), 0);
-  const modelCount = (latest.competitors||[]).reduce((s,c) => s + (c.featured_models?.length||0), 0);
-  document.getElementById('comp-offer-count').textContent = offerCount || '—';
-  document.getElementById('comp-model-count').textContent = modelCount || '—';
+  var offers = (latest.competitors||[]).reduce(function(s,c){ return s + (c.headline_offers ? c.headline_offers.length : 0); }, 0);
+  var models = (latest.competitors||[]).reduce(function(s,c){ return s + (c.featured_models ? c.featured_models.length : 0); }, 0);
+  document.getElementById('comp-offer-count').textContent = offers || '&mdash;';
+  document.getElementById('comp-model-count').textContent = models || '&mdash;';
   document.getElementById('comp-scan-count').textContent = COMP_SCANS.length;
-  if(COMP_SCANS.length > 0) renderCompetitorResults(latest);
+  renderCompetitorResults(latest);
 }
-
 
 /* ════════════════════════════════════════════════════════════════
-   FEATURE 11 — TRAINING QUIZ GENERATOR
+   FEATURE 11 — TRAINING QUIZ
 ════════════════════════════════════════════════════════════════ */
-
-let QUIZ_STATE = { questions:[], current:0, answers:[], score:0 };
+var QUIZ_STATE = {questions:[],current:0,answers:[],score:0,title:''};
 
 async function generateQuiz() {
-  const brand = document.getElementById('quiz-brand').value;
-  const topic = document.getElementById('quiz-topic').value;
-  const diff  = document.getElementById('quiz-difficulty').value;
-  const container = document.getElementById('training-quiz-container');
-  const setup = document.getElementById('training-setup');
-
-  if(!ANTHROPIC_API_KEY) { alert('Anthropic API key not configured.'); return; }
-
+  var brand = document.getElementById('quiz-brand').value;
+  var topic = document.getElementById('quiz-topic').value;
+  var diff  = document.getElementById('quiz-difficulty').value;
+  var container = document.getElementById('training-quiz-container');
+  if (!ANTHROPIC_API_KEY) { alert('Anthropic API key not configured.'); return; }
   container.style.display = 'block';
-  container.innerHTML = '<div style="text-align:center;padding:2rem"><div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--swansway);border-radius:50%;animation:qspin 0.8s linear infinite;margin:0 auto 12px"></div><div style="font-size:14px;font-weight:600">Generating quiz…</div><div style="font-size:12px;color:var(--ink-soft);margin-top:4px">Claude is writing questions tailored to Swansway</div></div>';
+  container.innerHTML = '<div style="text-align:center;padding:2rem"><div class="qplan-spinner"></div><div style="font-size:14px;font-weight:600;margin-top:12px">Generating quiz...</div></div>';
   container.scrollIntoView({behavior:'smooth'});
-
-  const brandData = BB_BRANDS ? BB_BRANDS.find(b => b.id === brand) : null;
-  const brandContext = brandData ? 'Brand: ' + brandData.name + '. Tagline: ' + brandData.tagline + '. Tone: ' + brandData.tone.join(', ') + '. Models: ' + brandData.models.join(', ') + '. Locations: ' + brandData.locations.join(', ') + '.' : 'All Swansway brands.';
-
-  const topicMap = {
-    tone: 'tone of voice, brand personality, and how to communicate for this brand',
-    audience: 'target customer segments, audience profiles, and who buys this brand',
-    models: 'current model range, key specifications, and model positioning',
-    channels: 'marketing channels, PESO model, and how to allocate media budget',
-    strategy: '2026 marketing strategy, priorities, and business objectives',
-    competitor: 'competitive landscape, key rivals, and differentiation',
-    mixed: 'all aspects of the brand including tone, audience, models, strategy and channels'
-  };
-
-  const diffMap = {
-    beginner: 'straightforward questions suitable for someone in their first month. Keep terminology simple.',
-    intermediate: 'moderately challenging questions for someone with 3-6 months experience. Include some nuance.',
-    advanced: 'challenging strategic questions for a senior marketer. Test deeper knowledge and judgment.'
-  };
-
+  var brandData = typeof BB_BRANDS !== 'undefined' ? BB_BRANDS.find(function(b){ return b.id === brand; }) : null;
+  var ctx = brandData ? ('Brand: ' + brandData.name + '. Tone: ' + (brandData.tone||[]).join(', ') + '. Models: ' + (brandData.models||[]).join(', ') + '.') : 'All Swansway brands.';
+  var topicMap = {tone:'tone of voice and brand personality',audience:'target audiences',models:'model range',channels:'marketing channels and PESO model',strategy:'2026 marketing strategy',competitor:'competitive landscape',mixed:'all topics'};
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 3000,
-        messages:[{role:'user',content:`You are a senior automotive marketing trainer creating a quiz for Swansway Motor Group team members.
-
-Context: ${brandContext}
-Topic: ${topicMap[topic] || 'general marketing knowledge'}
-Difficulty: ${diffMap[diff] || 'intermediate'}
-Swansway operates 30+ dealerships across North West England, Midlands and North Wales.
-
-Generate exactly 10 multiple choice questions. Return ONLY valid JSON:
-{
-  "title": "Quiz title",
-  "brand": "${brand}",
-  "topic": "${topic}",
-  "difficulty": "${diff}",
-  "questions": [
-    {
-      "question": "Question text here?",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correct": 0,
-      "explanation": "Why this is correct and what it means in practice for Swansway"
-    }
-  ]
-}
-
-Make questions specific to Swansway's actual brands, locations and strategy. No generic questions.`}]
-      })
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:'Generate a 10-question multiple choice quiz for Swansway Motor Group marketing team. Context: ' + ctx + ' Topic: ' + (topicMap[topic]||topic) + '. Difficulty: ' + diff + '. Return JSON only: {"title":"...","questions":[{"question":"...","options":["A","B","C","D"],"correct":0,"explanation":"..."}]}'}]})
     });
-
-    const data = await resp.json();
-    const raw = data.content?.[0]?.text || '';
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    const quiz = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
-
-    QUIZ_STATE = { questions: quiz.questions, current: 0, answers: [], score: 0, title: quiz.title };
+    var data = await resp.json();
+    var raw = data.content && data.content[0] ? data.content[0].text : '';
+    var match = raw.match(/\{[\s\S]*\}/);
+    var quiz = JSON.parse(match ? match[0] : raw);
+    QUIZ_STATE = {questions:quiz.questions, current:0, answers:[], score:0, title:quiz.title||'Quiz'};
     renderQuizQuestion();
-  } catch(e) {
-    container.innerHTML = '<div style="color:var(--accent);padding:16px">Error generating quiz: ' + e.message + '</div>';
-  }
+  } catch(e) { container.innerHTML = '<div style="color:var(--accent);padding:16px">Error: ' + e.message + '</div>'; }
 }
 
 function renderQuizQuestion() {
-  const container = document.getElementById('training-quiz-container');
-  const { questions, current, score } = QUIZ_STATE;
-  if(current >= questions.length) { renderQuizResults(); return; }
-  const q = questions[current];
-  container.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-      <div style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft);letter-spacing:0.1em;text-transform:uppercase">Question ${current+1} of ${questions.length}</div>
-      <div style="font-size:13px;font-weight:600;color:var(--swansway)">Score: ${score}/${current}</div>
-    </div>
-    <div style="height:4px;background:var(--border);border-radius:2px;margin-bottom:1.5rem"><div style="height:4px;border-radius:2px;background:var(--swansway);width:${(current/questions.length*100)}%;transition:width .4s"></div></div>
-    <div class="quiz-question">
-      <div class="quiz-q-num">Question ${current+1}</div>
-      <div class="quiz-q-text">${q.question}</div>
-      <div class="quiz-options">
-        ${q.options.map((opt, i) => '<button class="quiz-option" id="quiz-opt-'+i+'" onclick="quizAnswer('+i+')" style="display:block;width:100%;text-align:left">'+String.fromCharCode(65+i)+'. '+opt+'</button>').join('')}
-      </div>
-      <div class="quiz-explanation" id="quiz-exp">${q.explanation}</div>
-    </div>
-    <button class="btn btn-primary" id="quiz-next-btn" onclick="quizNext()" style="display:none;margin-top:1rem">Next question →</button>
-  `;
+  var container = document.getElementById('training-quiz-container');
+  var q = QUIZ_STATE.questions[QUIZ_STATE.current];
+  if (!q) { renderQuizResults(); return; }
+  var opts = q.options.map(function(opt, i) {
+    return '<button class="quiz-option" id="qopt-' + i + '" onclick="quizAnswer(' + i + ')">' + String.fromCharCode(65+i) + '. ' + opt + '</button>';
+  }).join('');
+  var pct = (QUIZ_STATE.current / QUIZ_STATE.questions.length * 100);
+  container.innerHTML = '<div style="display:flex;justify-content:space-between;margin-bottom:1rem"><div style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em">Question ' + (QUIZ_STATE.current+1) + ' of ' + QUIZ_STATE.questions.length + '</div><div style="font-size:13px;font-weight:600;color:var(--swansway)">Score: ' + QUIZ_STATE.score + '/' + QUIZ_STATE.current + '</div></div><div style="height:4px;background:var(--border);border-radius:2px;margin-bottom:1.5rem"><div style="height:4px;border-radius:2px;background:var(--swansway);width:' + pct + '%;transition:width .4s"></div></div><div class="quiz-question"><div class="quiz-q-num">Question ' + (QUIZ_STATE.current+1) + '</div><div class="quiz-q-text">' + q.question + '</div><div class="quiz-options">' + opts + '</div><div class="quiz-explanation" id="quiz-exp">' + q.explanation + '</div></div><button class="btn btn-primary" id="quiz-next" onclick="quizNext()" style="display:none;margin-top:1rem">Next &rarr;</button>';
 }
 
-function quizAnswer(answerIdx) {
-  const q = QUIZ_STATE.questions[QUIZ_STATE.current];
-  const correct = q.correct;
-  QUIZ_STATE.answers.push(answerIdx);
-  if(answerIdx === correct) QUIZ_STATE.score++;
-
-  // Disable all buttons
-  document.querySelectorAll('.quiz-option').forEach((btn, i) => {
+function quizAnswer(idx) {
+  var q = QUIZ_STATE.questions[QUIZ_STATE.current];
+  QUIZ_STATE.answers.push(idx);
+  if (idx === q.correct) QUIZ_STATE.score++;
+  document.querySelectorAll('.quiz-option').forEach(function(btn, i) {
     btn.disabled = true;
-    if(i === correct) btn.classList.add('correct');
-    else if(i === answerIdx && answerIdx !== correct) btn.classList.add('wrong');
+    if (i === q.correct) btn.classList.add('correct');
+    else if (i === idx) btn.classList.add('wrong');
   });
-
-  document.getElementById('quiz-exp').classList.add('show');
-  document.getElementById('quiz-next-btn').style.display = 'inline-flex';
+  var exp = document.getElementById('quiz-exp');
+  if (exp) exp.classList.add('show');
+  var nxt = document.getElementById('quiz-next');
+  if (nxt) nxt.style.display = 'inline-flex';
 }
 
-function quizNext() {
-  QUIZ_STATE.current++;
-  renderQuizQuestion();
-}
+function quizNext() { QUIZ_STATE.current++; renderQuizQuestion(); }
 
 function renderQuizResults() {
-  const container = document.getElementById('training-quiz-container');
-  const { score, questions, title } = QUIZ_STATE;
-  const pct = Math.round(score / questions.length * 100);
-  const grade = pct >= 90 ? 'Excellent' : pct >= 70 ? 'Good' : pct >= 50 ? 'Needs work' : 'Requires training';
-  const gradeColor = pct >= 90 ? '#059669' : pct >= 70 ? '#D97706' : '#DC2626';
-
-  container.innerHTML = `
-    <div class="quiz-score-card">
-      <div style="font-family:var(--font-m);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px">${title || 'Quiz complete'}</div>
-      <div class="quiz-score-num">${score}/${questions.length}</div>
-      <div class="quiz-score-label">${pct}% — <span style="color:${gradeColor};font-weight:700">${grade}</span></div>
-      <div class="quiz-score-bar-wrap"><div class="quiz-score-bar" style="width:${pct}%"></div></div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:1.5rem">${pct >= 70 ? 'Great knowledge of Swansway brands and strategy.' : 'Review the brand playbook and try again — knowledge builds with repetition.'}</div>
-      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-        <button class="btn" onclick="generateQuiz()" style="background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.3)">Try another quiz</button>
-        <button class="btn" onclick="document.getElementById('training-quiz-container').style.display='none'" style="background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.3)">Back to setup</button>
-      </div>
-    </div>
-  `;
+  var container = document.getElementById('training-quiz-container');
+  var pct = Math.round(QUIZ_STATE.score / QUIZ_STATE.questions.length * 100);
+  var grade = pct >= 90 ? 'Excellent' : pct >= 70 ? 'Good' : pct >= 50 ? 'Needs work' : 'Requires training';
+  var gColor = pct >= 90 ? '#059669' : pct >= 70 ? '#D97706' : '#DC2626';
+  container.innerHTML = '<div class="quiz-score-card"><div style="font-family:var(--font-m);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px">' + QUIZ_STATE.title + '</div><div class="quiz-score-num">' + QUIZ_STATE.score + '/' + QUIZ_STATE.questions.length + '</div><div class="quiz-score-label">' + pct + '% &mdash; <span style="color:' + gColor + ';font-weight:700">' + grade + '</span></div><div class="quiz-score-bar-wrap"><div class="quiz-score-bar" style="width:' + pct + '%"></div></div><div style="display:flex;gap:10px;justify-content:center;margin-top:1rem"><button class="btn" onclick="generateQuiz()" style="background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.3)">Try another</button><button class="btn" onclick="document.getElementById(\'training-quiz-container\').style.display=\'none\'" style="background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.3)">Back</button></div></div>';
 }
 
-
 /* ════════════════════════════════════════════════════════════════
-   FEATURE 6 — CREATIVE ASSET CHECKLIST (in Brief Builder Step 6)
+   FEATURE 6 — CREATIVE ASSET CHECKLIST
 ════════════════════════════════════════════════════════════════ */
-
 function bbGetAssetChecklist() {
-  const channels = BB.channels || [];
-  const ct = BB.ctype?.id || '';
-  const assets = [];
-
-  const CHANNEL_ASSETS = {
-    google:    [{ format:'Google Search Headlines', spec:'30 chars max × 15 headlines', qty:1 }, { format:'Google Search Descriptions', spec:'90 chars max × 4', qty:1 }, { format:'Google Display Banner', spec:'300×250px, 728×90px, 160×600px', qty:3 }],
-    meta:      [{ format:'Facebook/Instagram Image', spec:'1200×628px (feed), 1080×1080px (square)', qty:2 }, { format:'Facebook/Instagram Video', spec:'16:9, 1:1, 4:5 — 15s or 30s', qty:1 }, { format:'Story/Reel', spec:'1080×1920px (9:16) — 15s max', qty:1 }],
-    autotrader:[{ format:'AutoTrader Featured Listing Images', spec:'Min 1280×960px, JPG/PNG', qty:8 }, { format:'AutoTrader Display Banner', spec:'728×90px, 300×250px', qty:2 }],
-    youtube:   [{ format:'YouTube Pre-Roll', spec:'16:9, 1280×720px min, 15–30s (skippable)', qty:1 }, { format:'YouTube Bumper', spec:'16:9, 6s non-skippable', qty:1 }],
-    tiktok:    [{ format:'TikTok Video', spec:'1080×1920px (9:16), 15–60s', qty:2 }],
-    linkedin:  [{ format:'LinkedIn Single Image Ad', spec:'1200×627px', qty:1 }, { format:'LinkedIn Document Ad (fleet brochure)', spec:'PDF, max 300 pages', qty:1 }],
-    crm:       [{ format:'Email Header Banner', spec:'600px wide, JPG/PNG', qty:1 }, { format:'Email Template (desktop + mobile)', spec:'600px max width, responsive', qty:1 }],
-    organic:   [{ format:'Organic Social Images', spec:'1080×1080px (square), 1080×1350px (portrait)', qty:4 }, { format:'Organic Social Video (Reels)', spec:'1080×1920px, 15–90s', qty:2 }],
-    events:    [{ format:'Event Pull-up Banner', spec:'800×2000mm, 300dpi, PDF', qty:2 }, { format:'Event Backdrop', spec:'3000×2000mm, 300dpi, PDF', qty:1 }],
-    seo:       [{ format:'Google Business Profile Photos', spec:'720×540px min, JPG', qty:5 }],
+  var channels = BB ? BB.channels || [] : [];
+  var assets = [];
+  var CHANNEL_ASSETS = {
+    google:    [{format:'Google Search Headlines',spec:'30 chars x15',qty:1},{format:'Google Search Descriptions',spec:'90 chars x4',qty:1},{format:'Google Display Banners',spec:'300x250, 728x90, 160x600px',qty:3}],
+    meta:      [{format:'Facebook/Instagram Image',spec:'1200x628px and 1080x1080px',qty:2},{format:'Facebook/Instagram Video',spec:'16:9 or 1:1, 15s or 30s',qty:1},{format:'Story/Reel',spec:'1080x1920px, 15s max',qty:1}],
+    autotrader:[{format:'AutoTrader Listing Images',spec:'1280x960px min JPG',qty:8},{format:'AutoTrader Display Banner',spec:'728x90 and 300x250px',qty:2}],
+    youtube:   [{format:'YouTube Pre-Roll',spec:'1280x720px, 15-30s',qty:1},{format:'YouTube Bumper',spec:'6s non-skippable',qty:1}],
+    tiktok:    [{format:'TikTok Video',spec:'1080x1920px, 15-60s',qty:2}],
+    linkedin:  [{format:'LinkedIn Image Ad',spec:'1200x627px',qty:1},{format:'LinkedIn Document Ad',spec:'PDF brochure',qty:1}],
+    crm:       [{format:'Email Header Banner',spec:'600px wide',qty:1},{format:'Email Template',spec:'600px, responsive',qty:1}],
+    organic:   [{format:'Organic Social Images',spec:'1080x1080 and 1080x1350px',qty:4},{format:'Organic Reels',spec:'1080x1920px, 15-90s',qty:2}],
   };
-
-  const MANDATORY_ASSETS = [
-    { format:'Finance Representative Example (T&Cs)', spec:'Text — APR, term, deposit, monthly payment', qty:1 },
-    { format:'Brand Logo (approved)', spec:'Vector SVG or high-res PNG, white and colour versions', qty:1 },
-  ];
-
-  const seenChannels = new Set();
-  channels.forEach(chId => {
-    const chAssets = CHANNEL_ASSETS[chId];
-    if(chAssets && !seenChannels.has(chId)) {
-      seenChannels.add(chId);
-      assets.push(...chAssets);
-    }
-  });
-
-  if(ct === 'event') assets.push(...(CHANNEL_ASSETS.events||[]));
-  assets.push(...MANDATORY_ASSETS);
-
+  var seen = {};
+  channels.forEach(function(ch) { if (CHANNEL_ASSETS[ch] && !seen[ch]) { seen[ch] = true; assets = assets.concat(CHANNEL_ASSETS[ch]); } });
+  assets.push({format:'Finance Rep Example + T&Cs',spec:'APR, term, deposit, monthly payment',qty:1});
+  assets.push({format:'Brand Logo (approved)',spec:'Vector SVG + high-res PNG',qty:1});
   return assets;
 }
 
 function renderAssetChecklist() {
-  const assets = bbGetAssetChecklist();
-  if(!assets.length) return '';
-
-  const storeKey = 'asset_checklist_' + Date.now();
-  const checks = {};
-
-  return '<div style="margin-bottom:1.5rem"><div class="bb-out-section-title" style="color:var(--swansway)">Creative Asset Checklist</div>' +
-    '<div style="font-size:12px;color:var(--ink-soft);margin-bottom:12px">Based on your channel selection — ' + assets.length + ' assets required. Tick off as you brief/produce each one.</div>' +
-    '<div style="display:flex;flex-direction:column;gap:4px">' +
-    assets.map((a, i) => '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);border-radius:3px;background:var(--surface);cursor:pointer" onclick="this.querySelector('input').click()">' +
-      '<input type="checkbox" style="width:16px;height:16px;cursor:pointer;accent-color:var(--swansway);flex-shrink:0" onchange="this.closest('div').style.opacity=this.checked?'0.45':'1'">' +
-      '<div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--ink)">' + a.format + '</div><div style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft);margin-top:2px">' + a.spec + '</div></div>' +
-      '<div style="font-family:var(--font-m);font-size:10px;color:var(--ink-faint)">×' + a.qty + '</div>' +
-    '</div>').join('') +
-    '</div></div>';
+  var assets = bbGetAssetChecklist();
+  if (!assets.length) return '';
+  var items = assets.map(function(a, i) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);border-radius:3px;background:var(--surface);cursor:pointer" onclick="this.querySelector(\'input\').click()"><input type="checkbox" style="width:16px;height:16px;cursor:pointer;accent-color:var(--swansway);flex-shrink:0" onchange="this.closest(\'div\').style.opacity=this.checked?\'0.45\':\'1\'"><div style="flex:1"><div style="font-size:12px;font-weight:600">' + a.format + '</div><div style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft)">' + a.spec + '</div></div><div style="font-family:var(--font-m);font-size:10px;color:var(--ink-faint)">x' + a.qty + '</div></div>';
+  }).join('');
+  return '<div style="margin-bottom:1.5rem"><div class="bb-out-section-title" style="color:var(--swansway)">Creative Asset Checklist</div><div style="font-size:12px;color:var(--ink-soft);margin-bottom:12px">' + assets.length + ' assets required based on your channel selection. Tick off as produced.</div><div style="display:flex;flex-direction:column;gap:4px">' + items + '</div></div>';
 }
 
-// Hook into bbGenerateBrief to inject the asset checklist
-const _origGenerateBrief = bbGenerateBrief;
+var _origBBGenerate = bbGenerateBrief;
 bbGenerateBrief = function() {
-  _origGenerateBrief();
-  // Inject asset checklist after brief is rendered
-  setTimeout(() => {
-    const outBody = document.querySelector('#bb-output .bb-out-body');
-    if(outBody) {
-      const checklistDiv = document.createElement('div');
-      checklistDiv.className = 'bb-out-section';
-      checklistDiv.innerHTML = renderAssetChecklist();
-      outBody.insertBefore(checklistDiv, outBody.children[outBody.children.length - 2]);
+  _origBBGenerate();
+  setTimeout(function() {
+    var outBody = document.querySelector('#bb-output .bb-out-body');
+    if (outBody) {
+      var div = document.createElement('div');
+      div.className = 'bb-out-section';
+      div.innerHTML = renderAssetChecklist();
+      outBody.insertBefore(div, outBody.children[outBody.children.length - 2]);
     }
-  }, 100);
+  }, 150);
 };
 
-
 /* ── HOOK NEW VIEWS INTO switchView ── */
-const _origSV2 = switchView;
+var _origSVNew = switchView;
 switchView = function(id, el) {
-  _origSV2(id, el);
-  if(id === 'crosscal')   { setTimeout(renderCrossCalendar, 100); }
-  if(id === 'budget')     { setTimeout(renderBudgetTracker, 100); }
-  if(id === 'autopsy')    { renderAutopsyList(); }
-  if(id === 'competitor') { updateCompetitorMetrics(); }
+  _origSVNew(id, el);
+  if (id === 'crosscal')   { setTimeout(renderCrossCalendar, 100); }
+  if (id === 'budget')     { setTimeout(renderBudgetTracker, 100); }
+  if (id === 'autopsy')    { renderAutopsyList(); }
+  if (id === 'competitor') { updateCompetitorMetrics(); }
 };
 
 /* Brief builder wired into switchView above */
