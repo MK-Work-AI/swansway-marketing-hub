@@ -608,8 +608,8 @@ const BRAND_DEFAULTS = [
   {id:'audi',name:'Audi',color:'#CC0000',segment:'Premium',sites:6,budget:0,leads:420,newUnits:1800,evPct:45,convRate:12,cpl:38,retention:70,usedUnits:960,fleetUnits:240,nps:75,q2Focus:'A6 e-tron Avant launch + Summer Drive VIP event',sitenames:'Blackburn · Carlisle · Crewe · Preston · Stafford · Stoke'},
   {id:'vw',name:'Volkswagen',color:'#001E5A',segment:'Mainstream',sites:3,budget:0,leads:380,newUnits:2400,evPct:35,convRate:10,cpl:26,retention:68,usedUnits:1200,fleetUnits:180,nps:70,q2Focus:'ID.3 summer finance push + Golf facelift media',sitenames:'Chester · Crewe · Oldham · Preston · Stafford'},
   {id:'vwcv',name:'VW Commercial',color:'#1B4F72',segment:'Commercial',sites:5,budget:0,leads:120,newUnits:600,evPct:20,convRate:14,cpl:45,retention:72,usedUnits:300,fleetUnits:280,nps:68,q2Focus:'Transporter T7 launch + fleet drive days',sitenames:'Oldham VW Van Centre · Preston VW Van Centre'},
-  {id:'seat',name:'SEAT',color:'#E2231A',segment:'Mainstream',sites:2,budget:0,leads:250,newUnits:1100,evPct:25,convRate:9,cpl:22,retention:65,usedUnits:600,fleetUnits:60,nps:68,q2Focus:'Ibiza summer social push + Leon Cupra-lite crossover',sitenames:'Chester · Crewe · Stafford'},
-  {id:'cupra',name:'CUPRA',color:'#C8920A',segment:'Performance EV',sites:2,budget:0,leads:180,newUnits:400,evPct:60,convRate:11,cpl:42,retention:70,usedUnits:200,fleetUnits:40,nps:78,q2Focus:'Born EV summer + padel tennis series Crewe',sitenames:'Crewe CUPRA · Stockport CUPRA'},
+  {id:'seat',name:'SEAT',color:'#E2231A',segment:'Mainstream',sites:3,budget:0,leads:250,newUnits:1100,evPct:25,convRate:9,cpl:22,retention:65,usedUnits:600,fleetUnits:60,nps:68,q2Focus:'Ibiza summer social push + Leon Cupra-lite crossover',sitenames:'Chester · Crewe · Stafford'},
+  {id:'cupra',name:'CUPRA',color:'#C8920A',segment:'Performance EV',sites:3,budget:0,leads:180,newUnits:400,evPct:60,convRate:11,cpl:42,retention:70,usedUnits:200,fleetUnits:40,nps:78,q2Focus:'Born EV summer + padel tennis series Crewe',sitenames:'Crewe CUPRA · Stockport CUPRA'},
   {id:'landrover',name:'Land Rover',color:'#1D4E1D',segment:'Premium Luxury',sites:1,budget:0,leads:180,newUnits:500,evPct:40,convRate:18,cpl:55,retention:72,usedUnits:400,fleetUnits:80,nps:80,q2Focus:'Defender adventure camp + Range Rover lifestyle push',sitenames:'Chester · Crewe'},
   {id:'jaguar',name:'Jaguar',color:'#1B2631',segment:'Premium Luxury',sites:1,budget:0,leads:80,newUnits:180,evPct:50,convRate:15,cpl:52,retention:68,usedUnits:120,fleetUnits:30,nps:72,q2Focus:'Brand relaunch support + EV positioning',sitenames:'Crewe Jaguar'},
   {id:'honda',name:'Honda',color:'#CC0000',segment:'Mainstream Hybrid',sites:2,budget:0,leads:280,newUnits:1400,evPct:55,convRate:10,cpl:28,retention:70,usedUnits:700,fleetUnits:80,nps:74,q2Focus:'e:HEV hybrid summer campaign + HR-V push',sitenames:'Blackburn · Bolton · Stockport · Stafford'},
@@ -2124,6 +2124,7 @@ async function sbLoad() {
     rows.forEach(function(row) { SB_SITE_DATA[row.site_id] = row; });
     console.log('Site budgets loaded: ' + rows.length + ' sites');
     sbSyncBrandBudgets();
+    syncAdminBrandSites();
     sbRenderTable(SB_CURRENT_BRAND);
     sbUpdateMetrics(SB_CURRENT_BRAND);
   } catch(e) { console.warn('sbLoad error:', e); }
@@ -2161,8 +2162,19 @@ async function sbSave() {
 }
 
 
+
+function syncAdminBrandSites() {
+  if (!SB_SITES || !SB_SITES.length) return;
+  STATE.brands.forEach(function(brand) {
+    var brandSites = SB_SITES.filter(function(s) { return s.brand_id === brand.id; });
+    if (brandSites.length > 0) brand.sites = brandSites.length;
+  });
+  refreshDashboard();
+}
+
 function init() {
   initAdminSupabase();
+  syncAdminBrandSites();
   setTimeout(sbLoad, 600);
   buildSidebarBrands();
   refreshDashboard();

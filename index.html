@@ -1593,7 +1593,7 @@ const BRANDS = [
 
   {
     id:'seat', name:'SEAT', color:'#E2231A', segment:'Mainstream',
-    sites:2, sitenames:'Crewe · Oldham · Bolton Svc',
+    sites:3, sitenames:'Crewe · Oldham · Bolton Svc',
     budget:'—', newTarget:'1,100 units', evTarget:'25%', q2:'Ibiza summer social push + Leon Cupra-lite crossover',
     progress:58,
     tags:['Ibiza summer','Leon sporty','Young audience','TikTok-first','PCP accessibility'],
@@ -1646,7 +1646,7 @@ const BRANDS = [
 
   {
     id:'cupra', name:'CUPRA', color:'#C8920A', segment:'Performance EV',
-    sites:2, sitenames:'Crewe · Oldham · Bolton Svc',
+    sites:3, sitenames:'Crewe · Oldham · Bolton Svc',
     budget:'—', newTarget:'400 units', evTarget:'60%', q2:'Born EV summer campaign + padel tennis series Crewe',
     progress:69,
     tags:['Born EV','Padel tennis','Formentor','Influencer','Urban performance'],
@@ -2804,6 +2804,7 @@ function showConfigBadge() {
 document.addEventListener('DOMContentLoaded',()=>{
   loadAdminConfig();
   loadSiteBudgets();
+  syncBrandSitesFromHubSites();
   renderGroupBrandCards();
   renderGroupCalendar();
   renderGroupChannels();
@@ -2835,11 +2836,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 const BB_BRANDS = [
   { id:'audi',     name:'Audi',          color:'#BB0A21', segment:'Premium',         sites:6,  tagline:'Vorsprung durch Technik', models:['A3','A5','Q3','Q5','Q8 e-tron','e-tron GT','RS Range'], tone:['Assured','Intelligent','Understated','Prestige','Precise'], cpl:{meta:65,google:48,autotrader:55}, locations:['Chester','Crewe','Stafford','Stoke'] },
   { id:'byd',      name:'BYD',           color:'#E8002A', segment:'Pure EV / PHEV',  sites:3,  tagline:'Build Your Dreams',       models:['Atto 2','Atto 3 EVO','Seal','Seal U DM-i','Sealion 7'], tone:['Bold','Tech-forward','Challenger','Innovative','Accessible'], cpl:{meta:45,google:35,autotrader:42}, locations:['Crewe','Chester'] },
-  { id:'cupra',    name:'CUPRA',         color:'#D4A017', segment:'Performance EV',  sites:2,  tagline:'Born To Be Electrifying',  models:['Leon','Formentor','Born','Tavascan','Terramar'], tone:['Unconventional','Provocative','Tribe','Bold','Urban'], cpl:{meta:55,google:42,autotrader:48}, locations:['Crewe','Oldham','Bolton'] },
+  { id:'cupra',    name:'CUPRA',         color:'#D4A017', segment:'Performance EV',  sites:3,  tagline:'Born To Be Electrifying',  models:['Leon','Formentor','Born','Tavascan','Terramar'], tone:['Unconventional','Provocative','Tribe','Bold','Urban'], cpl:{meta:55,google:42,autotrader:48}, locations:['Crewe','Oldham','Bolton'] },
   { id:'vw',       name:'Volkswagen',    color:'#001E50', segment:'Volume',           sites:3,  tagline:'Das Auto',                 models:['Polo','Golf','Tiguan','T-Roc','ID.3','ID.4','ID.5'], tone:['Reliable','Trustworthy','Democratic','Approachable','Quality'], cpl:{meta:35,google:28,autotrader:32}, locations:['Crewe','Wrexham','Chester'] },
   { id:'landrover',name:'Land Rover',    color:'#005A2B', segment:'Premium Luxury',  sites:1,  tagline:'Above and Beyond',         models:['Defender','Discovery','Range Rover','RR Sport','Evoque'], tone:['Adventurous','Aspirational','Timeless','Cinematic','Heritage'], cpl:{meta:95,google:75,autotrader:85}, locations:['Stafford','Chester','Crewe'] },
   { id:'honda',    name:'Honda',         color:'#CC0000', segment:'Hybrid Family',   sites:2,  tagline:'The Power of Dreams',      models:['Jazz e:HEV','HR-V e:HEV','Civic e:HEV','CR-V e:HEV','ZR-V'], tone:['Trustworthy','Ingenious','Dependable','Optimistic','Reliable'], cpl:{meta:38,google:30,autotrader:35}, locations:['Stockport'] },
-  { id:'seat',     name:'SEAT',          color:'#FA0030', segment:'Volume / Entry',  sites:2,  tagline:'Enjoy Every Moment',       models:['Ibiza','Arona','Leon','Ateca','Tarraco'], tone:['Vibrant','Youthful','Accessible','Fun','Spanish warmth'], cpl:{meta:28,google:22,autotrader:26}, locations:['Crewe','Stoke','Bolton'] },
+  { id:'seat',     name:'SEAT',          color:'#FA0030', segment:'Volume / Entry',  sites:3,  tagline:'Enjoy Every Moment',       models:['Ibiza','Arona','Leon','Ateca','Tarraco'], tone:['Vibrant','Youthful','Accessible','Fun','Spanish warmth'], cpl:{meta:28,google:22,autotrader:26}, locations:['Crewe','Stoke','Bolton'] },
   { id:'peugeot',  name:'Peugeot',       color:'#002F5F', segment:'Volume / EV-fwd', sites:2,  tagline:'Unboring the Future',      models:['e-208','e-2008','308','408','e-3008','5008'], tone:['Bold design','French flair','Electric-forward','Confident','Accessible'], cpl:{meta:32,google:25,autotrader:30}, locations:['Chester','Crewe','Stoke'] },
   { id:'vwcv',     name:'VW Commercial', color:'#1B4F72', segment:'Commercial',      sites:5,  tagline:'Built for business',       models:['Caddy','Transporter T7','Crafter','ID. Buzz Cargo'], tone:['Functional','Reliable','Business-first','No-nonsense','Proven'], cpl:{meta:55,google:40,autotrader:50}, locations:['Wrexham','Liverpool','Lancashire','Birmingham'] },
   { id:'omoda',    name:'OMODA/JAECOO',  color:'#2C3E50', segment:'Emerging SUV',    sites:1,  tagline:'Dare to Explore',          models:['OMODA 5','OMODA 5 EV','JAECOO 7','JAECOO 8'], tone:['Challenger','Adventure','Tech-accessible','Curious','Bold'], cpl:{meta:38,google:30,autotrader:36}, locations:['Stockport'] },
@@ -4545,10 +4546,25 @@ async function loadSiteBudgets() {
       if (el) el.textContent = '£' + (groupTotal / 1000000).toFixed(2) + 'M';
     }
     updateBrandBudgetsFromSites();
+    syncBrandSitesFromHubSites();
     if (typeof renderBudgetTracker === 'function') renderBudgetTracker();
     if (typeof renderGroupChannels === 'function') renderGroupChannels();
     console.log('Site budgets loaded: ' + rows.length + ' sites, £' + groupTotal.toLocaleString());
   } catch(e) { console.warn('loadSiteBudgets exception:', e); }
+}
+
+
+function syncBrandSitesFromHubSites() {
+  if (!HUB_SITES || !HUB_SITES.length) return;
+  BRANDS.forEach(function(brand) {
+    var brandSites = HUB_SITES.filter(function(s) { return s.brand_id === brand.id; });
+    if (brandSites.length > 0) {
+      brand.sites = brandSites.length;
+      brand.sitenames = brandSites.map(function(s) {
+        return s.site_name.replace(brand.name + ' ', '').replace('VWC ', '').replace('VW ', '').replace('Motor Match ', '');
+      }).join(' · ');
+    }
+  });
 }
 
 const QPLAN_CACHE = {};
