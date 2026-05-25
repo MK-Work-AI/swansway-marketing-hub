@@ -2564,6 +2564,45 @@ function applyAdminConfig(cfg) {
     });
   }
 
+  // ── 5. UPDATE CAMPAIGN CALENDAR ──────────────────────────────
+  if (cfg.calendar && cfg.calendar.length) {
+    // Convert admin quarterly calendar format to hub month-bar format
+    var brandColorMap = {
+      'Audi':'#BB0A21','VW':'#001E50','Volkswagen':'#001E50',
+      'VW Commercial':'#1B4F72','VWCV':'#1B4F72',
+      'SEAT':'#E2231A','CUPRA':'#C8920A',
+      'Land Rover':'#1D4E1D','Jaguar':'#1B2631',
+      'Honda':'#CC0000','Peugeot':'#1B3A6B',
+      'BYD':'#0066CC','OMODA':'#6B21A8','OMODA/JAECOO':'#6B21A8',
+      'Motor Match':'#374151','All brands':'#374151',
+    };
+    var qMonthMap = {0:[0,1,2], 1:[3,4,5], 2:[6,7,8], 3:[9,10,11]};
+    var converted = [];
+    cfg.calendar.forEach(function(quarter, qi) {
+      var months = qMonthMap[qi] || [];
+      (quarter.events || []).forEach(function(ev) {
+        var brand = ev.brand.replace('🔴 ','').trim();
+        var color = ev.color || brandColorMap[brand] || '#374151';
+        converted.push({
+          brand: brand === 'ALL BRANDS' ? 'All brands' : brand,
+          color: color,
+          name: ev.label,
+          start: months[0],
+          end: months[months.length-1]
+        });
+      });
+    });
+    if (converted.length > 0) {
+      BUILT_IN_CAMPAIGNS = converted;
+      // Re-render calendar if it's currently visible
+      if (typeof renderCrossCalendar === 'function') renderCrossCalendar();
+      console.log('Campaign calendar updated from admin config: ' + converted.length + ' campaigns');
+    }
+  } else {
+    // Use fallback if no admin calendar data
+    if (BUILT_IN_CAMPAIGNS.length === 0) BUILT_IN_CAMPAIGNS = FALLBACK_CAMPAIGNS;
+  }
+
   console.log('Admin config fully applied to hub');
 }
 
@@ -3253,27 +3292,30 @@ function switchBrandView(id) {
    FEATURE 7 — CROSS-BRAND CAMPAIGN CALENDAR
 ════════════════════════════════════════════════════════════════ */
 const CAL_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const BUILT_IN_CAMPAIGNS = [
+// Campaigns loaded from admin config via Supabase — populated in applyAdminConfig
+var BUILT_IN_CAMPAIGNS = [];
+
+// Fallback campaigns used only if admin config not loaded
+var FALLBACK_CAMPAIGNS = [
   {brand:'All brands',color:'#374151',name:'March Plate Change',start:2,end:2},
   {brand:'All brands',color:'#374151',name:'September Plate Change',start:8,end:8},
   {brand:'All brands',color:'#374151',name:'Black Friday',start:10,end:10},
   {brand:'Audi',color:'#BB0A21',name:'A6 e-tron Launch',start:3,end:5},
-  {brand:'Audi',color:'#BB0A21',name:'Summer VIP Drive Day',start:5,end:5},
-  {brand:'BYD',color:'#0066CC',name:'Seal Awareness Push',start:4,end:7},
+  {brand:'BYD',color:'#0066CC',name:'Seal Awareness',start:4,end:7},
   {brand:'CUPRA',color:'#C8920A',name:'Born EV Summer',start:4,end:7},
-  {brand:'CUPRA',color:'#C8920A',name:'Padel Tennis Series',start:3,end:8},
   {brand:'Land Rover',color:'#1D4E1D',name:'Defender Adventure Camp',start:5,end:7},
   {brand:'SEAT',color:'#E2231A',name:'Ibiza Summer Social',start:4,end:7},
   {brand:'Honda',color:'#CC0000',name:'e:HEV Summer',start:4,end:8},
   {brand:'Peugeot',color:'#1B3A6B',name:'E-308 Lease Push',start:3,end:5},
   {brand:'VW',color:'#001E50',name:'ID. Electric Summer',start:4,end:6},
-  {brand:'VW Commercial',color:'#1B4F72',name:'T7 Launch',start:0,end:3},
   {brand:'Jaguar',color:'#1B2631',name:'Brand Relaunch',start:0,end:11},
 ];
 const CAL_BRAND_ORDER = ['All brands','Audi','Volkswagen','VW Commercial','SEAT','CUPRA','Land Rover','Jaguar','Honda','Peugeot','BYD','OMODA/JAECOO','Motor Match'];
 
 function renderCrossCalendar() {
   var el = document.getElementById('crosscal-grid');
+  // Use fallback if admin config not loaded yet
+  if (BUILT_IN_CAMPAIGNS.length === 0) BUILT_IN_CAMPAIGNS = FALLBACK_CAMPAIGNS;
   var legendEl = document.getElementById('crosscal-legend');
   if (!el) return;
   var html = '<div class="crosscal-grid">';
