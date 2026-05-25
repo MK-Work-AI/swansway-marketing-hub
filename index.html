@@ -3689,13 +3689,7 @@ function getBudgetFromSites(brandId) {
 }
 
 function renderBudgetTracker() {
-  // Sync BUDGET_BRANDS annual from site sums
-  if (Object.keys(SITE_BUDGETS).length > 0) {
-    BUDGET_BRANDS.forEach(function(bb) {
-      var b = getBudgetFromSites(bb.id);
-      if (b.planned > 0) bb.annual = b.planned;
-    });
-  }
+  // Planned and actual come directly from site monthly figures — no double-counting
 
   var thead    = document.getElementById('budget-thead');
   var tbody    = document.getElementById('budget-tbody');
