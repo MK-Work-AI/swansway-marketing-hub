@@ -662,7 +662,7 @@ td strong{font-weight:600}
   <div class="metrics-row">
     <div class="metric" style="color:#1A2E4A"><div class="metric-label">Total brands</div><div class="metric-val">11</div><div class="metric-sub">Audi to OMODA/JAECOO</div></div>
     <div class="metric" style="color:#C8102E"><div class="metric-label">Dealership sites</div><div class="metric-val">30</div><div class="metric-sub">+ 5 Motor Match sites</div></div>
-    <div class="metric" style="color:#047857"><div class="metric-label">Est. group budget</div><div class="metric-val">£4.2M</div><div class="metric-sub">Across all brands 2026</div></div>
+    <div class="metric" style="color:#047857"><div class="metric-label">Group budget</div><div class="metric-val" id="group-budget-val">—</div><div class="metric-sub">Across all brands 2026</div></div>
     <div class="metric" style="color:#7C3AED"><div class="metric-label">EV-focused spend</div><div class="metric-val">38%</div><div class="metric-sub">BYD, CUPRA, VW, OMODA</div></div>
   </div>
 
@@ -732,7 +732,7 @@ td strong{font-weight:600}
 ============================================================ -->
 <div class="view" id="view-channels">
   <div class="page-strip">
-    <div><div class="page-title">Group Channel Mix & Budget</div><div class="page-subtitle">Recommended £4.2M allocation across all marketing channels</div></div>
+    <div><div class="page-title">Group Channel Mix & Budget</div><div class="page-subtitle">Group budget allocation across all marketing channels</div></div>
     <button class="btn btn-accent" onclick="openAIModal('channels')">⚡ AI Prompts</button>
   </div>
   <div class="metrics-row">
@@ -2375,7 +2375,7 @@ function renderGroupKPIs() {
 const MODAL_PROMPTS = {
   group:[
     {icon:'📊',cat:'Strategy',text:'Build a comprehensive Q3 2026 marketing strategy for Swansway Motor Group — which brands to prioritise, what channels to lead with, and what the key messages should be'},
-    {icon:'💰',cat:'Budget',text:'How should Swansway Motor Group allocate its £4.2M marketing budget across 11 brands for maximum return on investment in 2026?'},
+    {icon:'💰',cat:'Budget',text:'How should Swansway Motor Group allocate its marketing budget across 11 brands for maximum return on investment in 2026?'},
     {icon:'⚡',cat:'EV',text:'Design a group-wide EV marketing strategy for Swansway — how to communicate electric and hybrid across BYD, CUPRA, VW, Peugeot and OMODA without confusing customers'},
     {icon:'🏢',cat:'Fleet',text:'Build a cross-brand fleet proposition for Swansway Motor Group — how to package VW Commercial, Audi, Land Rover and Peugeot fleet offers for corporate buyers'},
     {icon:'📅',cat:'Planning',text:'Write the Swansway Motor Group marketing team meeting agenda for the monthly brand review — what should be covered for all 11 brands?'},
@@ -2493,6 +2493,11 @@ function loadAdminConfig() {
 
 function applyAdminConfig(cfg) {
   if (!cfg) return;
+  if (cfg.brands && cfg.brands.length) {
+    var total = cfg.brands.reduce(function(s, b) { return s + (b.budget || 0); }, 0);
+    var el = document.getElementById('group-budget-val');
+    if (el && total > 0) el.textContent = '£' + (total / 1000000).toFixed(2) + 'M';
+  }
   // Apply brand targets, CPL etc from admin config
   if (cfg.brands) {
     cfg.brands.forEach(function(b) {
@@ -4481,6 +4486,11 @@ function switchAuthTab(tab) {
   document.getElementById('auth-tab-up').classList.toggle('active', tab==='up');
   document.getElementById('auth-form-in').style.display = tab==='in' ? 'block' : 'none';
   document.getElementById('auth-form-up').style.display = tab==='up' ? 'block' : 'none';
+}
+
+function authGoogle() {
+  if (!SB) { alert('Supabase not configured'); return; }
+  SB.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://mk-work-ai.github.io/swansway-marketing-hub/' } });
 }
 
 async function authSignIn() {
