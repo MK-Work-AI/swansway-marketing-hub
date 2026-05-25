@@ -920,13 +920,15 @@ function buildSidebarBrands() {
    DASHBOARD
 ══════════════════════════════════════════ */
 function refreshDashboard() {
-  const totalBudget = STATE.brands.reduce((s,b)=>s+b.budget,0);
+  const groupBudget  = STATE.group.budget || 4200000;
+  const brandSum     = STATE.brands.reduce((s,b)=>s+b.budget,0);
+  const totalBudget  = groupBudget; // Group total is the authoritative figure
   const totalUnits = STATE.brands.reduce((s,b)=>s+(b.id==='motormatch'?0:b.newUnits),0);
   const totalLeads = STATE.brands.reduce((s,b)=>s+b.leads,0);
   const avgEV = Math.round(STATE.brands.filter(b=>b.id!=='motormatch').reduce((s,b)=>s+b.evPct,0)/11);
 
   document.getElementById('dash-metrics').innerHTML = `
-    <div class="metric" style="border-top-color:#1A2E4A"><div class="metric-label">Total configured budget</div><div class="metric-val">£${(totalBudget/1000000).toFixed(2)}M</div><div class="metric-sub">Across ${STATE.brands.length} brands</div></div>
+    <div class="metric" style="border-top-color:#1A2E4A"><div class="metric-label">Group annual budget</div><div class="metric-val">£${(groupBudget/1000000).toFixed(2)}M</div><div class="metric-sub">Brand total: £${(brandSum/1000000).toFixed(2)}M</div></div>
     <div class="metric" style="border-top-color:#C8102E"><div class="metric-label">New car/van target</div><div class="metric-val">${totalUnits.toLocaleString()}</div><div class="metric-sub">Excl. Motor Match used</div></div>
     <div class="metric" style="border-top-color:#047857"><div class="metric-label">Total leads/month target</div><div class="metric-val">${totalLeads.toLocaleString()}</div><div class="metric-sub">All brands combined</div></div>
     <div class="metric" style="border-top-color:#7C3AED"><div class="metric-label">Avg EV target</div><div class="metric-val">${avgEV}%</div><div class="metric-sub">Group EV mix target</div></div>
