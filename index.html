@@ -4137,7 +4137,7 @@ function renderBrandCampaigns(brandId) {
   var calCamps = BUILT_IN_CAMPAIGNS.filter(function(c){
     return c.brand === brandName || c.brand === 'All brands';
   });
-  var briefs = BRIEFS_CACHE.filter(function(b){
+  var briefs = SB_BRIEFS_CACHE.filter(function(b){
     var d = b.data || {};
     return d.brand && (d.brand.id === brandId || d.brand.name === brandName);
   });
