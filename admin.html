@@ -408,8 +408,13 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
   <div class="page" id="page-calendar">
     <div class="page-title">Campaign Calendar</div>
     <div class="page-sub">Manage group-wide campaign moments and key dates for 2026</div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+      <button class="btn btn-primary" onclick="saveAll()" style="padding:8px 20px;font-size:13px">✓ Save all changes</button>
+    </div>
     <div id="calendar-quarters"></div>
-    <div style="margin-top:1rem"><button class="btn btn-success" onclick="saveAll()">✓ Save calendar</button></div>
+    <div style="margin-top:1.5rem;display:flex;justify-content:flex-end">
+      <button class="btn btn-primary" onclick="saveAll()" style="padding:8px 20px;font-size:13px">✓ Save all changes</button>
+    </div>
   </div>
 
   <!-- ══ BRAND PAGE (dynamic) ══ -->
@@ -790,8 +795,12 @@ function setSaveStatus(state) {
   el.innerHTML = states[state] || states['unsaved'];
 }
 
+var _autoSaveTimer = null;
 function autoSave() {
   setSaveStatus('unsaved');
+  // Debounce — save 1.5s after last change
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(function() { saveAll(); }, 1500);
 }
 
 /* ── SNAPSHOT ── */
