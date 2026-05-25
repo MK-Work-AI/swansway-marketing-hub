@@ -3300,7 +3300,7 @@ function renderCrossCalendar() {
     for (var m = 0; m < 12; m++) {
       var mc = camps.filter(function(c) { return m >= c.start && m <= c.end; });
       html += '<div class="crosscal-month-cell">';
-      mc.forEach(function(c) { html += '<div class="crosscal-campaign-bar" style="background:' + c.color + '" title="' + c.name + '">' + (m === c.start ? c.name : '') + '</div>'; });
+      mc.forEach(function(c) { var enc = encodeURIComponent(JSON.stringify(c)); html += '<div class="crosscal-campaign-bar" style="background:' + c.color + ';cursor:pointer" title="' + c.name + '" onclick="calShowCampaign(decodeURIComponent(\'' + enc + '\'))">' + (m === c.start ? c.name : '') + '</div>'; });
       html += '</div>';
     }
   });
@@ -3728,6 +3728,95 @@ switchView = function(id, el) {
   if (id === 'autopsy')    { renderAutopsyList(); }
   if (id === 'competitor') { updateCompetitorMetrics(); }
 };
+
+
+function calShowCampaign(cJson) {
+  var c = JSON.parse(cJson);
+  var existing = document.getElementById('cal-modal');
+  if (existing) existing.remove();
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var dates = months[c.start] + (c.end !== c.start ? ' \u2013 ' + months[c.end] : '') + ' 2026';
+
+  // Build modal using DOM to avoid all quote issues
+  var overlay = document.createElement('div');
+  overlay.id = 'cal-modal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:6px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.18)';
+
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'background:' + c.color + ';padding:18px 22px;display:flex;justify-content:space-between;align-items:flex-start';
+
+  var hdrLeft = document.createElement('div');
+  var brandLabel = document.createElement('div');
+  brandLabel.style.cssText = 'font-family:var(--font-m);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:5px';
+  brandLabel.textContent = c.brand;
+  var nameLabel = document.createElement('div');
+  nameLabel.style.cssText = 'font-family:var(--font-d);font-size:20px;font-weight:700;color:#fff';
+  nameLabel.textContent = c.name;
+  var datesLabel = document.createElement('div');
+  datesLabel.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px';
+  datesLabel.textContent = dates;
+  hdrLeft.appendChild(brandLabel); hdrLeft.appendChild(nameLabel); hdrLeft.appendChild(datesLabel);
+
+  var closeBtn = document.createElement('button');
+  closeBtn.style.cssText = 'background:rgba(255,255,255,0.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;flex-shrink:0';
+  closeBtn.innerHTML = '&times;';
+  closeBtn.onclick = function() { overlay.remove(); };
+
+  hdr.appendChild(hdrLeft); hdr.appendChild(closeBtn);
+
+  var body = document.createElement('div');
+  body.style.cssText = 'padding:20px 22px';
+
+  var grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px';
+
+  function infoCell(label, value) {
+    var cell = document.createElement('div');
+    cell.style.cssText = 'padding:10px 14px;background:var(--surface);border-radius:3px';
+    var lbl = document.createElement('div');
+    lbl.style.cssText = 'font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px';
+    lbl.textContent = label;
+    var val = document.createElement('div');
+    val.style.cssText = 'font-size:13px;font-weight:600';
+    val.textContent = value;
+    cell.appendChild(lbl); cell.appendChild(val);
+    return cell;
+  }
+  grid.appendChild(infoCell('Brand', c.brand));
+  grid.appendChild(infoCell('Dates', dates));
+
+  var actions = document.createElement('div');
+  actions.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-top:4px';
+
+  var briefBtn = document.createElement('button');
+  briefBtn.className = 'btn btn-accent';
+  briefBtn.style.flex = '1';
+  briefBtn.textContent = '\u270F Build brief for this campaign';
+  briefBtn.onclick = function() { overlay.remove(); calBuildBrief(c.brand, c.name); };
+
+  var closeBtn2 = document.createElement('button');
+  closeBtn2.className = 'btn';
+  closeBtn2.style.flex = '1';
+  closeBtn2.textContent = 'Close';
+  closeBtn2.onclick = function() { overlay.remove(); };
+
+  actions.appendChild(briefBtn); actions.appendChild(closeBtn2);
+  body.appendChild(grid); body.appendChild(actions);
+  box.appendChild(hdr); box.appendChild(body);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+function calBuildBrief(brandName, campaignName) {
+  var brandMap = {'Audi':'audi','BYD':'byd','CUPRA':'cupra','Volkswagen':'vw','Land Rover':'landrover','Honda':'honda','SEAT':'seat','Peugeot':'peugeot','VW Commercial':'vwcv','OMODA/JAECOO':'omoda','Motor Match':'motormatch','Jaguar':'jaguar','All brands':'audi'};
+  var brandId = brandMap[brandName] || 'audi';
+  switchView('brief', document.querySelector('[data-view=brief]'));
+  setTimeout(function() { bbSelectBrand(brandId); }, 300);
+}
 
 /* Brief builder wired into switchView above */
 
