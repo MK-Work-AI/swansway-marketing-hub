@@ -2141,6 +2141,8 @@ const GROUP_KPIS = [
 function switchView(id, el) {
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
+  // Persist view to URL hash so refresh restores position
+  try { history.replaceState(null, '', '#' + id); } catch(e) {}
   const target = document.getElementById('view-'+id);
   if(target) target.classList.add('active');
   if(el) el.classList.add('active');
@@ -2680,6 +2682,18 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderGroupCalendar();
   renderGroupChannels();
   renderGroupKPIs();
+  // Restore last view from URL hash on page load/refresh
+  (function restoreView() {
+    var hash = window.location.hash.replace('#','').trim();
+    // Don't restore if it's an auth callback hash
+    if (!hash || hash.includes('access_token') || hash.includes('code')) return;
+    var validViews = ['group','audi','vw','vwcv','seat','cupra','landrover','jaguar','honda','peugeot','byd','omoda','motormatch','calendar','channels','kpis','brief','crosscal','budget','autopsy','competitor','training'];
+    if (validViews.indexOf(hash) === -1) return;
+    // Find the matching nav button
+    var navBtn = document.querySelector('[data-view="' + hash + '"]');
+    // Small delay to let everything render first
+    setTimeout(function() { switchView(hash, navBtn); }, 200);
+  })();
   setTimeout(()=>{
     renderGroupBudgetChart();
     renderChannelChart();
