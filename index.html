@@ -2544,14 +2544,33 @@ function applyAdminConfig(cfg) {
     if (g.nps)       setEl('group-nps-target',   g.nps);
   }
 
-  // ── 3. UPDATE KPIs ────────────────────────────────────────────
+  // ── 3. UPDATE KPIs — merge admin targets/actuals into hub rich GROUP_KPIS ──
   if (cfg.kpis && cfg.kpis.length) {
-    cfg.kpis.forEach(function(kpi, i) {
-      var targetEl = document.getElementById('kpi-target-' + i);
-      var actualEl = document.getElementById('kpi-actual-' + i);
-      if (targetEl && kpi.target) targetEl.textContent = kpi.target.toLocaleString();
-      if (actualEl && kpi.actual !== undefined) actualEl.textContent = kpi.actual.toLocaleString();
+    cfg.kpis.forEach(function(adminKpi, i) {
+      if (i < GROUP_KPIS.length) {
+        // Update target display string from admin numeric value
+        var gk = GROUP_KPIS[i];
+        if (adminKpi.target !== undefined && adminKpi.target !== null) {
+          var unit = adminKpi.unit || '';
+          var lowerBetter = adminKpi.lowerBetter;
+          var tgt = adminKpi.target;
+          // Format target nicely
+          if (unit === '%')      gk.t = tgt + '%';
+          else if (unit === '£') gk.t = '£' + tgt;
+          else if (tgt >= 1000)  gk.t = tgt.toLocaleString() + (unit ? ' ' + unit : '');
+          else                   gk.t = (unit === 'mins' ? '< ' : '') + tgt + (unit && unit !== 'mins' ? ' ' + unit : '');
+        }
+        if (adminKpi.owner) gk.o = adminKpi.owner;
+        // Update progress based on actual vs target
+        if (adminKpi.actual > 0 && adminKpi.target > 0) {
+          gk.p = adminKpi.lowerBetter
+            ? Math.max(0, Math.round((1 - (adminKpi.actual - adminKpi.target) / adminKpi.target) * 100))
+            : Math.min(100, Math.round(adminKpi.actual / adminKpi.target * 100));
+        }
+      }
     });
+    // Re-render KPIs with updated data
+    if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
   }
 
   // ── 4. UPDATE CHANNELS ────────────────────────────────────────
