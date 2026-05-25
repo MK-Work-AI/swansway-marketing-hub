@@ -1437,25 +1437,91 @@ function collectKPIForm() {
    CALENDAR EDITOR
 ══════════════════════════════════════════ */
 function renderCalendarEditor() {
-  const container = document.getElementById('calendar-quarters');
-  container.innerHTML = STATE.calendar.map((q,qi)=>`
-    <div class="card mb2">
-      <div class="card-header">
-        <div class="card-title"><input class="editable-text" value="${q.q}" oninput="STATE.calendar[${qi}].q=this.value;autoSave()" style="width:250px;font-weight:600"></div>
-        <button class="btn btn-sm" onclick="addCalEvent(${qi})">+ Add event</button>
-      </div>
-      <div class="card-body" style="padding:8px 18px">
-        ${q.events.map((e,ei)=>`
-          <div style="display:grid;grid-template-columns:28px 140px 1fr 24px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
-            <label class="color-swatch" style="width:22px;height:22px"><input type="color" value="${e.color}" oninput="STATE.calendar[${qi}].events[${ei}].color=this.value;autoSave()"></label>
-            <input class="form-input" value="${e.brand}" placeholder="Brand" style="font-size:11px;padding:4px 8px" oninput="STATE.calendar[${qi}].events[${ei}].brand=this.value;autoSave()">
-            <input class="form-input" value="${e.label}" placeholder="Campaign/event" style="font-size:11px;padding:4px 8px" oninput="STATE.calendar[${qi}].events[${ei}].label=this.value;autoSave()">
-            <button class="remove-btn" onclick="removeCalEvent(${qi},${ei})">×</button>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
+  var container = document.getElementById('calendar-quarters');
+  if (!container) return;
+  container.innerHTML = '';
+  var BRAND_OPTS = '<option value="All brands">All brands</option><option value="Audi">Audi</option><option value="Volkswagen">Volkswagen</option><option value="VW Commercial">VW Commercial</option><option value="SEAT">SEAT</option><option value="CUPRA">CUPRA</option><option value="Land Rover">Land Rover</option><option value="Jaguar">Jaguar</option><option value="Honda">Honda</option><option value="Peugeot">Peugeot</option><option value="BYD">BYD</option><option value="OMODA/JAECOO">OMODA/JAECOO</option><option value="Motor Match">Motor Match</option>';
+  var BRAND_COLORS = {"All brands":"#374151","Audi":"#BB0A21","Volkswagen":"#001E50","VW Commercial":"#1B4F72","SEAT":"#E2231A","CUPRA":"#C8920A","Land Rover":"#1D4E1D","Jaguar":"#1B2631","Honda":"#CC0000","Peugeot":"#1B3A6B","BYD":"#0066CC","OMODA/JAECOO":"#6B21A8","Motor Match":"#374151"};
+
+  STATE.calendar.forEach(function(q, qi) {
+    var card = document.createElement('div');
+    card.className = 'card mb2';
+
+    // Header
+    var hdr = document.createElement('div');
+    hdr.className = 'card-header';
+    var titleInput = document.createElement('input');
+    titleInput.className = 'editable-text';
+    titleInput.value = q.q || '';
+    titleInput.style.cssText = 'width:250px;font-weight:600;font-family:var(--font-d);font-size:15px';
+    titleInput.oninput = (function(i){ return function(){ STATE.calendar[i].q = this.value; autoSave(); }; })(qi);
+    var addBtn = document.createElement('button');
+    addBtn.className = 'btn btn-sm';
+    addBtn.textContent = '+ Add campaign';
+    addBtn.onclick = (function(i){ return function(){ addCalEvent(i); }; })(qi);
+    var titleDiv = document.createElement('div');
+    titleDiv.className = 'card-title';
+    titleDiv.appendChild(titleInput);
+    hdr.appendChild(titleDiv);
+    hdr.appendChild(addBtn);
+    card.appendChild(hdr);
+
+    // Body
+    var body = document.createElement('div');
+    body.className = 'card-body';
+    body.style.cssText = 'padding:8px 18px';
+
+    if (!q.events || !q.events.length) {
+      var empty = document.createElement('div');
+      empty.style.cssText = 'color:var(--ink-faint);font-size:12px;padding:8px 0';
+      empty.textContent = 'No campaigns yet — click + Add campaign';
+      body.appendChild(empty);
+    } else {
+      q.events.forEach(function(e, ei) {
+        var row = document.createElement('div');
+        row.style.cssText = 'display:grid;grid-template-columns:34px 1fr 1fr 28px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)';
+
+        // Colour swatch (auto from brand)
+        var swatch = document.createElement('div');
+        swatch.style.cssText = 'width:24px;height:24px;border-radius:4px;border:1px solid var(--border);background:' + (e.color || '#374151') + ';flex-shrink:0';
+
+        // Brand dropdown
+        var brandSel = document.createElement('select');
+        brandSel.className = 'form-select';
+        brandSel.style.cssText = 'font-size:11px;padding:4px 8px';
+        brandSel.innerHTML = BRAND_OPTS;
+        brandSel.value = e.brand || 'All brands';
+        brandSel.onchange = (function(i,j,sw){ return function(){
+          STATE.calendar[i].events[j].brand = this.value;
+          STATE.calendar[i].events[j].color = BRAND_COLORS[this.value] || '#374151';
+          sw.style.background = STATE.calendar[i].events[j].color;
+          autoSave();
+        }; })(qi, ei, swatch);
+
+        // Label input
+        var labelInput = document.createElement('input');
+        labelInput.className = 'form-input';
+        labelInput.value = e.label || '';
+        labelInput.placeholder = 'Campaign name';
+        labelInput.style.cssText = 'font-size:11px;padding:4px 8px';
+        labelInput.oninput = (function(i,j){ return function(){ STATE.calendar[i].events[j].label = this.value; autoSave(); }; })(qi, ei);
+
+        // Remove button
+        var removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = '×';
+        removeBtn.onclick = (function(i,j){ return function(){ removeCalEvent(i,j); }; })(qi, ei);
+
+        row.appendChild(swatch);
+        row.appendChild(brandSel);
+        row.appendChild(labelInput);
+        row.appendChild(removeBtn);
+        body.appendChild(row);
+      });
+    }
+    card.appendChild(body);
+    container.appendChild(card);
+  });
 }
 
 function addCalEvent(qi) {
