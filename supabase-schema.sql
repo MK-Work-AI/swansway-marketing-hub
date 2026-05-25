@@ -228,6 +228,32 @@ alter table public.competitor_scans enable row level security;
 create policy "competitor_scans: own" on public.competitor_scans for all using (auth.uid() = user_id);
 grant select, insert, update, delete on public.competitor_scans to authenticated;
 
+
+-- ── ADMIN CONFIG ─────────────────────────────────────────────
+-- Stores the full admin dashboard configuration per user
+-- One row per user — upserted on every save
+create table if not exists public.admin_config (
+  user_id     uuid primary key references auth.users(id) on delete cascade,
+  config      jsonb not null default '{}',
+  updated_at  timestamptz default now()
+);
+alter table public.admin_config enable row level security;
+create policy "admin_config: own" on public.admin_config for all using (auth.uid() = user_id);
+grant select, insert, update, delete on public.admin_config to authenticated;
+
+-- ── ADMIN SNAPSHOTS ──────────────────────────────────────────
+-- Point-in-time snapshots of admin config (for history/audit)
+create table if not exists public.admin_snapshots (
+  id          uuid primary key default uuid_generate_v4(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  label       text not null,
+  config      jsonb not null default '{}',
+  created_at  timestamptz default now()
+);
+alter table public.admin_snapshots enable row level security;
+create policy "admin_snapshots: own" on public.admin_snapshots for all using (auth.uid() = user_id);
+grant select, insert, update, delete on public.admin_snapshots to authenticated;
+
 -- ── DONE ─────────────────────────────────────────────────────
 -- After running this schema:
 -- 1. Go to Authentication → Settings → enable Email auth
