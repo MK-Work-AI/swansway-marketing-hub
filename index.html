@@ -4394,12 +4394,14 @@ function sbInit() {
   SB.auth.onAuthStateChange((_event, session) => {
     if(session) {
       sbHandleSession(session);
-      // If user just confirmed email (arrived via confirmation link), close auth modal
-      if(_event === 'SIGNED_IN' && window.location.hash.includes('access_token')) {
+      if(_event === 'SIGNED_IN') {
         closeAuth();
-        showToast('✓ Email confirmed — you are now signed in', 'success');
-        // Clean up the URL hash
-        history.replaceState(null, '', window.location.pathname);
+        // Clean up URL (Google OAuth adds code/state params)
+        if(window.location.search || window.location.hash) {
+          history.replaceState(null, '', window.location.pathname);
+        }
+        const name = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'You';
+        showToast('✓ Signed in as ' + name, 'success');
       }
     } else {
       sbHandleSignOut();
