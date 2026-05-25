@@ -536,33 +536,19 @@ td strong{font-weight:600}
 
 <!-- ── SUPABASE AUTH MODAL ── -->
 <div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuth()">
-  <div class="auth-box">
+  <div class="auth-box" style="max-width:380px">
     <div class="auth-header">
       <div class="auth-header-title">Swansway Marketing Hub</div>
-      <div class="auth-header-sub">Sign in to save and access your campaign briefs</div>
+      <div class="auth-header-sub">Sign in to access your team workspace</div>
     </div>
-    <div class="auth-body">
-      
-      <button onclick="authGoogle()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;border:1.5px solid #dadce0;border-radius:3px;background:#fff;cursor:pointer;font-family:var(--font-b);font-size:13px;font-weight:600;color:#3c4043;margin-bottom:16px" onmouseover="this.style.boxShadow='0 1px 6px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='none'"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.16C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.16C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.16C12.43 13.72 17.74 9.5 24 9.5z"/></svg>Continue with Google</button>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:11px;color:var(--ink-faint);font-family:var(--font-m)">OR EMAIL</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="auth-tab-in" onclick="switchAuthTab('in')">Sign In</button>
-        <button class="auth-tab" id="auth-tab-up" onclick="switchAuthTab('up')">Create Account</button>
-      </div>
-      <div id="auth-form-in">
-        <div class="auth-field"><label class="auth-label">Email</label><input type="email" class="auth-input" id="auth-email" placeholder="you@swanswaygroup.com" onkeydown="if(event.key==='Enter')authSignIn()"></div>
-        <div class="auth-field"><label class="auth-label">Password</label><input type="password" class="auth-input" id="auth-password" placeholder="Your password" onkeydown="if(event.key==='Enter')authSignIn()"></div>
-        <button class="auth-btn" id="auth-signin-btn" onclick="authSignIn()">Sign in</button>
-        <div class="auth-err" id="auth-err-in"></div>
-      </div>
-      <div id="auth-form-up" style="display:none">
-        <div class="auth-field"><label class="auth-label">Full name</label><input type="text" class="auth-input" id="auth-name" placeholder="Marcus Smith"></div>
-        <div class="auth-field"><label class="auth-label">Email</label><input type="email" class="auth-input" id="auth-email-up" placeholder="you@swanswaygroup.com"></div>
-        <div class="auth-field"><label class="auth-label">Password</label><input type="password" class="auth-input" id="auth-password-up" placeholder="At least 8 characters"></div>
-        <button class="auth-btn" id="auth-signup-btn" onclick="authSignUp()">Create account</button>
-        <div class="auth-err" id="auth-err-up"></div>
-        <div class="auth-msg" id="auth-msg-up"></div>
-      </div>
+    <div style="padding:28px 24px;text-align:center">
+      <div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px">Welcome back</div>
+      <div style="font-size:13px;color:var(--ink-soft);margin-bottom:24px">Sign in with your Swansway Google account</div>
+      <button onclick="authGoogle()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 16px;border:1.5px solid #dadce0;border-radius:4px;background:#fff;cursor:pointer;font-family:var(--font-b);font-size:14px;font-weight:600;color:#3c4043;transition:box-shadow .2s" onmouseover="this.style.boxShadow='0 1px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.boxShadow='none'">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.16C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.16C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.16C12.43 13.72 17.74 9.5 24 9.5z"/></svg>
+        Continue with Google
+      </button>
+      <div style="font-size:11px;color:var(--ink-faint);margin-top:16px">Access is restricted to authorised Swansway team members</div>
     </div>
   </div>
 </div>
