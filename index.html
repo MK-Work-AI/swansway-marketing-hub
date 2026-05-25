@@ -4326,23 +4326,6 @@ var SITE_BUDGETS = {};  // site_id -> row
 var HUB_SITES = [{"site_id": "audi-blackburn", "site_name": "Audi Blackburn", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-carlisle", "site_name": "Audi Carlisle", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-crewe", "site_name": "Audi Crewe", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-preston", "site_name": "Audi Preston", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-stafford", "site_name": "Audi Stafford", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-stoke", "site_name": "Audi Stoke", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "vw-blackburn", "site_name": "VW Blackburn", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-chester", "site_name": "VW Chester", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-crewe", "site_name": "VW Crewe", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-macclesfield", "site_name": "VW Macclesfield", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-stafford", "site_name": "VW Stafford", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-stoke", "site_name": "VW Stoke", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vwcv-blackburn", "site_name": "VWC Blackburn", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-crewe", "site_name": "VWC Crewe", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-stoke", "site_name": "VWC Stoke", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "seat-blackburn", "site_name": "SEAT Blackburn", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "seat-chester", "site_name": "SEAT Chester", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "seat-crewe", "site_name": "SEAT Crewe", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "cupra-blackburn", "site_name": "CUPRA Blackburn", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "cupra-chester", "site_name": "CUPRA Chester", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "cupra-crewe", "site_name": "CUPRA Crewe", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "lr-chester", "site_name": "Land Rover Chester", "brand_id": "landrover", "brand_name": "Land Rover"}, {"site_id": "lr-stafford", "site_name": "Land Rover Stafford", "brand_id": "landrover", "brand_name": "Land Rover"}, {"site_id": "jag-chester", "site_name": "Jaguar Chester", "brand_id": "jaguar", "brand_name": "Jaguar"}, {"site_id": "honda-crewe", "site_name": "Honda Crewe", "brand_id": "honda", "brand_name": "Honda"}, {"site_id": "honda-stafford", "site_name": "Honda Stafford", "brand_id": "honda", "brand_name": "Honda"}, {"site_id": "peugeot-blackburn", "site_name": "Peugeot Blackburn", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "peugeot-chester", "site_name": "Peugeot Chester", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "peugeot-crewe", "site_name": "Peugeot Crewe", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "byd-crewe", "site_name": "BYD Crewe", "brand_id": "byd", "brand_name": "BYD"}, {"site_id": "omoda-crewe", "site_name": "OMODA/JAECOO Crewe", "brand_id": "omoda", "brand_name": "OMODA/JAECOO"}, {"site_id": "mm-blackburn", "site_name": "Motor Match Blackburn", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-chester", "site_name": "Motor Match Chester", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-crewe", "site_name": "Motor Match Crewe", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-stafford", "site_name": "Motor Match Stafford", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-stoke", "site_name": "Motor Match Stoke", "brand_id": "motormatch", "brand_name": "Motor Match"}];
 var HUB_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-async function loadSiteBudgets() {
-  if (!SB || !SB_USER) return;
-  try {
-    var r = await SB.from('site_budgets').select('*');
-    if (r.error || !r.data) return;
-    r.data.forEach(function(row) { SITE_BUDGETS[row.site_id] = row; });
-    // Update group budget metric from site data
-    var groupTotal = r.data.reduce(function(s, row) { return s + (row.annual_planned || 0); }, 0);
-    if (groupTotal > 0) {
-      var el = document.getElementById('group-budget-val');
-      if (el) el.textContent = '£' + (groupTotal / 1000000).toFixed(2) + 'M';
-    }
-    // Re-render budget tracker with real figures
-    if (typeof renderBudgetTracker === 'function') renderBudgetTracker();
-    console.log('Site budgets loaded: ' + r.data.length + ' sites');
-  } catch(e) { console.warn('loadSiteBudgets error:', e); }
-}
 
 function renderBrandSites(brandId) {
   var el = document.getElementById(brandId + '-sites-list');
@@ -4405,6 +4388,34 @@ function renderBrandSites(brandId) {
   });
   html += '</tbody></table></div>';
   el.innerHTML = html;
+}
+
+async function loadSiteBudgets() {
+  try {
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/site_budgets?select=*', {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (!resp.ok) {
+      var err = await resp.text();
+      console.warn('loadSiteBudgets error:', resp.status, err);
+      return;
+    }
+    var rows = await resp.json();
+    if (!rows || !rows.length) { console.log('loadSiteBudgets: no data'); return; }
+    rows.forEach(function(row) { SITE_BUDGETS[row.site_id] = row; });
+    var groupTotal = rows.reduce(function(s, r) { return s + (r.annual_planned || 0); }, 0);
+    if (groupTotal > 0) {
+      var el = document.getElementById('group-budget-val');
+      if (el) el.textContent = '£' + (groupTotal / 1000000).toFixed(2) + 'M';
+    }
+    updateBrandBudgetsFromSites();
+    if (typeof renderBudgetTracker === 'function') renderBudgetTracker();
+    console.log('Site budgets loaded: ' + rows.length + ' sites, £' + groupTotal.toLocaleString());
+  } catch(e) { console.warn('loadSiteBudgets exception:', e); }
 }
 
 const QPLAN_CACHE = {};
