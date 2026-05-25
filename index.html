@@ -764,7 +764,7 @@ td strong{font-weight:600}
 
 <!-- CROSS-BRAND CALENDAR -->
 <div class="view" id="view-crosscal">
-  <div class="page-strip"><div><div class="page-title">Campaign Calendar 2026</div><div class="page-subtitle">All brands &middot; All campaigns &middot; Full year view</div></div><div class="action-row"><button class="btn btn-accent" onclick="openBriefsPanel()">+ Add brief</button></div></div>
+  <div class="page-strip"><div><div class="page-title">Campaign Calendar 2026</div><div class="page-subtitle">All brands &middot; All campaigns &middot; Full year view</div></div><div class="action-row"><button class="btn btn-accent" onclick="calAddEvent()">+ Add campaign</button></div></div>
   <div class="chart-wrap" style="overflow-x:auto"><div id="crosscal-grid" style="min-width:900px"></div></div>
   <div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:10px" id="crosscal-legend"></div>
 </div>
@@ -1232,6 +1232,11 @@ td strong{font-weight:600}
   #bb-output { margin:0; }
   .bb-out-hero { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 }
+.cal-q-tab{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:4px;background:var(--white);cursor:pointer;font-family:var(--font-b);font-size:12px;font-weight:600;color:var(--ink-soft);transition:all .2s;text-align:center;display:block}
+.cal-q-tab span{display:block;font-size:10px;font-weight:400;color:var(--ink-faint);margin-top:2px;font-family:var(--font-m)}
+.cal-q-tab.active{background:var(--swansway);color:#fff;border-color:var(--swansway)}
+.cal-q-tab.active span{color:rgba(255,255,255,0.65)}
+.cal-q-tab:hover:not(.active){border-color:var(--swansway);color:var(--swansway)}
 </style>
 
 <!-- Progress -->
