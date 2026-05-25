@@ -208,8 +208,8 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
       </div>
     </div>
     <div class="topbar-actions">
-      <div class="save-status" id="save-status"><span class="save-dot" style="background:#FCD34D"></span> Loading…</div>
-      <span id="conn-status" style="font-size:11px;color:rgba(255,255,255,0.5)">● Checking…</span>
+      <div class="save-status" id="save-status"><span class="save-dot" style="background:#22C55E"></span> Supabase</div>
+      <span id="conn-status" style="display:none;font-size:11px;color:rgba(255,255,255,0.5)">● Checking…</span>
       <button class="tbtn" onclick="takeSnapshot()">📸 Snapshot</button>
       <button class="tbtn" onclick="exportConfig()">Export JSON</button>
       <button class="tbtn-accent tbtn" onclick="window.open('index.html','_blank')">View Live Plan →</button>
@@ -547,7 +547,7 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
         <div class="card-body">
           <p style="font-size:13px;color:var(--ink-soft)" id="last-saved-info">Not yet saved this session.</p>
           <div style="margin-top:10px;font-size:12px;color:var(--ink-faint)">
-            <div>Google Sheets: <span id="sheets-storage-status">checking…</span></div>
+            <div>Google Storage: <span style="color:#15803D">Supabase ✓</span></div>
             <div>Local storage: <span id="local-storage-status">checking…</span></div>
           </div>
         </div>
@@ -669,9 +669,8 @@ let charts = {};
    localStorage — Fallback when Sheets unavailable
 ══════════════════════════════════════════════════════ */
 
-// ▼▼▼ PASTE YOUR WEB APP URL HERE AFTER DEPLOYING ▼▼▼
-const SHEETS_API_URL = localStorage.getItem('swansway_sheets_url') || '';
-// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+// Sheets removed — using Supabase for storage
+const SHEETS_API_URL = '';
 
 const ADMIN_SECRET = 'swansway2026'; // Must match Code.gs ADMIN_SECRET
 
@@ -687,17 +686,8 @@ function updateConnectionStatus(ok, msg) {
     : `<span style="color:#FCD34D">● ${msg || 'Sheets not configured'}</span>`;
 }
 
-/* ── PING SHEETS ── */
-async function pingSheets(url) {
-  if (!url) return false;
-  try {
-    const resp = await fetch(url + '?action=ping&secret=' + ADMIN_SECRET, { method:'GET' });
-    const data = await resp.json();
-    return data.ok === true;
-  } catch(e) {
-    return false;
-  }
-}
+/* Sheets removed - using Supabase */
+function pingSheets() {}
 
 /* ── LOAD FROM SHEETS ── */
 async function loadFromSheets(url) {
@@ -1445,65 +1435,9 @@ function showToast(msg, type='') {
 /* ══════════════════════════════════════════
    SHEETS URL MANAGEMENT
 ══════════════════════════════════════════ */
-async function testAndSaveSheetsUrl() {
-  const input = document.getElementById('sheets-url-input');
-  const url = input.value.trim();
-  const resultEl = document.getElementById('sheets-test-result');
-  const pillEl = document.getElementById('sheets-status-pill');
-  if (!url) { showToast('Please enter a URL first','error'); return; }
+function testAndSaveSheetsUrl() { showToast("Using Supabase — no Sheets setup needed","success"); }
 
-  resultEl.style.display='block';
-  resultEl.style.background='#FFFBEB';
-  resultEl.style.border='1px solid #FDE68A';
-  resultEl.textContent='Testing connection…';
-
-  try {
-    const ok = await pingSheets(url);
-    if (ok) {
-      localStorage.setItem('swansway_sheets_url', url);
-      sheetsAvailable = true;
-      resultEl.style.background='#D1FAE5';
-      resultEl.style.border='1px solid #6EE7B7';
-      resultEl.textContent='✅ Connected successfully! All saves will now go to Google Sheets.';
-      pillEl.className='tag t-green'; pillEl.textContent='✅ Connected';
-      updateConnectionStatus(true);
-      showToast('✓ Google Sheets connected','success');
-      // Load fresh data from Sheets
-      const remote = await loadFromSheets(url);
-      if (remote.group)    STATE.group    = { ...STATE.group, ...remote.group };
-      if (remote.brands && remote.brands.length)   STATE.brands   = remote.brands;
-      if (remote.channels && remote.channels.length) STATE.channels = remote.channels;
-      if (remote.kpis && remote.kpis.length)     STATE.kpis     = remote.kpis;
-      if (remote.calendar && remote.calendar.length) STATE.calendar = remote.calendar;
-      buildSidebarBrands();
-      refreshDashboard();
-    } else {
-      resultEl.style.background='#FEE2E2';
-      resultEl.style.border='1px solid #FCA5A5';
-      resultEl.textContent='❌ Could not connect. Check the URL and that the Web App is deployed with "Anyone" access.';
-      pillEl.className='tag t-red'; pillEl.textContent='❌ Connection failed';
-    }
-  } catch(e) {
-    resultEl.style.background='#FEE2E2';
-    resultEl.style.border='1px solid #FCA5A5';
-    resultEl.textContent='❌ Error: ' + e.message + '. Check CORS — Web App must be deployed with "Anyone" access.';
-    pillEl.className='tag t-red'; pillEl.textContent='❌ Error';
-  }
-
-  // Update data page status
-  if(document.getElementById('sheets-storage-status'))
-    document.getElementById('sheets-storage-status').textContent = sheetsAvailable ? '✅ Connected' : '❌ Not connected';
-}
-
-function clearSheetsUrl() {
-  localStorage.removeItem('swansway_sheets_url');
-  document.getElementById('sheets-url-input').value='';
-  sheetsAvailable = false;
-  updateConnectionStatus(false, 'Sheets cleared');
-  document.getElementById('sheets-test-result').style.display='none';
-  document.getElementById('sheets-status-pill').className='tag t-amber';
-  document.getElementById('sheets-status-pill').textContent='Not configured';
-}
+function clearSheetsUrl() {}
 
 /* ── HISTORY PAGE ── */
 async function loadHistoryPage() {
