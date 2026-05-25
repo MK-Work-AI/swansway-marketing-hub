@@ -2489,36 +2489,104 @@ function loadAdminConfig() {
 
 function applyAdminConfig(cfg) {
   if (!cfg) return;
+  console.log('Applying admin config to hub...');
 
-  // Update BUDGET_BRANDS annual values from admin config
+  // ── 1. GROUP METRICS ──────────────────────────────────────────
+  if (cfg.group) {
+    var g = cfg.group;
+
+    // Group budget metric card
+    var totalBudget = BUDGET_BRANDS.reduce(function(s, b) { return s + (b.annual || 0); }, 0);
+    var budgetEl = document.getElementById('group-budget-val');
+    if (budgetEl && totalBudget > 0) budgetEl.textContent = '£' + (totalBudget / 1000000).toFixed(2) + 'M';
+
+    // Group KPI metric cards on overview page
+    function setMetric(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+    if (g.leads)     setMetric('group-leads-target',   g.leads.toLocaleString());
+    if (g.units)     setMetric('group-units-target',   g.units.toLocaleString());
+    if (g.evSales)   setMetric('group-ev-target',      g.evSales + '%');
+    if (g.cpl)       setMetric('group-cpl-target',     '£' + g.cpl);
+    if (g.conv)      setMetric('group-conv-target',    g.conv + '%');
+    if (g.retention) setMetric('group-retention-target', g.retention + '%');
+    if (g.nps)       setMetric('group-nps-target',     g.nps);
+    if (g.used)      setMetric('group-used-target',    g.used.toLocaleString());
+    if (g.evPct)     setMetric('group-ev-pct',         g.evPct + '%');
+    if (g.digSplit)  setMetric('group-dig-split',      g.digSplit);
+    if (g.coopPct)   setMetric('group-coop-pct',       g.coopPct + '%');
+    if (g.desc)      { var d = document.getElementById('group-desc'); if(d) d.textContent = g.desc; }
+  }
+
+  // ── 2. BRAND DATA ─────────────────────────────────────────────
   if (cfg.brands && cfg.brands.length) {
     cfg.brands.forEach(function(adminBrand) {
+
+      // Update BUDGET_BRANDS annual (for budget tracker)
       var bb = BUDGET_BRANDS.find(function(b) { return b.id === adminBrand.id; });
-      if (bb && adminBrand.budget) {
-        bb.annual = adminBrand.budget;
+      if (bb && adminBrand.budget) bb.annual = adminBrand.budget;
+
+      // Update brand card metrics on overview/brand pages
+      var prefix = 'brand-' + adminBrand.id + '-';
+      function setBrand(suffix, val) {
+        var el = document.getElementById(prefix + suffix);
+        if (el) el.textContent = val;
+      }
+      if (adminBrand.budget)    setBrand('budget',     '£' + parseInt(adminBrand.budget).toLocaleString());
+      if (adminBrand.leads)     setBrand('leads',      adminBrand.leads.toLocaleString());
+      if (adminBrand.newUnits)  setBrand('units',      adminBrand.newUnits.toLocaleString());
+      if (adminBrand.evPct)     setBrand('ev',         adminBrand.evPct + '%');
+      if (adminBrand.cpl)       setBrand('cpl',        '£' + adminBrand.cpl);
+      if (adminBrand.convRate)  setBrand('conv',       adminBrand.convRate + '%');
+      if (adminBrand.retention) setBrand('retention',  adminBrand.retention + '%');
+      if (adminBrand.usedUnits) setBrand('used',       adminBrand.usedUnits.toLocaleString());
+      if (adminBrand.fleetUnits) setBrand('fleet',     adminBrand.fleetUnits.toLocaleString());
+      if (adminBrand.nps)       setBrand('nps',        adminBrand.nps);
+      if (adminBrand.q2Focus)   setBrand('focus',      adminBrand.q2Focus);
+      if (adminBrand.sitenames) setBrand('sites',      adminBrand.sitenames);
+
+      // Also update the brand card summary on group overview
+      var card = document.getElementById('brand-card-' + adminBrand.id);
+      if (card) {
+        var budgetEl = card.querySelector('.brand-budget');
+        if (budgetEl && adminBrand.budget) budgetEl.textContent = '£' + parseInt(adminBrand.budget).toLocaleString();
+        var leadsEl = card.querySelector('.brand-leads');
+        if (leadsEl && adminBrand.leads) leadsEl.textContent = adminBrand.leads.toLocaleString() + ' leads';
+        var unitsEl = card.querySelector('.brand-units');
+        if (unitsEl && adminBrand.newUnits) unitsEl.textContent = adminBrand.newUnits.toLocaleString() + ' units';
+        var evEl = card.querySelector('.brand-ev');
+        if (evEl && adminBrand.evPct) evEl.textContent = adminBrand.evPct + '% EV';
       }
     });
 
-    // Update group budget metric
-    var total = BUDGET_BRANDS.reduce(function(s, b) { return s + (b.annual || 0); }, 0);
-    var el = document.getElementById('group-budget-val');
-    if (el && total > 0) el.textContent = '£' + (total / 1000000).toFixed(2) + 'M';
-
-    // Re-render budget tracker with new planned values
+    // Re-render budget tracker with updated planned values
     if (typeof renderBudgetTracker === 'function') renderBudgetTracker();
   }
 
-  // Apply brand budget labels to brand cards
-  if (cfg.brands) {
-    cfg.brands.forEach(function(b) {
-      var card = document.getElementById('brand-card-' + b.id);
-      if (card) {
-        var budgetEl = card.querySelector('.brand-budget');
-        if (budgetEl && b.budget) budgetEl.textContent = '£' + parseInt(b.budget).toLocaleString();
+  // ── 3. KPIs ───────────────────────────────────────────────────
+  if (cfg.kpis && cfg.kpis.length) {
+    cfg.kpis.forEach(function(kpi, i) {
+      var row = document.getElementById('kpi-row-' + i);
+      if (row) {
+        var targetEl = row.querySelector('.kpi-target');
+        var actualEl = row.querySelector('.kpi-actual');
+        if (targetEl && kpi.target) targetEl.textContent = kpi.target.toLocaleString();
+        if (actualEl && kpi.actual) actualEl.textContent = kpi.actual.toLocaleString();
       }
     });
   }
+
+  // ── 4. CHANNELS ───────────────────────────────────────────────
+  if (cfg.channels && cfg.channels.length) {
+    cfg.channels.forEach(function(ch, i) {
+      var pctEl = document.getElementById('channel-pct-' + i);
+      var noteEl = document.getElementById('channel-note-' + i);
+      if (pctEl && ch.pct) pctEl.textContent = ch.pct + '%';
+      if (noteEl && ch.note) noteEl.textContent = ch.note;
+    });
+  }
+
+  console.log('Admin config applied to hub');
 }
+
 
 function showConfigBadge() {
   const meta = document.querySelector('.topbar-meta');
