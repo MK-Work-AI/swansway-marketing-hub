@@ -1482,7 +1482,7 @@ const BRANDS = [
 
   {
     id:'vw', name:'Volkswagen', color:'#001E5A', segment:'Mainstream',
-    sites:5, sitenames:'Chester · Crewe · Oldham · Preston · Stafford',
+    sites:3, sitenames:'Wrexham · Crewe · Oldham',
     budget:'—', newTarget:'2,400 units', evTarget:'35%', q2:'ID.3 summer finance push + Golf facelift media',
     progress:71,
     tags:['ID. EV range','Family SUVs','Fleet','Golf facelift','Finance PCP'],
@@ -1541,7 +1541,7 @@ const BRANDS = [
 
   {
     id:'vwcv', name:'VW Commercial Vehicles', color:'#1B4F72', segment:'Commercial',
-    sites:2, sitenames:'Oldham VW Van Centre · Preston VW Van Centre',
+    sites:5, sitenames:'Wrexham · Liverpool · Lancashire · Birmingham · Oldham',
     budget:'—', newTarget:'600 units', evTarget:'20%', q2:'Transporter T7 launch + fleet drive days',
     progress:60,
     tags:['Transporter T7','ID. Buzz','Fleet/SME','Trade press','Van Show'],
@@ -1593,7 +1593,7 @@ const BRANDS = [
 
   {
     id:'seat', name:'SEAT', color:'#E2231A', segment:'Mainstream',
-    sites:3, sitenames:'Chester · Crewe · Stafford',
+    sites:2, sitenames:'Crewe · Oldham',
     budget:'—', newTarget:'1,100 units', evTarget:'25%', q2:'Ibiza summer social push + Leon Cupra-lite crossover',
     progress:58,
     tags:['Ibiza summer','Leon sporty','Young audience','TikTok-first','PCP accessibility'],
@@ -1646,7 +1646,7 @@ const BRANDS = [
 
   {
     id:'cupra', name:'CUPRA', color:'#C8920A', segment:'Performance EV',
-    sites:2, sitenames:'Crewe CUPRA · Stockport CUPRA (pending confirmation)',
+    sites:2, sitenames:'Crewe · Oldham',
     budget:'—', newTarget:'400 units', evTarget:'60%', q2:'Born EV summer campaign + padel tennis series Crewe',
     progress:69,
     tags:['Born EV','Padel tennis','Formentor','Influencer','Urban performance'],
@@ -1698,7 +1698,7 @@ const BRANDS = [
 
   {
     id:'landrover', name:'Land Rover', color:'#1D4E1D', segment:'Premium Luxury',
-    sites:2, sitenames:'Chester · Crewe',
+    sites:1, sitenames:'Stafford',
     budget:'—', newTarget:'500 units', evTarget:'40%', q2:'Defender adventure camp + Range Rover lifestyle push',
     progress:65,
     tags:['Defender','Range Rover','Adventure lifestyle','Off-road events','Motability'],
@@ -1750,7 +1750,7 @@ const BRANDS = [
 
   {
     id:'jaguar', name:'Jaguar', color:'#1B2631', segment:'Premium Luxury',
-    sites:1, sitenames:'Crewe Jaguar',
+    sites:1, sitenames:'Crewe',
     budget:'—', newTarget:'180 units', evTarget:'50%', q2:'Brand relaunch support + EV positioning',
     progress:52,
     tags:['Brand relaunch','EV repositioning','Luxury conquest','Fleet','Approved Used'],
@@ -1800,7 +1800,7 @@ const BRANDS = [
 
   {
     id:'honda', name:'Honda', color:'#CC0000', segment:'Mainstream Hybrid',
-    sites:4, sitenames:'Blackburn · Bolton · Stockport · Stafford',
+    sites:2, sitenames:'Stockport · Bolton',
     budget:'—', newTarget:'1,400 units', evTarget:'55%', q2:'e:HEV hybrid summer campaign + HR-V push',
     progress:55,
     tags:['e:HEV hybrid','HR-V','CR-V','Motability','Reliability'],
@@ -1855,7 +1855,7 @@ const BRANDS = [
 
   {
     id:'peugeot', name:'Peugeot', color:'#1B3A6B', segment:'Mainstream EV',
-    sites:3, sitenames:'Chester · Crewe · Stockport',
+    sites:2, sitenames:'Chester · Crewe',
     budget:'—', newTarget:'1,200 units', evTarget:'40%', q2:'E-308 summer lease push + 3008 PHEV launch',
     progress:62,
     tags:['E-208 EV','E-308','3008 PHEV','French design','Lease deals'],
@@ -1908,7 +1908,7 @@ const BRANDS = [
 
   {
     id:'byd', name:'BYD', color:'#0066CC', segment:'EV-Led',
-    sites:3, sitenames:'Cheshire · Cheshire 2 · Stoke',
+    sites:3, sitenames:'Crewe · Chester · Stoke',
     budget:'—', newTarget:'500 units', evTarget:'100%', q2:'BYD Seal awareness push + EV education campaign',
     progress:45,
     tags:['Seal EV','Atto 3','EV education','World #1 EV','Conquest Tesla'],
@@ -1961,7 +1961,7 @@ const BRANDS = [
 
   {
     id:'omoda', name:'OMODA / JAECOO', color:'#6B21A8', segment:'EV-Led New Brand',
-    sites:1, sitenames:'Stockport (dual brand showroom)',
+    sites:1, sitenames:'Stockport',
     budget:'—', newTarget:'250 units', evTarget:'55%', q2:'OMODA 7 launch + Jaecoo 5 EV push + grand opening follow-up',
     progress:30,
     tags:['OMODA 7','Jaecoo 5 EV','Brand launch','Grand opening','South Manchester'],
@@ -2012,7 +2012,7 @@ const BRANDS = [
 
   {
     id:'motormatch', name:'Motor Match', color:'#374151', segment:'Used Car',
-    sites:5, sitenames:'Chester · Crewe · Stockport · Stoke · Fenton',
+    sites:5, sitenames:'Crewe · Stockport · Bolton · Chester · Stoke',
     budget:'—', newTarget:'4,000 used units', evTarget:'15%', q2:'Top Value Dealer maintenance + summer stock push',
     progress:68,
     tags:['Top Value Dealer','AutoTrader','CarGurus','Used EV push','All brands'],
@@ -2833,17 +2833,17 @@ document.addEventListener('DOMContentLoaded',()=>{
 ════════════════════════════════════════════════════════════════ */
 
 const BB_BRANDS = [
-  { id:'audi',     name:'Audi',          color:'#BB0A21', segment:'Premium',         sites:4,  tagline:'Vorsprung durch Technik', models:['A3','A5','Q3','Q5','Q8 e-tron','e-tron GT','RS Range'], tone:['Assured','Intelligent','Understated','Prestige','Precise'], cpl:{meta:65,google:48,autotrader:55}, locations:['Chester','Crewe','Stafford','Stoke'] },
-  { id:'byd',      name:'BYD',           color:'#E8002A', segment:'Pure EV / PHEV',  sites:2,  tagline:'Build Your Dreams',       models:['Atto 2','Atto 3 EVO','Seal','Seal U DM-i','Sealion 7'], tone:['Bold','Tech-forward','Challenger','Innovative','Accessible'], cpl:{meta:45,google:35,autotrader:42}, locations:['Crewe','Chester'] },
-  { id:'cupra',    name:'CUPRA',         color:'#D4A017', segment:'Performance EV',  sites:3,  tagline:'Born To Be Electrifying',  models:['Leon','Formentor','Born','Tavascan','Terramar'], tone:['Unconventional','Provocative','Tribe','Bold','Urban'], cpl:{meta:55,google:42,autotrader:48}, locations:['Crewe','Oldham','Bolton'] },
+  { id:'audi',     name:'Audi',          color:'#BB0A21', segment:'Premium',         sites:6,  tagline:'Vorsprung durch Technik', models:['A3','A5','Q3','Q5','Q8 e-tron','e-tron GT','RS Range'], tone:['Assured','Intelligent','Understated','Prestige','Precise'], cpl:{meta:65,google:48,autotrader:55}, locations:['Chester','Crewe','Stafford','Stoke'] },
+  { id:'byd',      name:'BYD',           color:'#E8002A', segment:'Pure EV / PHEV',  sites:3,  tagline:'Build Your Dreams',       models:['Atto 2','Atto 3 EVO','Seal','Seal U DM-i','Sealion 7'], tone:['Bold','Tech-forward','Challenger','Innovative','Accessible'], cpl:{meta:45,google:35,autotrader:42}, locations:['Crewe','Chester'] },
+  { id:'cupra',    name:'CUPRA',         color:'#D4A017', segment:'Performance EV',  sites:2,  tagline:'Born To Be Electrifying',  models:['Leon','Formentor','Born','Tavascan','Terramar'], tone:['Unconventional','Provocative','Tribe','Bold','Urban'], cpl:{meta:55,google:42,autotrader:48}, locations:['Crewe','Oldham','Bolton'] },
   { id:'vw',       name:'Volkswagen',    color:'#001E50', segment:'Volume',           sites:3,  tagline:'Das Auto',                 models:['Polo','Golf','Tiguan','T-Roc','ID.3','ID.4','ID.5'], tone:['Reliable','Trustworthy','Democratic','Approachable','Quality'], cpl:{meta:35,google:28,autotrader:32}, locations:['Crewe','Wrexham','Chester'] },
-  { id:'landrover',name:'Land Rover',    color:'#005A2B', segment:'Premium Luxury',  sites:3,  tagline:'Above and Beyond',         models:['Defender','Discovery','Range Rover','RR Sport','Evoque'], tone:['Adventurous','Aspirational','Timeless','Cinematic','Heritage'], cpl:{meta:95,google:75,autotrader:85}, locations:['Stafford','Chester','Crewe'] },
-  { id:'honda',    name:'Honda',         color:'#CC0000', segment:'Hybrid Family',   sites:1,  tagline:'The Power of Dreams',      models:['Jazz e:HEV','HR-V e:HEV','Civic e:HEV','CR-V e:HEV','ZR-V'], tone:['Trustworthy','Ingenious','Dependable','Optimistic','Reliable'], cpl:{meta:38,google:30,autotrader:35}, locations:['Stockport'] },
-  { id:'seat',     name:'SEAT',          color:'#FA0030', segment:'Volume / Entry',  sites:3,  tagline:'Enjoy Every Moment',       models:['Ibiza','Arona','Leon','Ateca','Tarraco'], tone:['Vibrant','Youthful','Accessible','Fun','Spanish warmth'], cpl:{meta:28,google:22,autotrader:26}, locations:['Crewe','Stoke','Bolton'] },
-  { id:'peugeot',  name:'Peugeot',       color:'#002F5F', segment:'Volume / EV-fwd', sites:3,  tagline:'Unboring the Future',      models:['e-208','e-2008','308','408','e-3008','5008'], tone:['Bold design','French flair','Electric-forward','Confident','Accessible'], cpl:{meta:32,google:25,autotrader:30}, locations:['Chester','Crewe','Stoke'] },
-  { id:'vwcv',     name:'VW Commercial', color:'#1B4F72', segment:'Commercial',      sites:4,  tagline:'Built for business',       models:['Caddy','Transporter T7','Crafter','ID. Buzz Cargo'], tone:['Functional','Reliable','Business-first','No-nonsense','Proven'], cpl:{meta:55,google:40,autotrader:50}, locations:['Wrexham','Liverpool','Lancashire','Birmingham'] },
+  { id:'landrover',name:'Land Rover',    color:'#005A2B', segment:'Premium Luxury',  sites:1,  tagline:'Above and Beyond',         models:['Defender','Discovery','Range Rover','RR Sport','Evoque'], tone:['Adventurous','Aspirational','Timeless','Cinematic','Heritage'], cpl:{meta:95,google:75,autotrader:85}, locations:['Stafford','Chester','Crewe'] },
+  { id:'honda',    name:'Honda',         color:'#CC0000', segment:'Hybrid Family',   sites:2,  tagline:'The Power of Dreams',      models:['Jazz e:HEV','HR-V e:HEV','Civic e:HEV','CR-V e:HEV','ZR-V'], tone:['Trustworthy','Ingenious','Dependable','Optimistic','Reliable'], cpl:{meta:38,google:30,autotrader:35}, locations:['Stockport'] },
+  { id:'seat',     name:'SEAT',          color:'#FA0030', segment:'Volume / Entry',  sites:2,  tagline:'Enjoy Every Moment',       models:['Ibiza','Arona','Leon','Ateca','Tarraco'], tone:['Vibrant','Youthful','Accessible','Fun','Spanish warmth'], cpl:{meta:28,google:22,autotrader:26}, locations:['Crewe','Stoke','Bolton'] },
+  { id:'peugeot',  name:'Peugeot',       color:'#002F5F', segment:'Volume / EV-fwd', sites:2,  tagline:'Unboring the Future',      models:['e-208','e-2008','308','408','e-3008','5008'], tone:['Bold design','French flair','Electric-forward','Confident','Accessible'], cpl:{meta:32,google:25,autotrader:30}, locations:['Chester','Crewe','Stoke'] },
+  { id:'vwcv',     name:'VW Commercial', color:'#1B4F72', segment:'Commercial',      sites:5,  tagline:'Built for business',       models:['Caddy','Transporter T7','Crafter','ID. Buzz Cargo'], tone:['Functional','Reliable','Business-first','No-nonsense','Proven'], cpl:{meta:55,google:40,autotrader:50}, locations:['Wrexham','Liverpool','Lancashire','Birmingham'] },
   { id:'omoda',    name:'OMODA/JAECOO',  color:'#2C3E50', segment:'Emerging SUV',    sites:1,  tagline:'Dare to Explore',          models:['OMODA 5','OMODA 5 EV','JAECOO 7','JAECOO 8'], tone:['Challenger','Adventure','Tech-accessible','Curious','Bold'], cpl:{meta:38,google:30,autotrader:36}, locations:['Stockport'] },
-  { id:'motormatch',name:'Motor Match',  color:'#475569', segment:'Multi-brand Used',sites:3,  tagline:'Real cars. Real prices.',  models:['Approved Used — all brands'], tone:['Honest','Transparent','Straightforward','Local warmth','Value'], cpl:{meta:22,google:16,autotrader:20}, locations:['Crewe','Stockport','Bolton'] },
+  { id:'motormatch',name:'Motor Match',  color:'#475569', segment:'Multi-brand Used',sites:5,  tagline:'Real cars. Real prices.',  models:['Approved Used — all brands'], tone:['Honest','Transparent','Straightforward','Local warmth','Value'], cpl:{meta:22,google:16,autotrader:20}, locations:['Crewe','Stockport','Bolton'] },
 ];
 
 const BB_CTYPES = [
@@ -4454,7 +4454,7 @@ const ANTHROPIC_API_KEY = window.SWANSWAY_CONFIG?.anthropicKey || '';
 
 /* ════ SITE BUDGETS — HUB ════ */
 var SITE_BUDGETS = {};  // site_id -> row
-var HUB_SITES = [{"site_id": "audi-blackburn", "site_name": "Audi Blackburn", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-carlisle", "site_name": "Audi Carlisle", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-crewe", "site_name": "Audi Crewe", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-preston", "site_name": "Audi Preston", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-stafford", "site_name": "Audi Stafford", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-stoke", "site_name": "Audi Stoke", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "vw-blackburn", "site_name": "VW Blackburn", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-chester", "site_name": "VW Chester", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-crewe", "site_name": "VW Crewe", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-macclesfield", "site_name": "VW Macclesfield", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-stafford", "site_name": "VW Stafford", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-stoke", "site_name": "VW Stoke", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vwcv-blackburn", "site_name": "VWC Blackburn", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-crewe", "site_name": "VWC Crewe", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-stoke", "site_name": "VWC Stoke", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "seat-blackburn", "site_name": "SEAT Blackburn", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "seat-chester", "site_name": "SEAT Chester", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "seat-crewe", "site_name": "SEAT Crewe", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "cupra-blackburn", "site_name": "CUPRA Blackburn", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "cupra-chester", "site_name": "CUPRA Chester", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "cupra-crewe", "site_name": "CUPRA Crewe", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "lr-chester", "site_name": "Land Rover Chester", "brand_id": "landrover", "brand_name": "Land Rover"}, {"site_id": "lr-stafford", "site_name": "Land Rover Stafford", "brand_id": "landrover", "brand_name": "Land Rover"}, {"site_id": "jag-chester", "site_name": "Jaguar Chester", "brand_id": "jaguar", "brand_name": "Jaguar"}, {"site_id": "honda-crewe", "site_name": "Honda Crewe", "brand_id": "honda", "brand_name": "Honda"}, {"site_id": "honda-stafford", "site_name": "Honda Stafford", "brand_id": "honda", "brand_name": "Honda"}, {"site_id": "peugeot-blackburn", "site_name": "Peugeot Blackburn", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "peugeot-chester", "site_name": "Peugeot Chester", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "peugeot-crewe", "site_name": "Peugeot Crewe", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "byd-crewe", "site_name": "BYD Crewe", "brand_id": "byd", "brand_name": "BYD"}, {"site_id": "omoda-crewe", "site_name": "OMODA/JAECOO Crewe", "brand_id": "omoda", "brand_name": "OMODA/JAECOO"}, {"site_id": "mm-blackburn", "site_name": "Motor Match Blackburn", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-chester", "site_name": "Motor Match Chester", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-crewe", "site_name": "Motor Match Crewe", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-stafford", "site_name": "Motor Match Stafford", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-stoke", "site_name": "Motor Match Stoke", "brand_id": "motormatch", "brand_name": "Motor Match"}];
+var HUB_SITES = [{"site_id": "audi-blackburn", "site_name": "Audi Blackburn", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-carlisle", "site_name": "Audi Carlisle", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-crewe", "site_name": "Audi Crewe", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-preston", "site_name": "Audi Preston", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-stafford", "site_name": "Audi Stafford", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-stoke", "site_name": "Audi Stoke", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "vw-wrexham", "site_name": "VW Wrexham", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-crewe", "site_name": "VW Crewe", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-oldham", "site_name": "VW Oldham", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vwcv-wrexham", "site_name": "VWC Wrexham", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-liverpool", "site_name": "VWC Liverpool", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-lancashire", "site_name": "VWC Lancashire", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-birmingham", "site_name": "VWC Birmingham", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-oldham", "site_name": "VWC Oldham", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "seat-crewe", "site_name": "SEAT Crewe", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "seat-oldham", "site_name": "SEAT Oldham", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "cupra-crewe", "site_name": "CUPRA Crewe", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "cupra-oldham", "site_name": "CUPRA Oldham", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "lr-stafford", "site_name": "Land Rover Stafford", "brand_id": "landrover", "brand_name": "Land Rover"}, {"site_id": "jag-crewe", "site_name": "Jaguar Crewe", "brand_id": "jaguar", "brand_name": "Jaguar"}, {"site_id": "honda-stockport", "site_name": "Honda Stockport", "brand_id": "honda", "brand_name": "Honda"}, {"site_id": "honda-bolton", "site_name": "Honda Bolton", "brand_id": "honda", "brand_name": "Honda"}, {"site_id": "peugeot-chester", "site_name": "Peugeot Chester", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "peugeot-crewe", "site_name": "Peugeot Crewe", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "byd-crewe", "site_name": "BYD Crewe", "brand_id": "byd", "brand_name": "BYD"}, {"site_id": "byd-chester", "site_name": "BYD Chester", "brand_id": "byd", "brand_name": "BYD"}, {"site_id": "byd-stoke", "site_name": "BYD Stoke", "brand_id": "byd", "brand_name": "BYD"}, {"site_id": "omoda-stockport", "site_name": "OMODA/JAECOO Stockport", "brand_id": "omoda", "brand_name": "OMODA/JAECOO"}, {"site_id": "mm-crewe", "site_name": "Motor Match Crewe", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-stockport", "site_name": "Motor Match Stockport", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-bolton", "site_name": "Motor Match Bolton", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-chester", "site_name": "Motor Match Chester", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-stoke", "site_name": "Motor Match Stoke", "brand_id": "motormatch", "brand_name": "Motor Match"}]
 var HUB_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 
