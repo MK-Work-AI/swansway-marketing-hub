@@ -2482,12 +2482,26 @@ function loadAdminConfig() {
 
 function applyAdminConfig(cfg) {
   if (!cfg) return;
+
+  // Update BUDGET_BRANDS annual values from admin config
   if (cfg.brands && cfg.brands.length) {
-    var total = cfg.brands.reduce(function(s, b) { return s + (b.budget || 0); }, 0);
+    cfg.brands.forEach(function(adminBrand) {
+      var bb = BUDGET_BRANDS.find(function(b) { return b.id === adminBrand.id; });
+      if (bb && adminBrand.budget) {
+        bb.annual = adminBrand.budget;
+      }
+    });
+
+    // Update group budget metric
+    var total = BUDGET_BRANDS.reduce(function(s, b) { return s + (b.annual || 0); }, 0);
     var el = document.getElementById('group-budget-val');
     if (el && total > 0) el.textContent = '£' + (total / 1000000).toFixed(2) + 'M';
+
+    // Re-render budget tracker with new planned values
+    if (typeof renderBudgetTracker === 'function') renderBudgetTracker();
   }
-  // Apply brand targets, CPL etc from admin config
+
+  // Apply brand budget labels to brand cards
   if (cfg.brands) {
     cfg.brands.forEach(function(b) {
       var card = document.getElementById('brand-card-' + b.id);
@@ -3244,6 +3258,7 @@ var BUDGET_BRANDS = [
   {id:'peugeot',name:'Peugeot',color:'#1B3A6B',annual:215000},
   {id:'byd',name:'BYD',color:'#0066CC',annual:175000},
   {id:'omoda',name:'OMODA/JAECOO',color:'#6B21A8',annual:140000},
+  {id:'motormatch',name:'Motor Match',color:'#374151',annual:160000},
 ];
 var BUDGET_ACTUALS = {}; // Loaded from Supabase on init
 
