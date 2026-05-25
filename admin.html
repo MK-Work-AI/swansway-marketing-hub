@@ -678,13 +678,7 @@ let sheetsAvailable = false;
 let isSaving = false;
 
 /* ── CONNECTION STATUS ── */
-function updateConnectionStatus(ok, msg) {
-  const el = document.getElementById('conn-status');
-  if (!el) return;
-  el.innerHTML = ok
-    ? `<span style="color:#4ADE80">● Sheets connected</span>`
-    : `<span style="color:#FCD34D">● ${msg || 'Sheets not configured'}</span>`;
-}
+function updateConnectionStatus(ok, msg) {} // Sheets removed
 
 /* Sheets removed - using Supabase */
 function pingSheets() {}
@@ -757,7 +751,7 @@ async function loadState() {
       console.warn('Sheets load error:', e);
     }
   } else {
-    updateConnectionStatus(false, 'Sheets not configured');
+    updateConnectionStatus(false, 'Ready');
   }
 }
 
@@ -846,7 +840,7 @@ async function takeSnapshot() {
 /* ── HISTORY ── */
 async function loadHistory() {
   const url = getSheetsUrl();
-  if (!url) { showToast('Sheets not configured','error'); return []; }
+  if (!url) { return []; }
   try {
     const resp = await fetch(url + '?action=history&secret=' + ADMIN_SECRET);
     const data = await resp.json();
