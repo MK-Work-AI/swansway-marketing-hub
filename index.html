@@ -2310,22 +2310,8 @@ function renderBrand(b) {
     </div>
 
     <div class="inner-section" id="${b.id}-campaigns">
-      <div class="sh"><div><div class="sh-title">Priority Campaigns 2026</div><div class="sh-sub">Objectives, channels, offers and success measures</div></div></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Campaign</th><th>Timing</th><th>Objective</th><th>Channels</th><th>Offer/Hook</th><th>KPI</th></tr></thead>
-          <tbody>
-            ${b.campaigns.map(c=>`<tr>
-              <td><strong>${c.name}</strong></td>
-              <td><span class="tag t-teal">${c.timing}</span></td>
-              <td>${c.obj}</td>
-              <td style="font-size:11px;color:#6B7280">${c.channels}</td>
-              <td style="font-size:11px;color:#6B7280">${c.offer}</td>
-              <td style="font-size:11px;color:#6B7280">${c.kpi}</td>
-            </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
+      <div class="sh"><div><div class="sh-title">Priority Campaigns 2026</div><div class="sh-sub">From admin calendar and Brief Builder</div></div><div class="action-row"><button class="btn btn-sm btn-accent" onclick="switchView('brief',document.querySelector('[data-view=brief]'))">+ New brief</button></div></div>
+      <div id="${b.id}-campaigns-list"><div style="padding:20px;text-align:center;color:var(--ink-faint);font-size:13px">Loading campaigns...</div></div>
     </div>
 
     <div class="inner-section" id="${b.id}-audiences">
