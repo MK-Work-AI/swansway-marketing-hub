@@ -4407,12 +4407,12 @@ function sbInit() {
 function sbHandleSession(session) {
   SB_USER = session.user;
   showUserState(SB_USER);
-  loadBriefs();
-  loadBudgetActuals();
-  loadAutopsies();
-  loadCompetitorScans();
-  loadQplanActions();
-  loadAdminConfig();
+  if(typeof loadBriefs === 'function')         loadBriefs();
+  if(typeof loadBudgetActuals === 'function')  loadBudgetActuals();
+  if(typeof loadAutopsies === 'function')      loadAutopsies();
+  if(typeof loadCompetitorScans === 'function') loadCompetitorScans();
+  if(typeof loadQplanActions === 'function')   loadQplanActions();
+  if(typeof loadAdminConfig === 'function')    loadAdminConfig();
   // Refresh save bar if brief is open
   const saveBar = document.getElementById('bb-save-bar');
   const saveBtn = document.getElementById('bb-save-btn');
