@@ -254,6 +254,43 @@ alter table public.admin_snapshots enable row level security;
 create policy "admin_snapshots: own" on public.admin_snapshots for all using (auth.uid() = user_id);
 grant select, insert, update, delete on public.admin_snapshots to authenticated;
 
+
+-- ── QPLAN ACTION STATE ───────────────────────────────────────
+-- Q-plan tick-off checkboxes per brand/quarter
+create table if not exists public.qplan_actions (
+  id          uuid primary key default uuid_generate_v4(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  key         text not null,   -- e.g. 'qplan_actions_audi_Q2 2026'
+  data        jsonb not null default '{}',
+  updated_at  timestamptz default now(),
+  unique(user_id, key)
+);
+alter table public.qplan_actions enable row level security;
+create policy "qplan_actions: own" on public.qplan_actions for all using (auth.uid() = user_id);
+grant select, insert, update, delete on public.qplan_actions to authenticated;
+
+-- ── ADMIN CONFIG ─────────────────────────────────────────────
+create table if not exists public.admin_config (
+  user_id     uuid primary key references auth.users(id) on delete cascade,
+  config      jsonb not null default '{}',
+  updated_at  timestamptz default now()
+);
+alter table public.admin_config enable row level security;
+create policy "admin_config: own" on public.admin_config for all using (auth.uid() = user_id);
+grant select, insert, update, delete on public.admin_config to authenticated;
+
+-- ── ADMIN SNAPSHOTS ──────────────────────────────────────────
+create table if not exists public.admin_snapshots (
+  id          uuid primary key default uuid_generate_v4(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  label       text not null,
+  config      jsonb not null default '{}',
+  created_at  timestamptz default now()
+);
+alter table public.admin_snapshots enable row level security;
+create policy "admin_snapshots: own" on public.admin_snapshots for all using (auth.uid() = user_id);
+grant select, insert, update, delete on public.admin_snapshots to authenticated;
+
 -- ── DONE ─────────────────────────────────────────────────────
 -- After running this schema:
 -- 1. Go to Authentication → Settings → enable Email auth
