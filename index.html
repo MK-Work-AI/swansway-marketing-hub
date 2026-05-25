@@ -2237,9 +2237,13 @@ function switchView(id, el) {
     if(brand) renderBrand(brand);
   }
   if(id === 'brief') bbInit();
-  // Auto-load Q-plan from Supabase when a brand page opens
+  // Auto-load Q-plan, campaigns and KPIs when a brand page opens
   const brandForQplan = BRANDS.find(b=>b.id===id);
-  if(brandForQplan) setTimeout(()=>qplanAutoLoad(id, brandForQplan.color), 400);
+  if(brandForQplan) {
+    setTimeout(()=>qplanAutoLoad(id, brandForQplan.color), 400);
+    setTimeout(function(){ if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(id); }, 100);
+    setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(id); }, 150);
+  }
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -2371,6 +2375,8 @@ function switchInner(brandId, secId, el) {
   document.querySelectorAll(`#itabs-${brandId} .inner-tab`).forEach(t=>t.classList.remove('active'));
   document.querySelectorAll(`#${brandId}-content .inner-section`).forEach(s=>s.classList.remove('active'));
   el.classList.add('active');
+  if(secId === 'campaigns') { setTimeout(function(){ if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(brandId); }, 50); }
+  if(secId === 'kpis') { setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(brandId); }, 50); }
   document.getElementById(brandId+'-'+secId).classList.add('active');
 }
 
