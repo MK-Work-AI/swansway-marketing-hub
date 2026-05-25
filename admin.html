@@ -245,6 +245,7 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
   <div class="sidebar-section">
     <div class="sidebar-label">System</div>
     <button class="snav" onclick="showPage('users',this)">👥 Users</button>
+    <button class="snav" onclick="showPage('sitebudgets',this)">💷 Site Budgets</button>
     <button class="snav" onclick="showPage('history',this)">🕐 History</button>
     <button class="snav" onclick="showPage('security',this)">🔒 Security</button>
     <button class="snav" onclick="showPage('data',this)">💾 Data & Export</button>
@@ -428,6 +429,29 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
     <div id="brand-page-content"></div>
   </div>
 
+
+
+  <!-- ══ SITE BUDGETS ══ -->
+  <div class="page" id="page-sitebudgets">
+    <div class="page-title">Site Budgets</div>
+    <div class="page-sub">Annual planned budgets and monthly actuals per dealership</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:1.5rem" id="sb-brand-tabs">
+      <button class="cal-q-tab" id="sb-tab-audi" onclick="sbSelectBrand('audi')">Audi</button><button class="cal-q-tab" id="sb-tab-vw" onclick="sbSelectBrand('vw')">Volkswagen</button><button class="cal-q-tab" id="sb-tab-vwcv" onclick="sbSelectBrand('vwcv')">VW Commercial</button><button class="cal-q-tab" id="sb-tab-seat" onclick="sbSelectBrand('seat')">SEAT</button><button class="cal-q-tab" id="sb-tab-cupra" onclick="sbSelectBrand('cupra')">CUPRA</button><button class="cal-q-tab" id="sb-tab-landrover" onclick="sbSelectBrand('landrover')">Land Rover</button><button class="cal-q-tab" id="sb-tab-jaguar" onclick="sbSelectBrand('jaguar')">Jaguar</button><button class="cal-q-tab" id="sb-tab-honda" onclick="sbSelectBrand('honda')">Honda</button><button class="cal-q-tab" id="sb-tab-peugeot" onclick="sbSelectBrand('peugeot')">Peugeot</button><button class="cal-q-tab" id="sb-tab-byd" onclick="sbSelectBrand('byd')">BYD</button><button class="cal-q-tab" id="sb-tab-omoda" onclick="sbSelectBrand('omoda')">OMODA/JAECOO</button><button class="cal-q-tab" id="sb-tab-motormatch" onclick="sbSelectBrand('motormatch')">Motor Match</button>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" id="sb-brand-title">Select a brand above</div>
+        <button class="btn btn-primary" onclick="sbSave()">&#10003; Save all</button>
+      </div>
+      <div class="card-body" style="padding:0;overflow-x:auto">
+        <table class="brand-table" style="min-width:1200px">
+          <thead id="sb-thead"></thead>
+          <tbody id="sb-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="metrics-row" id="sb-metrics" style="margin-top:1rem"></div>
+  </div>
 
 
   <!-- ══ HISTORY ══ -->
@@ -982,6 +1006,7 @@ function changePassword() {
 ══════════════════════════════════════════ */
 function showPage(id, el) {
   if(id === 'users') setTimeout(loadUsers, 100);
+  if(id === 'sitebudgets') { sbLoad(); sbSelectBrand(SB_CURRENT_BRAND); }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.snav').forEach(s=>s.classList.remove('active'));
   const page = document.getElementById('page-'+id);
@@ -1915,8 +1940,204 @@ function importJSON() {
   input.click();
 }
 
+
+/* ════ SITE BUDGETS ════ */
+var SB_SITES = [{"site_id": "audi-blackburn", "site_name": "Audi Blackburn", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-carlisle", "site_name": "Audi Carlisle", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-crewe", "site_name": "Audi Crewe", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-preston", "site_name": "Audi Preston", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-stafford", "site_name": "Audi Stafford", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-stoke", "site_name": "Audi Stoke", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "vw-blackburn", "site_name": "VW Blackburn", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-chester", "site_name": "VW Chester", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-crewe", "site_name": "VW Crewe", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-macclesfield", "site_name": "VW Macclesfield", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-stafford", "site_name": "VW Stafford", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-stoke", "site_name": "VW Stoke", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vwcv-blackburn", "site_name": "VWC Blackburn", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-crewe", "site_name": "VWC Crewe", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-stoke", "site_name": "VWC Stoke", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "seat-blackburn", "site_name": "SEAT Blackburn", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "seat-chester", "site_name": "SEAT Chester", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "seat-crewe", "site_name": "SEAT Crewe", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "cupra-blackburn", "site_name": "CUPRA Blackburn", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "cupra-chester", "site_name": "CUPRA Chester", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "cupra-crewe", "site_name": "CUPRA Crewe", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "lr-chester", "site_name": "Land Rover Chester", "brand_id": "landrover", "brand_name": "Land Rover"}, {"site_id": "lr-stafford", "site_name": "Land Rover Stafford", "brand_id": "landrover", "brand_name": "Land Rover"}, {"site_id": "jag-chester", "site_name": "Jaguar Chester", "brand_id": "jaguar", "brand_name": "Jaguar"}, {"site_id": "honda-crewe", "site_name": "Honda Crewe", "brand_id": "honda", "brand_name": "Honda"}, {"site_id": "honda-stafford", "site_name": "Honda Stafford", "brand_id": "honda", "brand_name": "Honda"}, {"site_id": "peugeot-blackburn", "site_name": "Peugeot Blackburn", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "peugeot-chester", "site_name": "Peugeot Chester", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "peugeot-crewe", "site_name": "Peugeot Crewe", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "byd-crewe", "site_name": "BYD Crewe", "brand_id": "byd", "brand_name": "BYD"}, {"site_id": "omoda-crewe", "site_name": "OMODA/JAECOO Crewe", "brand_id": "omoda", "brand_name": "OMODA/JAECOO"}, {"site_id": "mm-blackburn", "site_name": "Motor Match Blackburn", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-chester", "site_name": "Motor Match Chester", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-crewe", "site_name": "Motor Match Crewe", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-stafford", "site_name": "Motor Match Stafford", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-stoke", "site_name": "Motor Match Stoke", "brand_id": "motormatch", "brand_name": "Motor Match"}];
+var SB_SITE_DATA = {};
+var SB_CURRENT_BRAND = 'audi';
+var SB_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function sbSelectBrand(brandId) {
+  SB_CURRENT_BRAND = brandId;
+  document.querySelectorAll('[id^="sb-tab-"]').forEach(function(t) {
+    t.className = 'cal-q-tab' + (t.id === 'sb-tab-' + brandId ? ' active' : '');
+  });
+  var names = {"audi": "Audi", "vw": "Volkswagen", "vwcv": "VW Commercial", "seat": "SEAT", "cupra": "CUPRA", "landrover": "Land Rover", "jaguar": "Jaguar", "honda": "Honda", "peugeot": "Peugeot", "byd": "BYD", "omoda": "OMODA/JAECOO", "motormatch": "Motor Match"};
+  var el = document.getElementById('sb-brand-title');
+  if (el) el.textContent = names[brandId] + ' — Site Budgets';
+  sbRenderTable(brandId);
+  sbUpdateMetrics(brandId);
+}
+
+function sbRenderTable(brandId) {
+  var thead = document.getElementById('sb-thead');
+  var tbody = document.getElementById('sb-tbody');
+  if (!thead || !tbody) return;
+  var sites = SB_SITES.filter(function(s) { return s.brand_id === brandId; });
+
+  // Header row
+  var hdrRow = document.createElement('tr');
+  var cols = ['Site', 'Annual'];
+  SB_MONTHS.forEach(function(m) { cols.push(m + ' Plan'); });
+  SB_MONTHS.forEach(function(m) { cols.push(m + ' Actual'); });
+  cols.push('Variance');
+  cols.forEach(function(c) {
+    var th = document.createElement('th');
+    th.textContent = c;
+    th.style.cssText = 'font-size:10px;white-space:nowrap;padding:6px 8px';
+    if (c.includes('Actual')) th.style.background = 'rgba(26,46,74,0.06)';
+    hdrRow.appendChild(th);
+  });
+  thead.innerHTML = '';
+  thead.appendChild(hdrRow);
+
+  // Body rows
+  tbody.innerHTML = '';
+  sites.forEach(function(site) {
+    var d = SB_SITE_DATA[site.site_id] || {};
+    var row = document.createElement('tr');
+
+    // Site name
+    var td0 = document.createElement('td');
+    td0.style.cssText = 'font-weight:600;font-size:13px;white-space:nowrap;padding:6px 8px';
+    td0.textContent = site.site_name;
+    row.appendChild(td0);
+
+    // Annual planned (auto-sum)
+    var tdAnn = document.createElement('td');
+    tdAnn.id = 'sb-annual-' + site.site_id;
+    tdAnn.style.cssText = 'font-family:var(--font-m);font-size:13px;font-weight:700;color:var(--swansway);padding:6px 8px;white-space:nowrap';
+    var annVal = d.annual_planned || 0;
+    tdAnn.textContent = '£' + annVal.toLocaleString();
+    row.appendChild(tdAnn);
+
+    // Monthly planned cells
+    for (var i = 0; i < 12; i++) {
+      var td = document.createElement('td');
+      td.style.cssText = 'padding:3px 4px';
+      var inp = document.createElement('input');
+      inp.type = 'number';
+      inp.min = '0';
+      inp.value = d['m' + i + '_planned'] || 0;
+      inp.style.cssText = 'width:72px;padding:3px 5px;border:1px solid var(--border);border-radius:2px;font-size:11px;font-family:var(--font-m);text-align:right';
+      inp.dataset.siteId = site.site_id;
+      inp.dataset.field = 'm' + i + '_planned';
+      inp.addEventListener('change', function() {
+        sbSetVal(this.dataset.siteId, this.dataset.field, this.value);
+        sbCalcAnnual(this.dataset.siteId);
+      });
+      td.appendChild(inp);
+      row.appendChild(td);
+    }
+
+    // Monthly actual cells
+    for (var j = 0; j < 12; j++) {
+      var tda = document.createElement('td');
+      tda.style.cssText = 'padding:3px 4px;background:rgba(26,46,74,0.03)';
+      var inpa = document.createElement('input');
+      inpa.type = 'number';
+      inpa.min = '0';
+      inpa.value = d['m' + j + '_actual'] || 0;
+      inpa.style.cssText = 'width:72px;padding:3px 5px;border:1px solid var(--border);border-radius:2px;font-size:11px;font-family:var(--font-m);text-align:right;background:#fff';
+      inpa.dataset.siteId = site.site_id;
+      inpa.dataset.field = 'm' + j + '_actual';
+      inpa.addEventListener('change', function() {
+        sbSetVal(this.dataset.siteId, this.dataset.field, this.value);
+        sbUpdateMetrics(SB_CURRENT_BRAND);
+      });
+      tda.appendChild(inpa);
+      row.appendChild(tda);
+    }
+
+    // Variance
+    var totalActual = 0;
+    for (var k = 0; k < 12; k++) totalActual += (d['m' + k + '_actual'] || 0);
+    var variance = totalActual - (d.annual_planned || 0);
+    var tdv = document.createElement('td');
+    tdv.style.cssText = 'font-family:var(--font-m);font-size:12px;padding:6px 8px;white-space:nowrap;color:' + (variance > 0 ? '#DC2626' : variance < 0 ? '#059669' : '#6B7280');
+    tdv.textContent = totalActual > 0 ? (variance >= 0 ? '+' : '') + '£' + Math.abs(variance).toLocaleString() : '—';
+    row.appendChild(tdv);
+    tbody.appendChild(row);
+  });
+}
+
+function sbSetVal(siteId, field, value) {
+  if (!SB_SITE_DATA[siteId]) SB_SITE_DATA[siteId] = {};
+  SB_SITE_DATA[siteId][field] = parseInt(value) || 0;
+}
+
+function sbCalcAnnual(siteId) {
+  var d = SB_SITE_DATA[siteId] || {};
+  var total = 0;
+  for (var i = 0; i < 12; i++) total += (d['m' + i + '_planned'] || 0);
+  SB_SITE_DATA[siteId].annual_planned = total;
+  var el = document.getElementById('sb-annual-' + siteId);
+  if (el) el.textContent = '£' + total.toLocaleString();
+}
+
+function sbUpdateMetrics(brandId) {
+  var el = document.getElementById('sb-metrics');
+  if (!el) return;
+  var sites = SB_SITES.filter(function(s) { return s.brand_id === brandId; });
+  var totalPlan = 0, totalActual = 0;
+  sites.forEach(function(site) {
+    var d = SB_SITE_DATA[site.site_id] || {};
+    totalPlan += d.annual_planned || 0;
+    for (var i = 0; i < 12; i++) totalActual += (d['m' + i + '_actual'] || 0);
+  });
+  var variance = totalActual - totalPlan;
+  var metrics = [
+    {label:'Brand planned total', val:'£' + totalPlan.toLocaleString(), color:'var(--swansway)'},
+    {label:'Brand actual YTD', val: totalActual > 0 ? '£' + totalActual.toLocaleString() : '—', color:'#059669'},
+    {label:'Variance', val: totalActual > 0 ? (variance >= 0 ? '+' : '') + '£' + Math.abs(variance).toLocaleString() : '—', color: variance > 0 ? '#DC2626' : '#059669'},
+    {label:'Sites', val: sites.length, color:'#6B7280'},
+  ];
+  el.innerHTML = metrics.map(function(m) {
+    return '<div class="metric" style="border-top-color:' + m.color + '"><div class="metric-label">' + m.label + '</div><div class="metric-val" style="color:' + m.color + '">' + m.val + '</div></div>';
+  }).join('');
+}
+
+async function sbLoad() {
+  var svcKey = window.SWANSWAY_CONFIG && window.SWANSWAY_CONFIG.serviceKey;
+  if (!svcKey) return;
+  try {
+    var resp = await fetch(SB_ADMIN_URL + '/rest/v1/site_budgets?select=*', {
+      headers: {'apikey': svcKey, 'Authorization': 'Bearer ' + svcKey}
+    });
+    if (!resp.ok) return;
+    var rows = await resp.json();
+    rows.forEach(function(row) { SB_SITE_DATA[row.site_id] = row; });
+    console.log('Site budgets loaded: ' + rows.length + ' sites');
+    sbRenderTable(SB_CURRENT_BRAND);
+    sbUpdateMetrics(SB_CURRENT_BRAND);
+  } catch(e) { console.warn('sbLoad error:', e); }
+}
+
+async function sbSave() {
+  var svcKey = window.SWANSWAY_CONFIG && window.SWANSWAY_CONFIG.serviceKey;
+  if (!svcKey) { showToast('No service key', 'error'); return; }
+  try {
+    var rows = SB_SITES.map(function(site) {
+      var d = SB_SITE_DATA[site.site_id] || {};
+      var row = {
+        site_id: site.site_id, site_name: site.site_name,
+        brand_id: site.brand_id, brand_name: site.brand_name,
+        annual_planned: d.annual_planned || 0,
+        updated_at: new Date().toISOString()
+      };
+      for (var i = 0; i < 12; i++) {
+        row['m' + i + '_planned'] = d['m' + i + '_planned'] || 0;
+        row['m' + i + '_actual']  = d['m' + i + '_actual']  || 0;
+      }
+      return row;
+    });
+    var resp = await fetch(SB_ADMIN_URL + '/rest/v1/site_budgets?on_conflict=site_id', {
+      method: 'POST',
+      headers: {
+        'apikey': svcKey, 'Authorization': 'Bearer ' + svcKey,
+        'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify(rows)
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    showToast('✓ Site budgets saved', 'success');
+  } catch(e) { showToast('Save error: ' + e.message, 'error'); }
+}
+
+
 function init() {
   initAdminSupabase();
+  setTimeout(sbLoad, 600);
   buildSidebarBrands();
   refreshDashboard();
   // Populate sheets URL field if stored
