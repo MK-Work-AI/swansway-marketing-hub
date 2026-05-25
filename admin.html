@@ -758,27 +758,40 @@ async function saveAll() {
 }
 
 async function saveToSupabase(payload) {
-  if (!SB_ADMIN || !SB_ADMIN_USER) {
+  const serviceKey = window.SWANSWAY_CONFIG?.serviceKey || SB_SERVICE_KEY;
+  if (!serviceKey || serviceKey.length < 100) {
     setSaveStatus('saved-local');
-    showToast('✓ Saved locally (sign in to sync across devices)', 'success');
+    showToast('⚠ Service key not configured in config.js', 'error');
     return;
   }
+  const SHARED_CONFIG_ID = '00000000-0000-0000-0000-000000000001';
+  const body = JSON.stringify([{
+    user_id:    SHARED_CONFIG_ID,
+    config:     payload,
+    updated_at: new Date().toISOString()
+  }]);
   try {
-    // Use a fixed ID so admin config is shared across all users
-    const SHARED_CONFIG_ID = '00000000-0000-0000-0000-000000000001';
-    const { error } = await SB_ADMIN
-      .from('admin_config')
-      .upsert({
-        user_id:    SHARED_CONFIG_ID,
-        config:     payload,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'user_id' });
-    if (error) throw error;
+    // Use fetch directly with service key — no user session needed
+    const resp = await fetch(SB_ADMIN_URL + '/rest/v1/admin_config?on_conflict=user_id', {
+      method: 'POST',
+      headers: {
+        'apikey':        serviceKey,
+        'Authorization': 'Bearer ' + serviceKey,
+        'Content-Type':  'application/json',
+        'Prefer':        'resolution=merge-duplicates'
+      },
+      body: body
+    });
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error(resp.status + ' ' + err.substring(0, 100));
+    }
     setSaveStatus('saved-supabase');
     showToast('✓ Saved to Supabase', 'success');
+    console.log('Admin config saved to Supabase');
   } catch(e) {
     setSaveStatus('saved-local');
-    showToast('⚠ Supabase error: ' + e.message, 'error');
+    showToast('⚠ Save error: ' + e.message, 'error');
     console.error('Save error:', e);
   }
 }
