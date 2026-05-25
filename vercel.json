@@ -1,51 +1,24 @@
 {
   "version": 2,
-  "name": "swansway-marketing-hub",
-  "builds": [
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.sql",
-      "use": "@vercel/static"
+  "functions": {
+    "api/claude.js": {
+      "runtime": "edge"
     }
-  ],
+  },
   "routes": [
     {
-      "src": "/",
-      "dest": "/index.html"
+      "src": "/api/claude",
+      "methods": ["OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "https://mk-work-ai.github.io",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+      },
+      "continue": true
     },
     {
-      "src": "/admin",
-      "dest": "/admin.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        }
-      ]
+      "src": "/api/claude",
+      "dest": "/api/claude.js"
     }
   ]
 }
