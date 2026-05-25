@@ -1585,7 +1585,7 @@ const BRANDS = [
       {l:'Fleet accounts active',t:'40 accounts',p:45,o:'Fleet team'},
       {l:'T7 Transporter units',t:'250 units',p:30,o:'Sales'},
       {l:'ID. Buzz / EV units',t:'80 units (20%)',p:25,o:'Sales + Mktg'},
-      {l:'Accessories revenue',t:'£180K',p:55,o:'Aftersales'},
+      {l:'Accessories revenue',t:'—',p:55,o:'Aftersales'},
       {l:'LinkedIn followers growth',t:'+50%',p:40,o:'Group social'},
     ],
     aiPrompts:[
@@ -3744,7 +3744,7 @@ function renderBudgetTracker() {
 
 function budgetEditCell(brandId, monthIdx, el) {
   if (el.querySelector('input')) return;
-  var current = BUDGET_ACTUALS[brandId + '_' + monthIdx] || 0;
+  var current = 0; // Actuals from site budgets
   var brand = BUDGET_BRANDS.find(function(b) { return b.id === brandId; });
   var planned = brand ? Math.round(brand.annual / 12) : 0;
   el.classList.add('editing');
@@ -3753,11 +3753,8 @@ function budgetEditCell(brandId, monthIdx, el) {
   input.focus(); input.select();
   function save() {
     var val = parseInt(input.value) || 0;
-    BUDGET_ACTUALS[brandId + '_' + monthIdx] = val;
-    saveBudgetActuals();
-    renderBudgetTracker();
-    // Show save confirmation
-    showToast('✓ Budget saved', 'success');
+    // Actuals now managed via Admin → Site Budgets
+    showToast('Enter actuals in Admin → Site Budgets', 'success');
   }
   input.addEventListener('blur', save);
   input.addEventListener('keydown', function(e) { if (e.key === 'Enter') save(); if (e.key === 'Escape') renderBudgetTracker(); });
@@ -3807,7 +3804,7 @@ function budgetImportCSV() {
         if (!brand) return;
         for (var mi = 0; mi < 12; mi++) {
           var val = parseInt(parts[mi+1]);
-          if (!isNaN(val)) BUDGET_ACTUALS[brand.id + '_' + mi] = val;
+          // Actuals now from site_budgets table
         }
       });
       saveBudgetActuals(); renderBudgetTracker();

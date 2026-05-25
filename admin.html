@@ -308,7 +308,8 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
         <div class="form-grid-4">
           <div class="form-group">
             <label class="form-label">Total annual budget (£)</label>
-            <div class="input-prefix"><span class="prefix-symbol">£</span><input type="number" class="form-input prefix-input" id="gs-budget" readonly style="background:var(--surface);color:var(--ink-soft);cursor:default" title="Auto-calculated from brand budgets" placeholder="4200000" oninput="onGroupBudgetChange()"></div>
+            <div class="input-prefix"><span class="prefix-symbol">£</span><input type="number" class="form-input prefix-input" id="gs-budget" readonly style="background:var(--surface);color:var(--ink-soft);cursor:not-allowed" title="Auto-calculated from site budgets" readonly style="background:var(--surface);color:var(--ink-soft);cursor:default" title="Auto-calculated from brand budgets" placeholder="4200000" oninput="onGroupBudgetChange()"></div>
+          <div style="font-size:11px;color:var(--ink-soft);margin-top:4px">Auto-calculated from Site Budgets page</div>
           </div>
           <div class="form-group">
             <label class="form-label">EV-focused spend target (%)</label>
