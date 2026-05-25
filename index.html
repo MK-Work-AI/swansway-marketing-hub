@@ -2480,103 +2480,28 @@ function renderBrandKpiChart() {
    and overrides default data where configured
 ══════════════════════════════════════ */
 function loadAdminConfig() {
-  try {
-    const saved = localStorage.getItem('swansway_config');
-    if (!saved) return;
-    const cfg = JSON.parse(saved);
-
-    // Override group-level data
-    if (cfg.group) {
-      const g = cfg.group;
-      // Update topbar subtitle
-      const sub = document.querySelector('.logo-sub');
-      if (sub && g.name) sub.textContent = g.year + ' Marketing Hub · ' + g.desc;
-      // Patch group metrics in brand overview
-      if (g.budget) GROUP_CHANNELS.forEach((ch, i) => {
-        if (cfg.channels && cfg.channels[i]) {
-          ch.pct = cfg.channels[i].pct;
-          ch.name = cfg.channels[i].name;
-          ch.budget = '£' + Math.round(g.budget * cfg.channels[i].pct / 100 / 1000) + 'K';
+  // Load admin config from Supabase if signed in, else skip
+  if (SB && SB_USER) {
+    SB.from('admin_config').select('config').eq('user_id', SB_USER.id).single()
+      .then(function(r) {
+        if (r.data && r.data.config) {
+          applyAdminConfig(r.data.config);
         }
-      });
-    }
+      }).catch(function() {});
+  }
+}
 
-    // Override channels
-    if (cfg.channels && cfg.channels.length) {
-      GROUP_CHANNELS.length = 0;
-      const totalBudget = cfg.group?.budget || 4200000;
-      cfg.channels.forEach(c => {
-        GROUP_CHANNELS.push({
-          n: c.name,
-          pct: c.pct,
-          budget: '£' + Math.round(totalBudget * c.pct / 100 / 1000) + 'K',
-          note: c.note || '',
-          color: c.color || '#374151'
-        });
-      });
-    }
-
-    // Override brand data (budget, targets, etc.)
-    if (cfg.brands && cfg.brands.length) {
-      cfg.brands.forEach(adminBrand => {
-        const planBrand = BRANDS.find(b => b.id === adminBrand.id);
-        if (!planBrand) return;
-        // Update the display strings from admin numbers
-        if (adminBrand.budget) {
-          const k = adminBrand.budget / 1000;
-          planBrand.budget = k >= 1000 ? '£' + (adminBrand.budget/1000000).toFixed(2) + 'M' : '£' + Math.round(k) + 'K';
-        }
-        if (adminBrand.newUnits) planBrand.newTarget = adminBrand.newUnits.toLocaleString() + ' units';
-        if (adminBrand.evPct !== undefined) planBrand.evTarget = adminBrand.evPct + '%';
-        if (adminBrand.q2Focus) planBrand.q2 = adminBrand.q2Focus;
-        if (adminBrand.name) planBrand.name = adminBrand.name;
-        if (adminBrand.color) planBrand.color = adminBrand.color;
-        if (adminBrand.segment) planBrand.segment = adminBrand.segment;
-        if (adminBrand.sites) planBrand.sites = adminBrand.sites;
-        if (adminBrand.sitenames) planBrand.sitenames = adminBrand.sitenames;
-        // Update progress bar from targets
-        if (adminBrand.leads && adminBrand.newUnits) {
-          planBrand.progress = Math.min(95, Math.round((adminBrand.convRate || 11) * 6));
-        }
-        // Update KPIs array with admin values
-        if (planBrand.kpis && adminBrand.leads) {
-          planBrand.kpis.forEach(k => {
-            if (k.l.includes('leads')) k.t = adminBrand.leads + '/month';
-            if (k.l.includes('units') && !k.l.includes('Used')) k.t = adminBrand.newUnits.toLocaleString() + ' units';
-            if (k.l.includes('conversion')) k.t = adminBrand.convRate + '% avg';
-            if (k.l.includes('NPS')) k.t = adminBrand.nps + '+';
-            if (k.l.includes('cost per lead') || k.l.includes('CPL')) k.t = '< £' + adminBrand.cpl;
-            if (k.l.includes('retention')) k.t = adminBrand.retention + '%+';
-            if (k.l.includes('Used') && k.l.includes('units')) k.t = (adminBrand.usedUnits || 0).toLocaleString() + ' units';
-            if (k.l.includes('Fleet')) k.t = (adminBrand.fleetUnits || 0) + ' units';
-          });
-        }
-      });
-    }
-
-    // Override calendar
-    if (cfg.calendar && cfg.calendar.length) {
-      GROUP_CALENDAR.length = 0;
-      cfg.calendar.forEach(q => GROUP_CALENDAR.push(q));
-    }
-
-    // Override group KPIs
-    if (cfg.kpis && cfg.kpis.length) {
-      GROUP_KPIS.length = 0;
-      cfg.kpis.forEach(k => {
-        GROUP_KPIS.push({
-          l: k.label,
-          t: k.target + (k.unit || ''),
-          p: k.target > 0 && k.actual > 0 ? Math.min(99, Math.round(k.actual / k.target * 100)) : Math.floor(Math.random() * 30 + 40),
-          o: k.owner
-        });
-      });
-    }
-
-    // Show "configured" badge
-    showConfigBadge();
-  } catch(e) {
-    /* admin config not loaded */
+function applyAdminConfig(cfg) {
+  if (!cfg) return;
+  // Apply brand targets, CPL etc from admin config
+  if (cfg.brands) {
+    cfg.brands.forEach(function(b) {
+      var card = document.getElementById('brand-card-' + b.id);
+      if (card) {
+        var budgetEl = card.querySelector('.brand-budget');
+        if (budgetEl && b.budget) budgetEl.textContent = '£' + parseInt(b.budget).toLocaleString();
+      }
+    });
   }
 }
 
@@ -3326,10 +3251,21 @@ var BUDGET_BRANDS = [
   {id:'byd',name:'BYD',color:'#0066CC',annual:175000},
   {id:'omoda',name:'OMODA/JAECOO',color:'#6B21A8',annual:140000},
 ];
-var BUDGET_ACTUALS = JSON.parse(localStorage.getItem('swansway_budget_actuals') || '{}');
+var BUDGET_ACTUALS = {}; // Loaded from Supabase on init
 
 function saveBudgetActuals() {
-  localStorage.setItem('swansway_budget_actuals', JSON.stringify(BUDGET_ACTUALS));
+  if (SB && SB_USER) {
+    SB.from('budget_actuals').upsert({ user_id: SB_USER.id, data: BUDGET_ACTUALS })
+      .then(function() {}).catch(function() {});
+  }
+}
+
+async function loadBudgetActuals() {
+  if (!SB || !SB_USER) return;
+  try {
+    var r = await SB.from('budget_actuals').select('data').eq('user_id', SB_USER.id).single();
+    if (r.data && r.data.data) { BUDGET_ACTUALS = r.data.data; renderBudgetTracker(); }
+  } catch(e) {}
 }
 
 function renderBudgetTracker() {
@@ -3455,7 +3391,7 @@ function budgetImportCSV() {
 /* ════════════════════════════════════════════════════════════════
    FEATURE 3 — CAMPAIGN AUTOPSY
 ════════════════════════════════════════════════════════════════ */
-var AUTOPSY_LIST = JSON.parse(localStorage.getItem('swansway_autopsies') || '[]');
+var AUTOPSY_LIST = []; // Loaded from Supabase on init
 var autopsyScore = 0;
 
 function autopsyNew() {
@@ -3493,7 +3429,6 @@ function autopsySave() {
     score: autopsyScore, created: new Date().toISOString()
   };
   AUTOPSY_LIST.unshift(autopsy);
-  localStorage.setItem('swansway_autopsies', JSON.stringify(AUTOPSY_LIST));
   if (SB && SB_USER) { SB.from('autopsies').insert({user_id:SB_USER.id,brand_id:brand.id,brand_name:brand.name,data:autopsy}).then(function(){}); }
   document.getElementById('autopsy-form').style.display = 'none';
   autopsyScore = 0;
@@ -3506,6 +3441,17 @@ function autopsyMetric(label, plan, actual, lowerBetter) {
   var cls = actual === 0 ? '' : (good ? 'on' : (Math.abs(diff/plan) > 0.2 ? 'over' : 'under'));
   var arrow = actual === 0 ? '' : (diff > 0 ? ' &#8593;' : ' &#8595;');
   return '<div class="autopsy-metric"><div class="autopsy-metric-label">' + label + '</div><div class="autopsy-metric-row"><div class="autopsy-planned">&pound;' + plan.toLocaleString() + '</div><div class="autopsy-actual ' + cls + '">' + (actual > 0 ? '&pound;' + actual.toLocaleString() + arrow : '&mdash;') + '</div></div></div>';
+}
+
+async function loadAutopsies() {
+  if (!SB || !SB_USER) return;
+  try {
+    var r = await SB.from('autopsies').select('data').eq('user_id', SB_USER.id).order('created_at', {ascending: false});
+    if (r.data && r.data.length) {
+      AUTOPSY_LIST = r.data.map(function(row) { return row.data; });
+      renderAutopsyList();
+    }
+  } catch(e) {}
 }
 
 function renderAutopsyList() {
@@ -3529,7 +3475,7 @@ function renderAutopsyList() {
 function autopsyDelete(id) {
   if (!confirm('Delete this autopsy?')) return;
   AUTOPSY_LIST = AUTOPSY_LIST.filter(function(a) { return a.id !== id; });
-  localStorage.setItem('swansway_autopsies', JSON.stringify(AUTOPSY_LIST));
+  if (SB && SB_USER) { SB.from('autopsies').delete().eq('id', id).then(function(){}); }
   renderAutopsyList();
 }
 function autopsyLoadSaved() { renderAutopsyList(); }
@@ -3537,7 +3483,7 @@ function autopsyLoadSaved() { renderAutopsyList(); }
 /* ════════════════════════════════════════════════════════════════
    FEATURE 9 — COMPETITOR MONITOR
 ════════════════════════════════════════════════════════════════ */
-var COMP_SCANS = JSON.parse(localStorage.getItem('swansway_comp_scans') || '[]');
+var COMP_SCANS = []; // Loaded from Supabase on init
 
 async function competitorScan() {
   var statusEl = document.getElementById('competitor-scan-status');
@@ -3576,7 +3522,7 @@ async function competitorScan() {
     scan._timestamp = new Date().toISOString();
     COMP_SCANS.unshift(scan);
     if (COMP_SCANS.length > 10) COMP_SCANS = COMP_SCANS.slice(0, 10);
-    localStorage.setItem('swansway_comp_scans', JSON.stringify(COMP_SCANS));
+    if (SB && SB_USER) { SB.from('competitor_scans').insert({user_id:SB_USER.id,data:scan}).then(function(){}); }
     renderCompetitorResults(scan);
     updateCompetitorMetrics();
   } catch(e) { resultsEl.innerHTML = '<div style="color:var(--accent);padding:16px">Error: ' + e.message + '</div>'; }
@@ -3604,6 +3550,17 @@ function renderCompetitorResults(scan) {
   });
   html += '<div style="font-size:11px;color:var(--ink-faint);text-align:right;margin-top:8px;font-family:var(--font-m)">Scanned: ' + new Date(scan._timestamp).toLocaleString('en-GB') + '</div>';
   el.innerHTML = html;
+}
+
+async function loadCompetitorScans() {
+  if (!SB || !SB_USER) return;
+  try {
+    var r = await SB.from('competitor_scans').select('data').eq('user_id', SB_USER.id).order('created_at', {ascending: false}).limit(10);
+    if (r.data && r.data.length) {
+      COMP_SCANS = r.data.map(function(row) { return row.data; });
+      updateCompetitorMetrics();
+    }
+  } catch(e) {}
 }
 
 function updateCompetitorMetrics() {
@@ -4113,7 +4070,7 @@ function qplanRenderForBrand(brandId, plan) {
 
   // Action completion state (localStorage per brand/quarter)
   const storeKey = 'qplan_actions_' + brandId + '_' + (plan.quarter || 'q');
-  const done = JSON.parse(localStorage.getItem(storeKey) || '{}');
+  var done = QPLAN_ACTION_STATE[storeKey] || {};
 
   container.innerHTML = `
     <div class="qplan-header">
@@ -4309,7 +4266,7 @@ function qplanToggleSection(header) {
 /* ── ACTION ITEM TOGGLE ── */
 function qplanToggleAction(brandId, quarter, idx) {
   const storeKey = 'qplan_actions_' + brandId + '_' + quarter;
-  const done = JSON.parse(localStorage.getItem(storeKey) || '{}');
+  var done = QPLAN_ACTION_STATE[storeKey] || {};
   done[idx] = !done[idx];
   localStorage.setItem(storeKey, JSON.stringify(done));
   const item = document.getElementById('qaction-' + brandId + '-' + idx);
@@ -4447,6 +4404,11 @@ function sbHandleSession(session) {
   SB_USER = session.user;
   showUserState(SB_USER);
   loadBriefs();
+  loadBudgetActuals();
+  loadAutopsies();
+  loadCompetitorScans();
+  loadQplanActions();
+  loadAdminConfig();
   // Refresh save bar if brief is open
   const saveBar = document.getElementById('bb-save-bar');
   const saveBtn = document.getElementById('bb-save-btn');

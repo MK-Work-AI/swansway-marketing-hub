@@ -706,7 +706,7 @@ async function saveToSheets(payload) {
 
 /* ── GET SHEETS URL ── */
 function getSheetsUrl() {
-  const stored = localStorage.getItem('swansway_sheets_url');
+  const stored = null; // Sheets removed
   const input  = document.getElementById('sheets-url-input');
   return (input && input.value.trim()) || stored || SHEETS_API_URL || '';
 }
@@ -715,16 +715,7 @@ function getSheetsUrl() {
    PRIMARY LOAD STATE
 ══════════════════════════════════════════ */
 async function loadState() {
-  // 1. Load localStorage first (instant, works offline)
-  try {
-    const saved = localStorage.getItem('swansway_admin_v2');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      STATE = { ...STATE, ...parsed };
-    }
-  } catch(e) {}
-
-  // 2. Load from Supabase (overrides localStorage with latest)
+  // Load from Supabase
   await loadFromSupabase();
 }
 
@@ -745,8 +736,7 @@ async function loadFromSupabase() {
     if (remote.channels?.length) STATE.channels = remote.channels;
     if (remote.kpis?.length)     STATE.kpis     = remote.kpis;
     if (remote.calendar?.length) STATE.calendar = remote.calendar;
-    // Also save to localStorage as cache
-    localStorage.setItem('swansway_admin_v2', JSON.stringify(STATE));
+
     buildSidebarBrands();
     refreshDashboard();
   } catch(e) {}
@@ -773,13 +763,7 @@ async function saveAll() {
     calendar: STATE.calendar,
   };
 
-  // 1. Always save to localStorage (instant, works offline)
-  try {
-    localStorage.setItem('swansway_admin_v2', JSON.stringify(STATE));
-    localStorage.setItem('swansway_config', JSON.stringify(payload));
-  } catch(e) {}
-
-  // 2. Save to Supabase
+  // Save to Supabase
   await saveToSupabase(payload);
 
   const savedAt = 'Last saved: ' + new Date().toLocaleString('en-GB');
@@ -1685,7 +1669,7 @@ function init() {
   buildSidebarBrands();
   refreshDashboard();
   // Populate sheets URL field if stored
-  const savedUrl = localStorage.getItem('swansway_sheets_url') || '';
+  const savedUrl = '';
   const urlInput = document.getElementById('sheets-url-input');
   if (urlInput && savedUrl) {
     urlInput.value = savedUrl;
@@ -1694,7 +1678,7 @@ function init() {
   }
   // Update storage status
   const localStatus = document.getElementById('local-storage-status');
-  if (localStatus) localStatus.textContent = localStorage.getItem('swansway_admin_v2') ? '✅ Data present' : '⚠ No local data';
+  if (localStatus) localStatus.textContent = SB_ADMIN ? '✅ Supabase connected' : '⚠ Not connected';
   const sheetsStatus = document.getElementById('sheets-storage-status');
   if (sheetsStatus) sheetsStatus.textContent = sheetsAvailable ? '✅ Connected' : (savedUrl ? 'Checking…' : '❌ Not configured');
   document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el=>{
@@ -1707,7 +1691,7 @@ function init() {
 (async () => {
   // Load local state synchronously first
   try {
-    const saved = localStorage.getItem('swansway_admin_v2');
+    const saved = null; // Supabase only
     if (saved) { const p = JSON.parse(saved); STATE = {...STATE,...p}; }
   } catch(e) {}
   document.getElementById('login-pw').focus();
