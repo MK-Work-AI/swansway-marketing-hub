@@ -3406,93 +3406,82 @@ function renderCrossCalendar() {
   var MN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   var months = QM[q];
 
-  // Update label
   var labelEl = document.getElementById('cal-quarter-label');
   if (labelEl) labelEl.textContent = QL[q];
-
-  // Update tabs
   for (var i = 0; i < 4; i++) {
     var tab = document.getElementById('cal-tab-' + i);
     if (tab) tab.className = 'cal-q-tab' + (i === q ? ' active' : '');
   }
 
-  // Brand list with colours
   var BORDER = [
-    {id:'All brands',   color:'#374151'},
-    {id:'Audi',         color:'#BB0A21'},
-    {id:'Volkswagen',   color:'#001E50'},
-    {id:'VW',           color:'#001E50'},
-    {id:'VW Commercial',color:'#1B4F72'},
-    {id:'SEAT',         color:'#E2231A'},
-    {id:'CUPRA',        color:'#C8920A'},
-    {id:'Land Rover',   color:'#1D4E1D'},
-    {id:'Jaguar',       color:'#1B2631'},
-    {id:'Honda',        color:'#CC0000'},
-    {id:'Peugeot',      color:'#1B3A6B'},
-    {id:'BYD',          color:'#0066CC'},
-    {id:'OMODA/JAECOO', color:'#6B21A8'},
-    {id:'Motor Match',  color:'#374151'},
+    {id:'All brands',color:'#374151'},{id:'Audi',color:'#BB0A21'},
+    {id:'Volkswagen',color:'#001E50'},{id:'VW Commercial',color:'#1B4F72'},
+    {id:'SEAT',color:'#E2231A'},{id:'CUPRA',color:'#C8920A'},
+    {id:'Land Rover',color:'#1D4E1D'},{id:'Jaguar',color:'#1B2631'},
+    {id:'Honda',color:'#CC0000'},{id:'Peugeot',color:'#1B3A6B'},
+    {id:'BYD',color:'#0066CC'},{id:'OMODA/JAECOO',color:'#6B21A8'},
+    {id:'Motor Match',color:'#374151'},
   ];
 
-  // Filter to brands with campaigns this quarter
   var active = BORDER.filter(function(b) {
     return BUILT_IN_CAMPAIGNS.some(function(c) {
-      return (c.brand === b.id || c.brand === 'ALL BRANDS') &&
-             months.some(function(m) { return m >= c.start && m <= c.end; });
+      return c.brand === b.id && months.some(function(m) { return m >= c.start && m <= c.end; });
     });
   });
 
-  if (active.length === 0) {
-    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint);font-size:13px">No campaigns scheduled for this quarter.<br>Add campaigns in Admin → Campaign Calendar then save.</div>';
+  if (!active.length) {
+    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint);font-size:13px">No campaigns this quarter — add them in Admin → Campaign Calendar.</div>';
     if (legendEl) legendEl.innerHTML = '';
     return;
   }
 
-  // Build grid
-  var html = '<div class="cal-month-col">';
-  html += '<div class="cal-month-header brand-col">Brand</div>';
-  months.forEach(function(m) { html += '<div class="cal-month-header">' + MN[m] + '</div>'; });
+  // Build table using a real HTML table for reliable column alignment
+  var COL_W = ['140px','1fr','1fr','1fr'];
+  var GRID  = 'display:grid;grid-template-columns:140px 1fr 1fr 1fr;gap:1px;background:var(--border);margin-bottom:1px';
+  var HCELL = 'background:var(--swansway);color:#fff;padding:9px 12px;font-family:var(--font-m);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;font-weight:500;display:flex;align-items:center;justify-content:center';
+  var BCELL = 'background:var(--white);padding:8px 10px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;min-height:48px';
+  var MCELL = 'background:var(--white);padding:5px;min-height:48px;display:flex;flex-direction:column;gap:3px';
+
+  var html = '<div style="border-radius:4px;overflow:hidden;border:1px solid var(--border)">';
+
+  // Header row
+  html += '<div style="' + GRID + '">';
+  html += '<div style="' + HCELL + ';background:#0D1B2A;justify-content:flex-start">Brand</div>';
+  months.forEach(function(m) { html += '<div style="' + HCELL + '">' + MN[m] + '</div>'; });
   html += '</div>';
 
   active.forEach(function(brand) {
-    html += '<div class="cal-brand-row">';
-    html += '<div class="cal-brand-cell"><span style="width:9px;height:9px;border-radius:50%;background:' + brand.color + ';flex-shrink:0;display:inline-block"></span>' + brand.id + '</div>';
+    html += '<div style="' + GRID + '">';
+    html += '<div style="' + BCELL + '"><span style="width:9px;height:9px;border-radius:50%;background:' + brand.color + ';flex-shrink:0;display:inline-block"></span>' + brand.id + '</div>';
     months.forEach(function(m) {
       var camps = BUILT_IN_CAMPAIGNS.filter(function(c) {
-        return (c.brand === brand.id || (brand.id === 'VW' && c.brand === 'Volkswagen')) && m >= c.start && m <= c.end;
+        return c.brand === brand.id && m >= c.start && m <= c.end;
       });
-      html += '<div class="cal-month-cell">';
-      if (!camps.length) {
-        html += '<span class="cal-empty">&mdash;</span>';
-      } else {
-        camps.forEach(function(c) {
-          var enc = encodeURIComponent(JSON.stringify(c));
-          html += '<div class="cal-campaign-pill" style="background:' + c.color + '" data-enc="' + enc.replace(/"/g,'&quot;') + '" data-cal-pill="1" title="' + c.name.replace(/"/g,'&quot;') + '">' + c.name + '</div>';
-        });
-      }
+      html += '<div style="' + MCELL + '">';
+      camps.forEach(function(c) {
+        var enc = encodeURIComponent(JSON.stringify(c));
+        html += '<div data-enc="' + enc.replace(/"/g,'&quot;') + '" data-cal-pill="1" title="' + c.name.replace(/"/g,'&quot;') + '" style="border-radius:3px;padding:5px 8px;font-size:11px;color:#fff;font-weight:500;line-height:1.3;cursor:pointer;background:' + c.color + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + c.name + '</div>';
+      });
+      if (!camps.length) html += '<span style="color:var(--ink-faint);font-size:11px;padding:4px 0">—</span>';
       html += '</div>';
     });
     html += '</div>';
   });
 
+  html += '</div>';
   el.innerHTML = html;
 
-  // Wire pill clicks
   el.querySelectorAll('[data-cal-pill]').forEach(function(pill) {
-    pill.addEventListener('click', function() {
-      calShowCampaign(decodeURIComponent(this.getAttribute('data-enc')));
-    });
+    pill.addEventListener('click', function() { calShowCampaign(decodeURIComponent(this.getAttribute('data-enc'))); });
   });
 
-  // Legend
   if (legendEl) {
     var seen = {};
     legendEl.innerHTML = BUILT_IN_CAMPAIGNS
       .filter(function(c) { return months.some(function(m) { return m >= c.start && m <= c.end; }); })
       .filter(function(c) { if (seen[c.brand]) return false; seen[c.brand] = true; return true; })
       .map(function(c) {
-        return '<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-soft);background:var(--surface);padding:4px 10px;border-radius:12px">'
-             + '<span style="width:8px;height:8px;border-radius:50%;background:' + c.color + ';display:inline-block"></span>' + c.brand + '</div>';
+        return '<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-soft);background:var(--surface);padding:4px 10px;border-radius:12px"><span style="width:8px;height:8px;border-radius:50%;background:' + c.color + ';display:inline-block"></span>' + c.brand + '</div>';
       }).join('');
   }
 }
