@@ -604,23 +604,23 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
    DEFAULT DATA
 ══════════════════════════════════════════ */
 const BRAND_DEFAULTS = [
-  {id:'audi',name:'Audi',color:'#CC0000',segment:'Premium',sites:6,budget:780000,leads:420,newUnits:1800,evPct:45,convRate:12,cpl:38,retention:70,usedUnits:960,fleetUnits:240,nps:75,q2Focus:'A6 e-tron Avant launch + Summer Drive VIP event',sitenames:'Blackburn · Carlisle · Crewe · Preston · Stafford · Stoke'},
-  {id:'vw',name:'Volkswagen',color:'#001E5A',segment:'Mainstream',sites:5,budget:590000,leads:380,newUnits:2400,evPct:35,convRate:10,cpl:26,retention:68,usedUnits:1200,fleetUnits:180,nps:70,q2Focus:'ID.3 summer finance push + Golf facelift media',sitenames:'Chester · Crewe · Oldham · Preston · Stafford'},
-  {id:'vwcv',name:'VW Commercial',color:'#1B4F72',segment:'Commercial',sites:2,budget:340000,leads:120,newUnits:600,evPct:20,convRate:14,cpl:45,retention:72,usedUnits:300,fleetUnits:280,nps:68,q2Focus:'Transporter T7 launch + fleet drive days',sitenames:'Oldham VW Van Centre · Preston VW Van Centre'},
-  {id:'seat',name:'SEAT',color:'#E2231A',segment:'Mainstream',sites:3,budget:210000,leads:250,newUnits:1100,evPct:25,convRate:9,cpl:22,retention:65,usedUnits:600,fleetUnits:60,nps:68,q2Focus:'Ibiza summer social push + Leon Cupra-lite crossover',sitenames:'Chester · Crewe · Stafford'},
-  {id:'cupra',name:'CUPRA',color:'#C8920A',segment:'Performance EV',sites:2,budget:190000,leads:180,newUnits:400,evPct:60,convRate:11,cpl:42,retention:70,usedUnits:200,fleetUnits:40,nps:78,q2Focus:'Born EV summer + padel tennis series Crewe',sitenames:'Crewe CUPRA · Stockport CUPRA'},
-  {id:'landrover',name:'Land Rover',color:'#1D4E1D',segment:'Premium Luxury',sites:2,budget:380000,leads:180,newUnits:500,evPct:40,convRate:18,cpl:55,retention:72,usedUnits:400,fleetUnits:80,nps:80,q2Focus:'Defender adventure camp + Range Rover lifestyle push',sitenames:'Chester · Crewe'},
-  {id:'jaguar',name:'Jaguar',color:'#1B2631',segment:'Premium Luxury',sites:1,budget:175000,leads:80,newUnits:180,evPct:50,convRate:15,cpl:52,retention:68,usedUnits:120,fleetUnits:30,nps:72,q2Focus:'Brand relaunch support + EV positioning',sitenames:'Crewe Jaguar'},
-  {id:'honda',name:'Honda',color:'#CC0000',segment:'Mainstream Hybrid',sites:4,budget:260000,leads:280,newUnits:1400,evPct:55,convRate:10,cpl:28,retention:70,usedUnits:700,fleetUnits:80,nps:74,q2Focus:'e:HEV hybrid summer campaign + HR-V push',sitenames:'Blackburn · Bolton · Stockport · Stafford'},
-  {id:'peugeot',name:'Peugeot',color:'#1B3A6B',segment:'Mainstream EV',sites:3,budget:215000,leads:240,newUnits:1200,evPct:40,convRate:9,cpl:24,retention:65,usedUnits:500,fleetUnits:70,nps:68,q2Focus:'E-308 summer lease push + 3008 PHEV launch',sitenames:'Chester · Crewe · Stockport'},
-  {id:'byd',name:'BYD',color:'#0066CC',segment:'EV-Led',sites:3,budget:175000,leads:180,newUnits:500,evPct:100,convRate:8,cpl:35,retention:60,usedUnits:100,fleetUnits:50,nps:68,q2Focus:'BYD Seal awareness push + EV education campaign',sitenames:'Cheshire · Cheshire 2 · Stoke'},
-  {id:'omoda',name:'OMODA / JAECOO',color:'#6B21A8',segment:'EV-Led New Brand',sites:1,budget:140000,leads:100,newUnits:250,evPct:55,convRate:7,cpl:30,retention:55,usedUnits:50,fleetUnits:20,nps:65,q2Focus:'OMODA 7 launch + Jaecoo 5 EV push + grand opening follow-up',sitenames:'Stockport (dual brand showroom)'},
-  {id:'motormatch',name:'Motor Match',color:'#374151',segment:'Used Car',sites:5,budget:160000,leads:600,newUnits:4000,evPct:15,convRate:6,cpl:14,retention:0,usedUnits:4000,fleetUnits:0,nps:70,q2Focus:'Top Value Dealer maintenance + summer stock push',sitenames:'Chester · Crewe · Stockport · Stoke · Fenton'},
+  {id:'audi',name:'Audi',color:'#CC0000',segment:'Premium',sites:6,budget:0,leads:420,newUnits:1800,evPct:45,convRate:12,cpl:38,retention:70,usedUnits:960,fleetUnits:240,nps:75,q2Focus:'A6 e-tron Avant launch + Summer Drive VIP event',sitenames:'Blackburn · Carlisle · Crewe · Preston · Stafford · Stoke'},
+  {id:'vw',name:'Volkswagen',color:'#001E5A',segment:'Mainstream',sites:5,budget:0,leads:380,newUnits:2400,evPct:35,convRate:10,cpl:26,retention:68,usedUnits:1200,fleetUnits:180,nps:70,q2Focus:'ID.3 summer finance push + Golf facelift media',sitenames:'Chester · Crewe · Oldham · Preston · Stafford'},
+  {id:'vwcv',name:'VW Commercial',color:'#1B4F72',segment:'Commercial',sites:2,budget:0,leads:120,newUnits:600,evPct:20,convRate:14,cpl:45,retention:72,usedUnits:300,fleetUnits:280,nps:68,q2Focus:'Transporter T7 launch + fleet drive days',sitenames:'Oldham VW Van Centre · Preston VW Van Centre'},
+  {id:'seat',name:'SEAT',color:'#E2231A',segment:'Mainstream',sites:3,budget:0,leads:250,newUnits:1100,evPct:25,convRate:9,cpl:22,retention:65,usedUnits:600,fleetUnits:60,nps:68,q2Focus:'Ibiza summer social push + Leon Cupra-lite crossover',sitenames:'Chester · Crewe · Stafford'},
+  {id:'cupra',name:'CUPRA',color:'#C8920A',segment:'Performance EV',sites:2,budget:0,leads:180,newUnits:400,evPct:60,convRate:11,cpl:42,retention:70,usedUnits:200,fleetUnits:40,nps:78,q2Focus:'Born EV summer + padel tennis series Crewe',sitenames:'Crewe CUPRA · Stockport CUPRA'},
+  {id:'landrover',name:'Land Rover',color:'#1D4E1D',segment:'Premium Luxury',sites:2,budget:0,leads:180,newUnits:500,evPct:40,convRate:18,cpl:55,retention:72,usedUnits:400,fleetUnits:80,nps:80,q2Focus:'Defender adventure camp + Range Rover lifestyle push',sitenames:'Chester · Crewe'},
+  {id:'jaguar',name:'Jaguar',color:'#1B2631',segment:'Premium Luxury',sites:1,budget:0,leads:80,newUnits:180,evPct:50,convRate:15,cpl:52,retention:68,usedUnits:120,fleetUnits:30,nps:72,q2Focus:'Brand relaunch support + EV positioning',sitenames:'Crewe Jaguar'},
+  {id:'honda',name:'Honda',color:'#CC0000',segment:'Mainstream Hybrid',sites:4,budget:0,leads:280,newUnits:1400,evPct:55,convRate:10,cpl:28,retention:70,usedUnits:700,fleetUnits:80,nps:74,q2Focus:'e:HEV hybrid summer campaign + HR-V push',sitenames:'Blackburn · Bolton · Stockport · Stafford'},
+  {id:'peugeot',name:'Peugeot',color:'#1B3A6B',segment:'Mainstream EV',sites:3,budget:0,leads:240,newUnits:1200,evPct:40,convRate:9,cpl:24,retention:65,usedUnits:500,fleetUnits:70,nps:68,q2Focus:'E-308 summer lease push + 3008 PHEV launch',sitenames:'Chester · Crewe · Stockport'},
+  {id:'byd',name:'BYD',color:'#0066CC',segment:'EV-Led',sites:3,budget:0,leads:180,newUnits:500,evPct:100,convRate:8,cpl:35,retention:60,usedUnits:100,fleetUnits:50,nps:68,q2Focus:'BYD Seal awareness push + EV education campaign',sitenames:'Cheshire · Cheshire 2 · Stoke'},
+  {id:'omoda',name:'OMODA / JAECOO',color:'#6B21A8',segment:'EV-Led New Brand',sites:1,budget:0,leads:100,newUnits:250,evPct:55,convRate:7,cpl:30,retention:55,usedUnits:50,fleetUnits:20,nps:65,q2Focus:'OMODA 7 launch + Jaecoo 5 EV push + grand opening follow-up',sitenames:'Stockport (dual brand showroom)'},
+  {id:'motormatch',name:'Motor Match',color:'#374151',segment:'Used Car',sites:5,budget:0,leads:600,newUnits:4000,evPct:15,convRate:6,cpl:14,retention:0,usedUnits:4000,fleetUnits:0,nps:70,q2Focus:'Top Value Dealer maintenance + summer stock push',sitenames:'Chester · Crewe · Stockport · Stoke · Fenton'},
 ];
 
 const GROUP_DEFAULTS = {
   name:'Swansway Motor Group', year:'2026', desc:'11 brands · 30 dealerships · North West, Midlands & North Wales',
-  fystart:'January', budget:4200000, evPct:38, digSplit:'70% digital / 30% traditional', coopPct:15,
+  fystart:'January', budget:0, evPct:38, digSplit:'70% digital / 30% traditional', coopPct:15,
   units:8530, leads:2400, evSales:35, conv:11, retention:68, used:6000, nps:72, cpl:32,
   priorities:[
     {title:'EV Transition Leadership',desc:'Drive electric adoption across BYD, CUPRA, VW, Peugeot and OMODA/JAECOO. Education-first campaigns, home charger incentives, BIK savings calculators for fleet.'},
@@ -1047,9 +1047,16 @@ function buildSidebarBrands() {
 function refreshDashboard() {
   const brandSum     = STATE.brands.reduce((s,b)=>s+(b.budget||0),0);
   const groupBudget  = brandSum; // Auto-calculated from brand budgets
-  const totalBudget  = brandSum;
-  // Keep group.budget in sync
-  if (STATE.group) STATE.group.budget = brandSum;
+  // Total budget = sum of all site planned budgets (single source of truth)
+  var siteBrandSum = 0;
+  if (typeof SB_SITES !== 'undefined' && typeof SB_SITE_DATA !== 'undefined') {
+    SB_SITES.forEach(function(site) {
+      var d = SB_SITE_DATA[site.site_id] || {};
+      siteBrandSum += d.annual_planned || 0;
+    });
+  }
+  const totalBudget = siteBrandSum > 0 ? siteBrandSum : brandSum;
+  if (STATE.group) STATE.group.budget = totalBudget;
   const totalUnits = STATE.brands.reduce((s,b)=>s+(b.id==='motormatch'?0:b.newUnits),0);
   const totalLeads = STATE.brands.reduce((s,b)=>s+b.leads,0);
   const avgEV = Math.round(STATE.brands.filter(b=>b.id!=='motormatch').reduce((s,b)=>s+b.evPct,0)/11);
