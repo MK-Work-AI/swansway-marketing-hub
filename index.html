@@ -2118,7 +2118,7 @@ const GROUP_CALENDAR = [
    GROUP CHANNELS DATA
 ══════════════════════════════════════ */
 const GROUP_CHANNELS = [
-  {n:'Digital Paid (PPC/Display)',pct:30,budget:'£1,260K',note:'Google, Bing, AutoTrader PPC — brand-specific ad sets per brand and dealership. Google Shopping for used cars. ZEV-specific EV search terms across BYD, VW, Peugeot, CUPRA.',color:'#1E3A8A'},
+  {n:'Digital Paid (PPC/Display)',pct:30,budget:'auto',note:'Google, Bing, AutoTrader PPC — brand-specific ad sets per brand and dealership. Google Shopping for used cars. ZEV-specific EV search terms across BYD, VW, Peugeot, CUPRA.',color:'#1E3A8A'},
   {n:'Social & Content',pct:20,budget:'—',note:'TikTok, Instagram, Facebook, YouTube — brand personality-led, mix of UGC and produced content. Josh S. as group social lead. Each brand has its own social identity.',color:'#14532D'},
   {n:'Manufacturer Co-op',pct:15,budget:'—',note:'Leverage VW Group, JLR, Honda, Stellantis, OMODA UK central funds. Submit compliant creative to unlock match funding. This is effectively free money — prioritise compliance.',color:'#78350F'},
   {n:'Email & CRM',pct:12,budget:'—',note:'Lifecycle nurture, conquest, retention — segmented by brand and lifecycle stage. 5–6 stage sequences for each brand. Owner upgrade triggers. Service retention campaigns.',color:'#4C1D95'},
@@ -2422,15 +2422,27 @@ function renderGroupCalendar() {
 /* ── RENDER GROUP CHANNELS ── */
 function renderGroupChannels() {
   const g = document.getElementById('group-channel-list');
-  g.innerHTML = GROUP_CHANNELS.map(c=>`
-    <div class="channel-item">
-      <div class="channel-name">${c.n}</div>
-      <div class="channel-bar-wrap"><div class="channel-bar" style="width:${c.pct*3.2}%;background:${c.color}"></div></div>
-      <div class="channel-pct">${c.pct}%</div>
-      <div class="channel-budget">${c.budget}</div>
-    </div>
-    <div class="channel-note">${c.note}</div>
-  `).join('');
+  if (!g) return;
+  // Get group total from site budgets (single source of truth)
+  var groupTotal = Object.values(SITE_BUDGETS).reduce(function(s, d) {
+    return s + (d.annual_planned || 0);
+  }, 0);
+  // Fall back to sum of BUDGET_BRANDS if site budgets not loaded yet
+  if (groupTotal === 0) {
+    groupTotal = BUDGET_BRANDS.reduce(function(s, b) { return s + (b.annual || 0); }, 0);
+  }
+  g.innerHTML = GROUP_CHANNELS.map(function(c) {
+    var budgetVal = groupTotal > 0
+      ? '£' + Math.round(groupTotal * c.pct / 100 / 1000) + 'K'
+      : c.budget !== 'auto' ? c.budget : '—';
+    return '<div class="channel-item">'
+      + '<div class="channel-name">' + c.n + '</div>'
+      + '<div class="channel-bar-wrap"><div class="channel-bar" style="width:' + (c.pct * 3.2) + '%;background:' + c.color + '"></div></div>'
+      + '<div class="channel-pct">' + c.pct + '%</div>'
+      + '<div class="channel-budget">' + budgetVal + '</div>'
+      + '</div>'
+      + '<div class="channel-note">' + c.note + '</div>';
+  }).join('');
 }
 
 /* ── RENDER GROUP KPIs ── */
@@ -2703,12 +2715,16 @@ function applyAdminConfig(cfg) {
 
   // ── 4. UPDATE CHANNELS ────────────────────────────────────────
   if (cfg.channels && cfg.channels.length) {
+    // Update GROUP_CHANNELS pct and notes from admin config
     cfg.channels.forEach(function(ch, i) {
-      var pctEl  = document.getElementById('channel-pct-' + i);
-      var noteEl = document.getElementById('channel-note-' + i);
-      if (pctEl && ch.pct)   pctEl.textContent  = ch.pct + '%';
-      if (noteEl && ch.note) noteEl.textContent  = ch.note;
+      if (i < GROUP_CHANNELS.length) {
+        if (ch.pct)  GROUP_CHANNELS[i].pct  = ch.pct;
+        if (ch.note) GROUP_CHANNELS[i].note = ch.note;
+        if (ch.name || ch.n) GROUP_CHANNELS[i].n = ch.name || ch.n;
+      }
     });
+    // Re-render with updated percentages (£ auto-computed from site budgets)
+    if (typeof renderGroupChannels === 'function') renderGroupChannels();
   }
 
   // ── 5. UPDATE CAMPAIGN CALENDAR ──────────────────────────────
@@ -4432,6 +4448,7 @@ async function loadSiteBudgets() {
     }
     updateBrandBudgetsFromSites();
     if (typeof renderBudgetTracker === 'function') renderBudgetTracker();
+    if (typeof renderGroupChannels === 'function') renderGroupChannels();
     console.log('Site budgets loaded: ' + rows.length + ' sites, £' + groupTotal.toLocaleString());
   } catch(e) { console.warn('loadSiteBudgets exception:', e); }
 }
