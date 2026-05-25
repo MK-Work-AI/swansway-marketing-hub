@@ -4331,6 +4331,7 @@ function renderBrandSites(brandId) {
   var el = document.getElementById(brandId + '-sites-list');
   if (!el) return;
   var sites = HUB_SITES.filter(function(s) { return s.brand_id === brandId; });
+  console.log('renderBrandSites:', brandId, sites.length, 'sites, SITE_BUDGETS keys:', Object.keys(SITE_BUDGETS).length);
   if (!sites.length) {
     el.innerHTML = '<div style="padding:20px;color:var(--ink-faint);font-size:13px">No sites configured for this brand.</div>';
     return;
