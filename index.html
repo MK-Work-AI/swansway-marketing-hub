@@ -3692,75 +3692,156 @@ function getBudgetFromSites(brandId) {
 }
 
 function renderBudgetTracker() {
-  // Sync BUDGET_BRANDS annual from site sums if available
+  // Sync BUDGET_BRANDS annual from site sums
   if (Object.keys(SITE_BUDGETS).length > 0) {
     BUDGET_BRANDS.forEach(function(bb) {
       var b = getBudgetFromSites(bb.id);
       if (b.planned > 0) bb.annual = b.planned;
     });
   }
-  var thead = document.getElementById('budget-thead');
-  var tbody = document.getElementById('budget-tbody');
+
+  var thead    = document.getElementById('budget-thead');
+  var tbody    = document.getElementById('budget-tbody');
   var metricsEl = document.getElementById('budget-metrics');
   if (!thead) return;
-  var hdr = '<tr><th>Brand</th>';
-  CAL_MONTHS.forEach(function(m) { hdr += '<th style="text-align:right">' + m + '</th>'; });
+
+  // Header
+  var hdr = '<tr><th>Brand / Site</th>';
+  CAL_MONTHS.forEach(function(m) { hdr += '<th style="text-align:right;font-size:10px">' + m + '</th>'; });
   hdr += '<th style="text-align:right">Planned</th><th style="text-align:right">Actual</th><th style="text-align:right">Variance</th></tr>';
   thead.innerHTML = hdr;
+
   var totalPlanned = 0, totalActual = 0;
-  var mPlanned = new Array(12).fill(0), mActual = new Array(12).fill(0);
+  var mPlanned = new Array(12).fill(0);
+  var mActual  = new Array(12).fill(0);
   var rows = '';
+
   BUDGET_BRANDS.forEach(function(b) {
-    // Get planned per month from site budgets
-    var sitesForBrand = HUB_SITES ? HUB_SITES.filter(function(s) { return s.brand_id === b.id; }) : [];
-    var monthlyPlanned = new Array(12).fill(0);
-    var monthlyActual  = new Array(12).fill(0);
-    if (sitesForBrand.length > 0 && Object.keys(SITE_BUDGETS).length > 0) {
-      sitesForBrand.forEach(function(site) {
+    // Get sites for this brand
+    var sites = (typeof HUB_SITES !== 'undefined')
+      ? HUB_SITES.filter(function(s) { return s.brand_id === b.id; })
+      : [];
+    var hasSiteData = sites.length > 0 && Object.keys(SITE_BUDGETS).length > 0;
+
+    // Calculate brand monthly totals from site budgets
+    var brandMonthlyPlan   = new Array(12).fill(0);
+    var brandMonthlyActual = new Array(12).fill(0);
+    if (hasSiteData) {
+      sites.forEach(function(site) {
         var d = SITE_BUDGETS[site.site_id] || {};
         for (var i = 0; i < 12; i++) {
-          monthlyPlanned[i] += d['m' + i + '_planned'] || 0;
-          monthlyActual[i]  += d['m' + i + '_actual']  || 0;
+          brandMonthlyPlan[i]   += d['m' + i + '_planned'] || 0;
+          brandMonthlyActual[i] += d['m' + i + '_actual']  || 0;
         }
       });
     } else {
-      var fallback = Math.round(b.annual / 12);
-      for (var i = 0; i < 12; i++) monthlyPlanned[i] = fallback;
+      var monthly = Math.round(b.annual / 12);
+      for (var i = 0; i < 12; i++) brandMonthlyPlan[i] = monthly;
     }
-    var monthly = monthlyPlanned[0] || Math.round(b.annual / 12);
-    var brandActual = 0;
-    var cells = '';
-    for (var mi = 0; mi < 12; mi++) {
-      var monthly = monthlyPlanned[mi] || Math.round(b.annual / 12);
-      var actual = monthlyActual[mi] || 0;
-      brandActual += actual;
-      mPlanned[mi] += monthly;
-      mActual[mi] += actual;
-      var diff = actual - monthly;
-      var cls = actual === 0 ? '' : (diff > monthly * 0.1 ? ' budget-over' : diff < -monthly * 0.1 ? ' budget-under' : ' budget-on');
-      var inner = actual > 0 ? ('&pound;' + actual.toLocaleString()) : ('<em style="color:var(--ink-faint)">&pound;' + monthly.toLocaleString() + '</em>');
-      cells += '<td class="budget-cell' + cls + '" title="Planned: &pound;' + monthly.toLocaleString() + '">' + inner + '</td>';
+
+    var brandPlan   = brandMonthlyPlan.reduce(function(s, v) { return s + v; }, 0);
+    var brandActual = brandMonthlyActual.reduce(function(s, v) { return s + v; }, 0);
+    totalPlanned += brandPlan;
+    totalActual  += brandActual;
+    for (var i = 0; i < 12; i++) {
+      mPlanned[i] += brandMonthlyPlan[i];
+      mActual[i]  += brandMonthlyActual[i];
     }
-    totalPlanned += b.annual;
-    totalActual += brandActual;
-    var variance = brandActual - b.annual;
-    var varStr = brandActual === 0 ? '&mdash;' : (variance >= 0 ? '+' : '') + '&pound;' + Math.abs(variance).toLocaleString();
+
+    var variance = brandActual - brandPlan;
     var varStyle = brandActual === 0 ? '' : (variance > 0 ? 'color:#DC2626' : 'color:#059669');
-    rows += '<tr><td><div style="display:flex;align-items:center;gap:6px;font-weight:600"><span style="width:8px;height:8px;border-radius:50%;background:' + b.color + ';display:inline-block;flex-shrink:0"></span>' + b.name + '</div></td>' + cells + '<td style="text-align:right;font-size:11px;color:var(--ink-soft)">&pound;' + b.annual.toLocaleString() + '</td><td style="text-align:right;font-size:12px;font-weight:600">' + (brandActual > 0 ? '&pound;' + brandActual.toLocaleString() : '&mdash;') + '</td><td style="text-align:right;font-size:11px;' + varStyle + '">' + varStr + '</td></tr>';
+    var varStr   = brandActual === 0 ? '&mdash;' : (variance >= 0 ? '+' : '') + '&pound;' + Math.abs(variance).toLocaleString();
+
+    // Brand row (accordion header)
+    var brandRowId = 'bt-sites-' + b.id;
+    var brandCells = '';
+    for (var mi = 0; mi < 12; mi++) {
+      var plan = brandMonthlyPlan[mi];
+      var act  = brandMonthlyActual[mi];
+      var diff = act - plan;
+      var cls  = act === 0 ? '' : (diff > plan * 0.1 ? ' budget-over' : diff < -plan * 0.1 ? ' budget-under' : ' budget-on');
+      var inner = act > 0
+        ? '&pound;' + act.toLocaleString()
+        : '<em style="color:var(--ink-faint)">&pound;' + plan.toLocaleString() + '</em>';
+      brandCells += '<td class="budget-cell' + cls + '">' + inner + '</td>';
+    }
+
+    var expandIcon = sites.length > 0 ? ' <span style="font-size:10px;color:var(--ink-soft)" id="bt-icon-' + b.id + '">&#9660;</span>' : '';
+    var clickHandler = sites.length > 0 ? 'onclick="btToggle(\'' + b.id + '\')"' : '';
+
+    rows += '<tr ' + clickHandler + ' style="' + (sites.length > 0 ? 'cursor:pointer;' : '') + 'background:var(--surface)">'
+      + '<td><div style="display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px">'
+      + '<span style="width:8px;height:8px;border-radius:50%;background:' + b.color + ';display:inline-block;flex-shrink:0"></span>'
+      + b.name + expandIcon + '</div>'
+      + (sites.length > 0 ? '<div style="font-size:10px;color:var(--ink-soft);margin-left:14px;margin-top:1px">' + sites.length + ' sites</div>' : '')
+      + '</td>'
+      + brandCells
+      + '<td style="text-align:right;font-size:11px;color:var(--ink-soft)">&pound;' + brandPlan.toLocaleString() + '</td>'
+      + '<td style="text-align:right;font-size:12px;font-weight:600">' + (brandActual > 0 ? '&pound;' + brandActual.toLocaleString() : '&mdash;') + '</td>'
+      + '<td style="text-align:right;font-size:11px;' + varStyle + '">' + varStr + '</td>'
+      + '</tr>';
+
+    // Site sub-rows (hidden by default)
+    if (hasSiteData) {
+      rows += '<tr id="' + brandRowId + '" style="display:none"><td colspan="16" style="padding:0">';
+      rows += '<table style="width:100%;border-collapse:collapse">';
+
+      sites.forEach(function(site) {
+        var d = SITE_BUDGETS[site.site_id] || {};
+        var sitePlan = 0, siteActual = 0;
+        var siteCells = '';
+        for (var mi = 0; mi < 12; mi++) {
+          var sp = d['m' + mi + '_planned'] || 0;
+          var sa = d['m' + mi + '_actual']  || 0;
+          sitePlan   += sp;
+          siteActual += sa;
+          var sdiff = sa - sp;
+          var scls  = sa === 0 ? '' : (sdiff > sp * 0.1 ? ' budget-over' : sdiff < -sp * 0.1 ? ' budget-under' : ' budget-on');
+          var sinner = sa > 0
+            ? '&pound;' + sa.toLocaleString()
+            : sp > 0 ? '<em style="color:var(--ink-faint)">&pound;' + sp.toLocaleString() + '</em>' : '<em style="color:var(--ink-faint)">&mdash;</em>';
+          siteCells += '<td class="budget-cell' + scls + '" style="font-size:11px;padding:4px 8px">' + sinner + '</td>';
+        }
+        var sVar = siteActual - sitePlan;
+        var sVarStyle = siteActual === 0 ? '' : (sVar > 0 ? 'color:#DC2626' : 'color:#059669');
+        rows += '<tr style="background:var(--white);border-top:1px solid var(--border)">'
+          + '<td style="padding:5px 8px 5px 24px;font-size:12px;color:var(--ink-soft)">' + site.site_name + '</td>'
+          + siteCells
+          + '<td style="text-align:right;font-size:11px;color:var(--ink-faint);padding:4px 8px">' + (sitePlan > 0 ? '&pound;' + sitePlan.toLocaleString() : '&mdash;') + '</td>'
+          + '<td style="text-align:right;font-size:11px;padding:4px 8px">' + (siteActual > 0 ? '&pound;' + siteActual.toLocaleString() : '&mdash;') + '</td>'
+          + '<td style="text-align:right;font-size:11px;' + sVarStyle + ';padding:4px 8px">' + (siteActual > 0 ? (sVar >= 0 ? '+' : '') + '&pound;' + Math.abs(sVar).toLocaleString() : '&mdash;') + '</td>'
+          + '</tr>';
+      });
+
+      rows += '</table></td></tr>';
+    }
   });
+
   tbody.innerHTML = rows;
+
+  // Metrics
   var pct = totalActual > 0 ? Math.round(totalActual / totalPlanned * 100) : 0;
-  var mData = [
-    {label:'Total planned 2026',val:'&pound;' + (totalPlanned/1000000).toFixed(2) + 'M',sub:'Across all 11 brands',color:'var(--swansway)'},
-    {label:'Total actual entered',val:totalActual > 0 ? '&pound;' + (totalActual/1000000).toFixed(2) + 'M' : '&pound;0',sub:'Click cells to enter actuals',color:'#059669'},
-    {label:'Budget utilisation',val:pct + '%',sub:'Of annual plan',color:'#D97706'},
-    {label:'Remaining',val:'&pound;' + ((totalPlanned-totalActual)/1000000).toFixed(2) + 'M',sub:'To year end',color:'#6B7280'},
-  ];
-  metricsEl.innerHTML = mData.map(function(m) {
+  metricsEl.innerHTML = [
+    {label:'Total planned 2026', val:'&pound;' + (totalPlanned/1000000).toFixed(2) + 'M', sub:'Across all brands', color:'var(--swansway)'},
+    {label:'Total actual entered', val: totalActual > 0 ? '&pound;' + (totalActual/1000000).toFixed(2) + 'M' : '&pound;0', sub:'From site budgets', color:'#059669'},
+    {label:'Budget utilisation', val: pct + '%', sub:'Of annual plan', color:'#D97706'},
+    {label:'Remaining', val:'&pound;' + ((totalPlanned-totalActual)/1000000).toFixed(2) + 'M', sub:'To year end', color:'#6B7280'},
+  ].map(function(m) {
     return '<div class="metric" style="border-top-color:' + m.color + '"><div class="metric-label">' + m.label + '</div><div class="metric-val" style="color:' + m.color + '">' + m.val + '</div><div class="metric-sub">' + m.sub + '</div></div>';
   }).join('');
+
   renderBudgetChart(mPlanned, mActual);
 }
+
+function btToggle(brandId) {
+  var row  = document.getElementById('bt-sites-' + brandId);
+  var icon = document.getElementById('bt-icon-' + brandId);
+  if (!row) return;
+  var open = row.style.display !== 'none';
+  row.style.display  = open ? 'none' : 'table-row';
+  if (icon) icon.innerHTML = open ? '&#9660;' : '&#9650;';
+}
+
 
 function budgetEditCell(brandId, monthIdx, el) {
   if (el.querySelector('input')) return;
