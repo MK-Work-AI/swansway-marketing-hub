@@ -759,8 +759,38 @@ function updateConnectionStatus(ok, msg) {} // Sheets removed
    PRIMARY LOAD STATE
 ══════════════════════════════════════════ */
 async function loadState() {
-  // Load from Supabase
-  await loadFromSupabase();
+  const serviceKey = window.SWANSWAY_CONFIG?.serviceKey || SB_SERVICE_KEY;
+  if (!serviceKey || serviceKey.length < 100) {
+    console.warn('Admin: no service key — cannot load from Supabase');
+    buildSidebarBrands(); refreshDashboard(); return;
+  }
+  try {
+    const resp = await fetch(SB_ADMIN_URL + '/rest/v1/admin_config?select=config&order=updated_at.desc&limit=1', {
+      headers: {
+        'apikey':        serviceKey,
+        'Authorization': 'Bearer ' + serviceKey,
+        'Content-Type':  'application/json'
+      }
+    });
+    if (!resp.ok) { console.warn('Load failed:', resp.status); buildSidebarBrands(); refreshDashboard(); return; }
+    const rows = await resp.json();
+    if (!rows || !rows.length || !rows[0].config) {
+      console.log('No saved config in Supabase yet — using defaults');
+      buildSidebarBrands(); refreshDashboard(); return;
+    }
+    const remote = rows[0].config;
+    if (remote.group)            STATE.group    = { ...STATE.group,    ...remote.group };
+    if (remote.brands?.length)   STATE.brands   = remote.brands;
+    if (remote.channels?.length) STATE.channels = remote.channels;
+    if (remote.kpis?.length)     STATE.kpis     = remote.kpis;
+    if (remote.calendar?.length) STATE.calendar = remote.calendar;
+    console.log('Admin config loaded from Supabase ✓');
+    buildSidebarBrands();
+    refreshDashboard();
+  } catch(e) {
+    console.error('loadState error:', e);
+    buildSidebarBrands(); refreshDashboard();
+  }
 }
 
 async function loadFromSupabase() {
