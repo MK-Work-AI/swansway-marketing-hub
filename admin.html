@@ -758,10 +758,12 @@ async function saveToSupabase(payload) {
     return;
   }
   try {
+    // Use a fixed ID so admin config is shared across all users
+    const SHARED_CONFIG_ID = '00000000-0000-0000-0000-000000000001';
     const { error } = await SB_ADMIN
       .from('admin_config')
       .upsert({
-        user_id:    SB_ADMIN_USER.id,
+        user_id:    SHARED_CONFIG_ID,
         config:     payload,
         updated_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
@@ -770,7 +772,8 @@ async function saveToSupabase(payload) {
     showToast('✓ Saved to Supabase', 'success');
   } catch(e) {
     setSaveStatus('saved-local');
-    showToast('⚠ Supabase error — saved locally only', 'error');
+    showToast('⚠ Supabase error: ' + e.message, 'error');
+    console.error('Save error:', e);
   }
 }
 

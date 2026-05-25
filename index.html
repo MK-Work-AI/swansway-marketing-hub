@@ -2469,15 +2469,22 @@ function renderBrandKpiChart() {
    and overrides default data where configured
 ══════════════════════════════════════ */
 function loadAdminConfig() {
-  // Load admin config from Supabase if signed in, else skip
-  if (SB && SB_USER) {
-    SB.from('admin_config').select('config').eq('user_id', SB_USER.id).single()
-      .then(function(r) {
-        if (r.data && r.data.config) {
-          applyAdminConfig(r.data.config);
-        }
-      }).catch(function() {});
-  }
+  if (!SB) return;
+  // Admin config is shared — load the most recently saved version
+  SB.from('admin_config')
+    .select('config')
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+    .then(function(r) {
+      if (r.error) { console.warn('Admin config load error:', r.error); return; }
+      if (r.data && r.data.config) {
+        applyAdminConfig(r.data.config);
+        console.log('Admin config loaded from Supabase');
+      } else {
+        console.log('No admin config in Supabase yet — using defaults');
+      }
+    }).catch(function(e) { console.warn('Admin config exception:', e); });
 }
 
 function applyAdminConfig(cfg) {
