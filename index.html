@@ -4372,33 +4372,22 @@ function sbInit() {
       flowType: 'pkce'
     }
   });
-  // Handle OAuth code in URL (Google redirect brings ?code=xxx)
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has('code')) {
-    // Exchange code for session — Supabase does this automatically via detectSessionInUrl
-    // Clean the URL immediately
-    history.replaceState(null, '', window.location.pathname);
-  }
-  // Get session (works after code exchange or existing session)
-  SB.auth.getSession().then(({ data:{ session } }) => {
-    if(session) sbHandleSession(session);
-    else showSignInButton();
-  });
-  // Listen for auth changes
+  // onAuthStateChange handles ALL auth events including initial load,
+  // Google OAuth redirect, sign out — single source of truth
   SB.auth.onAuthStateChange((_event, session) => {
+    console.log('Auth event:', _event, session ? session.user.email : 'no session');
     if(session) {
       sbHandleSession(session);
       if(_event === 'SIGNED_IN') {
         closeAuth();
-        // Clean up URL (Google OAuth adds code/state params)
-        if(window.location.search || window.location.hash) {
-          history.replaceState(null, '', window.location.pathname);
-        }
+        history.replaceState(null, '', window.location.pathname);
         const name = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'You';
         showToast('✓ Signed in as ' + name, 'success');
       }
-    } else {
+    } else if(_event === 'SIGNED_OUT') {
       sbHandleSignOut();
+    } else if(_event === 'INITIAL_SESSION') {
+      if(!session) showSignInButton();
     }
   });
   } catch(e) { showSignInButton(); }
