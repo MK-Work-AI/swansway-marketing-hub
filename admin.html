@@ -299,7 +299,7 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
         <div class="form-grid-4">
           <div class="form-group">
             <label class="form-label">Total annual budget (£)</label>
-            <div class="input-prefix"><span class="prefix-symbol">£</span><input type="number" class="form-input prefix-input" id="gs-budget" placeholder="4200000" oninput="onGroupBudgetChange()"></div>
+            <div class="input-prefix"><span class="prefix-symbol">£</span><input type="number" class="form-input prefix-input" id="gs-budget" readonly style="background:var(--surface);color:var(--ink-soft);cursor:default" title="Auto-calculated from brand budgets" placeholder="4200000" oninput="onGroupBudgetChange()"></div>
           </div>
           <div class="form-group">
             <label class="form-label">EV-focused spend target (%)</label>
@@ -920,9 +920,11 @@ function buildSidebarBrands() {
    DASHBOARD
 ══════════════════════════════════════════ */
 function refreshDashboard() {
-  const groupBudget  = STATE.group.budget || 4200000;
-  const brandSum     = STATE.brands.reduce((s,b)=>s+b.budget,0);
-  const totalBudget  = groupBudget; // Group total is the authoritative figure
+  const brandSum     = STATE.brands.reduce((s,b)=>s+(b.budget||0),0);
+  const groupBudget  = brandSum; // Auto-calculated from brand budgets
+  const totalBudget  = brandSum;
+  // Keep group.budget in sync
+  if (STATE.group) STATE.group.budget = brandSum;
   const totalUnits = STATE.brands.reduce((s,b)=>s+(b.id==='motormatch'?0:b.newUnits),0);
   const totalLeads = STATE.brands.reduce((s,b)=>s+b.leads,0);
   const avgEV = Math.round(STATE.brands.filter(b=>b.id!=='motormatch').reduce((s,b)=>s+b.evPct,0)/11);
@@ -963,7 +965,7 @@ function renderDashCharts() {
   const cc = document.getElementById('dashChannelChart');
   if(!bc||!cc||!window.Chart) return;
   brandChartInst = new Chart(bc,{type:'doughnut',data:{labels:STATE.brands.map(b=>b.name),datasets:[{data:STATE.brands.map(b=>b.budget),backgroundColor:STATE.brands.map(b=>b.color),borderWidth:2,borderColor:'#F0EDE8'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
-  const totalBudget = STATE.group.budget||4200000;
+  const totalBudget = STATE.brands.reduce((s,b)=>s+(b.budget||0),0);
   channelChartInst = new Chart(cc,{type:'doughnut',data:{labels:STATE.channels.map(c=>c.name),datasets:[{data:STATE.channels.map(c=>c.pct),backgroundColor:STATE.channels.map(c=>c.color),borderWidth:2,borderColor:'#F0EDE8'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
 }
 
@@ -993,7 +995,7 @@ function collectGroupForm() {
   STATE.group.name = document.getElementById('gs-name').value;
   STATE.group.year = document.getElementById('gs-year').value;
   STATE.group.desc = document.getElementById('gs-desc').value;
-  STATE.group.budget = parseFloat(document.getElementById('gs-budget').value)||4200000;
+  STATE.group.budget = STATE.brands.reduce((s,b)=>s+(b.budget||0),0); // Auto-sum
   STATE.group.evPct = parseFloat(document.getElementById('gs-ev-pct').value)||38;
   STATE.group.coopPct = parseFloat(document.getElementById('gs-coop-pct').value)||15;
   STATE.group.units = parseFloat(document.getElementById('gs-units').value)||8530;
@@ -1181,7 +1183,7 @@ function resetBrandDefaults(id) {
    CHANNEL EDITOR
 ══════════════════════════════════════════ */
 function renderChannelEditor() {
-  const totalBudget = STATE.group.budget || 4200000;
+  const totalBudget = STATE.brands.reduce((s,b)=>s+(b.budget||0),0);
   const container = document.getElementById('channel-editor-rows');
   container.innerHTML = STATE.channels.map((c,i)=>`
     <div class="channel-editor-row">
@@ -1197,7 +1199,7 @@ function renderChannelEditor() {
 }
 
 function updateChannelTotals() {
-  const totalBudget = STATE.group.budget || 4200000;
+  const totalBudget = STATE.brands.reduce((s,b)=>s+(b.budget||0),0);
   let total = 0;
   STATE.channels.forEach((c,i)=>{
     const rangeEl = document.getElementById(`ch-range-${i}`);
