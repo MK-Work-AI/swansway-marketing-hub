@@ -3334,6 +3334,12 @@ function renderCrossCalendar() {
   });
   html += '</div>';
   el.innerHTML = html;
+  // Wire up pill clicks via event delegation
+  el.querySelectorAll('[data-cal-pill]').forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      calShowCampaign(decodeURIComponent(this.getAttribute('data-enc')));
+    });
+  });
   var seen = {};
   legendEl.innerHTML = BUILT_IN_CAMPAIGNS.filter(function(c) { if (seen[c.brand]) return false; seen[c.brand] = true; return true; }).map(function(c) {
     return '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-soft)"><span style="width:10px;height:10px;border-radius:2px;background:' + c.color + ';display:inline-block"></span>' + c.brand + '</div>';
@@ -4909,4 +4915,23 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
+<!-- CROSS-BRAND CAMPAIGN CALENDAR -->
+<div class="view" id="view-crosscal">
+  <div class="page-strip">
+    <div><div class="page-title">Campaign Calendar 2026</div><div class="page-subtitle">All brands &middot; All campaigns</div></div>
+    <div class="action-row">
+      <button class="btn" onclick="calPrevQuarter()">&#8592; Prev</button>
+      <div id="cal-quarter-label" style="padding:0 14px;font-family:var(--font-d);font-size:14px;font-weight:700;color:var(--swansway);display:flex;align-items:center;white-space:nowrap">Q2 &mdash; Apr &middot; May &middot; Jun</div>
+      <button class="btn" onclick="calNextQuarter()">Next &#8594;</button>
+      <button class="btn btn-accent" onclick="openBriefsPanel()">+ Add brief</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:1.5rem">
+    <button class="cal-q-tab" onclick="calSetQuarter(0)" id="cal-tab-0">Q1 <span>Jan &ndash; Mar</span></button>
+    <button class="cal-q-tab" onclick="calSetQuarter(1)" id="cal-tab-1">Q2 <span>Apr &ndash; Jun</span></button>
+    <button class="cal-q-tab" onclick="calSetQuarter(2)" id="cal-tab-2">Q3 <span>Jul &ndash; Sep</span></button>
+    <button class="cal-q-tab" onclick="calSetQuarter(3)" id="cal-tab-3">Q4 <span>Oct &ndash; Dec</span></button>
+  </div>
+  <div id="crosscal-grid"></div>
+  <div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:8px" id="crosscal-legend"></div>
+</div>
