@@ -2243,6 +2243,7 @@ function switchView(id, el) {
     setTimeout(()=>qplanAutoLoad(id, brandForQplan.color), 400);
     setTimeout(function(){ if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(id); }, 100);
     setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(id); }, 150);
+    setTimeout(function(){ if(typeof renderBrandSites==='function') renderBrandSites(id); }, 200);
   }
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -2279,6 +2280,7 @@ function renderBrand(b) {
 
     <div class="inner-tabs" id="itabs-${b.id}">
       <button class="inner-tab active" onclick="switchInner('${b.id}','strategy',this)">Strategy</button>
+        <button class="inner-tab" onclick="switchInner('${b.id}','sites',this)">📍 Sites & Budget</button>
       ${b.centres.length>0?`<button class="inner-tab" onclick="switchInner('${b.id}','centres',this)">Centres (${b.centres.length})</button>`:''}
       <button class="inner-tab" onclick="switchInner('${b.id}','campaigns',this)">Campaigns</button>
       <button class="inner-tab" onclick="switchInner('${b.id}','audiences',this)">Audiences</button>
@@ -2340,6 +2342,11 @@ function renderBrand(b) {
       </div>
     </div>
 
+    <div class="inner-section" id="${b.id}-sites">
+      <div class="sh"><div><div class="sh-title">Site Budget Breakdown</div><div class="sh-sub">Planned vs actual spend per dealership</div></div></div>
+      <div id="${b.id}-sites-list"><div style="padding:20px;text-align:center;color:var(--ink-faint);font-size:13px">Sign in to view site budgets</div></div>
+    </div>
+
     <div class="inner-section" id="${b.id}-kpis">
       <div class="sh"><div><div class="sh-title">KPI Framework</div><div class="sh-sub">Targets, measures and ownership for 2026</div></div></div>
       <div class="kpi-list">
@@ -2376,6 +2383,7 @@ function switchInner(brandId, secId, el) {
   document.querySelectorAll(`#${brandId}-content .inner-section`).forEach(s=>s.classList.remove('active'));
   el.classList.add('active');
   if(secId === 'campaigns') { setTimeout(function(){ if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(brandId); }, 50); }
+  if(secId === 'sites') { setTimeout(function(){ if(typeof renderBrandSites==='function') renderBrandSites(brandId); }, 50); }
   if(secId === 'kpis') { setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(brandId); }, 50); }
   document.getElementById(brandId+'-'+secId).classList.add('active');
 }
@@ -3606,6 +3614,17 @@ async function loadBudgetActuals() {
   } catch(e) { console.error('Budget load exception:', e); }
 }
 
+function getBudgetFromSites(brandId) {
+  var sites = HUB_SITES.filter(function(s) { return s.brand_id === brandId; });
+  var planned = 0, actual = 0;
+  sites.forEach(function(s) {
+    var d = SITE_BUDGETS[s.site_id] || {};
+    planned += d.annual_planned || 0;
+    for (var i = 0; i < 12; i++) actual += (d['m' + i + '_actual'] || 0);
+  });
+  return { planned: planned, actual: actual };
+}
+
 function renderBudgetTracker() {
   var thead = document.getElementById('budget-thead');
   var tbody = document.getElementById('budget-tbody');
@@ -4264,6 +4283,93 @@ function renderBrandKPIs(brandId) {
 const ANTHROPIC_API_KEY = window.SWANSWAY_CONFIG?.anthropicKey || '';
 
 // In-memory cache: brandId → latest plan data
+
+/* ════ SITE BUDGETS — HUB ════ */
+var SITE_BUDGETS = {};  // site_id -> row
+var HUB_SITES = [{"site_id": "audi-blackburn", "site_name": "Audi Blackburn", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-carlisle", "site_name": "Audi Carlisle", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-crewe", "site_name": "Audi Crewe", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-preston", "site_name": "Audi Preston", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-stafford", "site_name": "Audi Stafford", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-stoke", "site_name": "Audi Stoke", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "vw-blackburn", "site_name": "VW Blackburn", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-chester", "site_name": "VW Chester", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-crewe", "site_name": "VW Crewe", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-macclesfield", "site_name": "VW Macclesfield", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-stafford", "site_name": "VW Stafford", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-stoke", "site_name": "VW Stoke", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vwcv-blackburn", "site_name": "VWC Blackburn", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-crewe", "site_name": "VWC Crewe", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-stoke", "site_name": "VWC Stoke", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "seat-blackburn", "site_name": "SEAT Blackburn", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "seat-chester", "site_name": "SEAT Chester", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "seat-crewe", "site_name": "SEAT Crewe", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "cupra-blackburn", "site_name": "CUPRA Blackburn", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "cupra-chester", "site_name": "CUPRA Chester", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "cupra-crewe", "site_name": "CUPRA Crewe", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "lr-chester", "site_name": "Land Rover Chester", "brand_id": "landrover", "brand_name": "Land Rover"}, {"site_id": "lr-stafford", "site_name": "Land Rover Stafford", "brand_id": "landrover", "brand_name": "Land Rover"}, {"site_id": "jag-chester", "site_name": "Jaguar Chester", "brand_id": "jaguar", "brand_name": "Jaguar"}, {"site_id": "honda-crewe", "site_name": "Honda Crewe", "brand_id": "honda", "brand_name": "Honda"}, {"site_id": "honda-stafford", "site_name": "Honda Stafford", "brand_id": "honda", "brand_name": "Honda"}, {"site_id": "peugeot-blackburn", "site_name": "Peugeot Blackburn", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "peugeot-chester", "site_name": "Peugeot Chester", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "peugeot-crewe", "site_name": "Peugeot Crewe", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "byd-crewe", "site_name": "BYD Crewe", "brand_id": "byd", "brand_name": "BYD"}, {"site_id": "omoda-crewe", "site_name": "OMODA/JAECOO Crewe", "brand_id": "omoda", "brand_name": "OMODA/JAECOO"}, {"site_id": "mm-blackburn", "site_name": "Motor Match Blackburn", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-chester", "site_name": "Motor Match Chester", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-crewe", "site_name": "Motor Match Crewe", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-stafford", "site_name": "Motor Match Stafford", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-stoke", "site_name": "Motor Match Stoke", "brand_id": "motormatch", "brand_name": "Motor Match"}];
+var HUB_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+async function loadSiteBudgets() {
+  if (!SB || !SB_USER) return;
+  try {
+    var r = await SB.from('site_budgets').select('*');
+    if (r.error || !r.data) return;
+    r.data.forEach(function(row) { SITE_BUDGETS[row.site_id] = row; });
+    // Update group budget metric from site data
+    var groupTotal = r.data.reduce(function(s, row) { return s + (row.annual_planned || 0); }, 0);
+    if (groupTotal > 0) {
+      var el = document.getElementById('group-budget-val');
+      if (el) el.textContent = '£' + (groupTotal / 1000000).toFixed(2) + 'M';
+    }
+    // Re-render budget tracker with real figures
+    if (typeof renderBudgetTracker === 'function') renderBudgetTracker();
+    console.log('Site budgets loaded: ' + r.data.length + ' sites');
+  } catch(e) { console.warn('loadSiteBudgets error:', e); }
+}
+
+function renderBrandSites(brandId) {
+  var el = document.getElementById(brandId + '-sites-list');
+  if (!el) return;
+  var sites = HUB_SITES.filter(function(s) { return s.brand_id === brandId; });
+  if (!sites.length) {
+    el.innerHTML = '<div style="padding:20px;color:var(--ink-faint);font-size:13px">No sites configured for this brand.</div>';
+    return;
+  }
+  var totalPlan = 0, totalActual = 0;
+  sites.forEach(function(s) {
+    var d = SITE_BUDGETS[s.site_id] || {};
+    totalPlan   += d.annual_planned || 0;
+    for (var i = 0; i < 12; i++) totalActual += (d['m' + i + '_actual'] || 0);
+  });
+
+  // Summary row
+  var html = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem">';
+  html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:4px;padding:12px 14px"><div style="font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Brand planned total</div><div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--swansway)">£' + totalPlan.toLocaleString() + '</div></div>';
+  html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:4px;padding:12px 14px"><div style="font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">YTD actual</div><div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:#059669">' + (totalActual > 0 ? '£' + totalActual.toLocaleString() : '—') + '</div></div>';
+  var variance = totalActual - totalPlan;
+  html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:4px;padding:12px 14px"><div style="font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Variance</div><div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:' + (variance > 0 ? '#DC2626' : '#059669') + '">' + (totalActual > 0 ? (variance >= 0 ? '+' : '') + '£' + Math.abs(variance).toLocaleString() : '—') + '</div></div>';
+  html += '</div>';
+
+  // Sites table
+  html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">';
+  html += '<thead><tr style="background:var(--swansway);color:#fff">';
+  html += '<th style="padding:8px 12px;text-align:left;font-family:var(--font-m);font-size:10px;font-weight:500;letter-spacing:0.08em">Site</th>';
+  html += '<th style="padding:8px 12px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Annual planned</th>';
+  html += '<th style="padding:8px 12px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">YTD actual</th>';
+  html += '<th style="padding:8px 12px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Variance</th>';
+  HUB_MONTHS.forEach(function(m) { html += '<th style="padding:8px 6px;text-align:right;font-family:var(--font-m);font-size:9px;font-weight:500;min-width:52px">' + m + '</th>'; });
+  html += '</tr></thead><tbody>';
+
+  sites.forEach(function(site, idx) {
+    var d = SITE_BUDGETS[site.site_id] || {};
+    var plan = d.annual_planned || 0;
+    var actual = 0;
+    for (var i = 0; i < 12; i++) actual += (d['m' + i + '_actual'] || 0);
+    var v = actual - plan;
+    var bg = idx % 2 === 0 ? 'var(--white)' : 'var(--surface)';
+    html += '<tr style="background:' + bg + '">';
+    html += '<td style="padding:8px 12px;font-size:13px;font-weight:600">' + site.site_name + '</td>';
+    html += '<td style="padding:8px 12px;text-align:right;font-family:var(--font-m);font-size:12px;color:var(--swansway);font-weight:700">' + (plan > 0 ? '£' + plan.toLocaleString() : '—') + '</td>';
+    html += '<td style="padding:8px 12px;text-align:right;font-family:var(--font-m);font-size:12px;color:#059669">' + (actual > 0 ? '£' + actual.toLocaleString() : '—') + '</td>';
+    html += '<td style="padding:8px 12px;text-align:right;font-family:var(--font-m);font-size:12px;color:' + (v > 0 ? '#DC2626' : '#059669') + '">' + (actual > 0 ? (v >= 0 ? '+' : '') + '£' + Math.abs(v).toLocaleString() : '—') + '</td>';
+    for (var i = 0; i < 12; i++) {
+      var mPlan = d['m' + i + '_planned'] || 0;
+      var mAct  = d['m' + i + '_actual']  || 0;
+      var mPct  = mPlan > 0 ? Math.min(100, Math.round(mAct / mPlan * 100)) : 0;
+      html += '<td style="padding:4px 6px;text-align:right;vertical-align:middle">';
+      html += '<div style="font-family:var(--font-m);font-size:10px;color:var(--swansway)">' + (mPlan > 0 ? '£' + (mPlan/1000).toFixed(0) + 'k' : '—') + '</div>';
+      if (mAct > 0) {
+        html += '<div style="font-size:9px;color:#059669">' + (mAct/1000).toFixed(0) + 'k</div>';
+        html += '<div style="height:3px;background:var(--border);border-radius:2px;margin-top:2px"><div style="height:3px;background:' + (mPct > 100 ? '#DC2626' : '#059669') + ';width:' + Math.min(100,mPct) + '%;border-radius:2px"></div></div>';
+      }
+      html += '</td>';
+    }
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
 const QPLAN_CACHE = {};
 
 /* ── TRIGGER UPLOAD ── */
@@ -4869,6 +4975,7 @@ function sbHandleSession(session) {
   showUserState(SB_USER);
   if(typeof loadBriefs === 'function')         loadBriefs();
   if(typeof loadBudgetActuals === 'function')  loadBudgetActuals();
+  if(typeof loadSiteBudgets === 'function')   loadSiteBudgets();
   if(typeof loadAutopsies === 'function')      loadAutopsies();
   if(typeof loadCompetitorScans === 'function') loadCompetitorScans();
   if(typeof loadQplanActions === 'function')   loadQplanActions();
