@@ -3551,12 +3551,26 @@ async function competitorScan() {
   var si = 0;
   var st = setInterval(function() { if (si < steps.length) { msgEl.textContent = steps[si][0]; subEl.textContent = steps[si][1]; si++; } }, 5000);
   try {
-    var resp = await fetch('https://swansway-marketing-hub.vercel.app/api/claude', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:'Analyse the current marketing of Arnold Clark, Lookers, Evans Halshaw and Marshall Motors UK dealer groups. Return JSON only: {"competitors":[{"name":"Arnold Clark","current_push":"...","headline_offers":["..."],"featured_models":["..."],"channels_active":["..."],"tone":"...","swansway_threat":"...","insight":"..."}],"market_themes":["..."],"swansway_opportunity":"...","recommended_action":"..."}'}]})
+    var proxyUrl = 'https://swansway-marketing-hub.vercel.app/api/claude';
+    var reqBody = JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      messages: [{role: 'user', content: 'You are a UK automotive retail marketing analyst. Based on your knowledge of these dealer groups as of 2025-2026, analyse their marketing approach: Arnold Clark, Lookers, Evans Halshaw, Marshall Motors. Return ONLY valid JSON with no other text: {"competitors":[{"name":"Arnold Clark","current_push":"what they push","headline_offers":["offer1","offer2"],"featured_models":["model1"],"channels_active":["Google","Meta"],"tone":"their tone","swansway_threat":"threat to Swansway","insight":"action Swansway should take"}],"market_themes":["theme1","theme2"],"swansway_opportunity":"biggest gap","recommended_action":"one action this month"}'}]
     });
-    var data = await resp.json();
+    var resp = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: reqBody
+    });
+    var rawText = await resp.text();
+    console.log('Proxy response status:', resp.status);
+    console.log('Proxy response:', rawText.substring(0, 200));
+    if (!rawText) throw new Error('Empty response from proxy (status ' + resp.status + ')');
+    var data;
+    try { data = JSON.parse(rawText); } catch(e) { throw new Error('Proxy returned non-JSON: ' + rawText.substring(0, 100)); }
+    if (data.error) throw new Error('Proxy error: ' + data.error);
     var raw = data.content && data.content[0] ? data.content[0].text : '';
+    if (!raw) throw new Error('No content in API response');
     var match = raw.match(/\{[\s\S]*\}/);
     var scan = JSON.parse(match ? match[0] : raw);
     scan._timestamp = new Date().toISOString();
