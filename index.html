@@ -2544,32 +2544,39 @@ function applyAdminConfig(cfg) {
     if (g.nps)       setEl('group-nps-target',   g.nps);
   }
 
-  // ── 3. UPDATE KPIs — merge admin targets/actuals into hub rich GROUP_KPIS ──
+  // ── 3. UPDATE KPIs — sync all fields from admin into hub GROUP_KPIS ──
   if (cfg.kpis && cfg.kpis.length) {
-    cfg.kpis.forEach(function(adminKpi, i) {
-      if (i < GROUP_KPIS.length) {
-        // Update target display string from admin numeric value
-        var gk = GROUP_KPIS[i];
-        if (adminKpi.target !== undefined && adminKpi.target !== null) {
-          var unit = adminKpi.unit || '';
-          var lowerBetter = adminKpi.lowerBetter;
-          var tgt = adminKpi.target;
-          // Format target nicely
-          if (unit === '%')      gk.t = tgt + '%';
-          else if (unit === '£') gk.t = '£' + tgt;
-          else if (tgt >= 1000)  gk.t = tgt.toLocaleString() + (unit ? ' ' + unit : '');
-          else                   gk.t = (unit === 'mins' ? '< ' : '') + tgt + (unit && unit !== 'mins' ? ' ' + unit : '');
-        }
-        if (adminKpi.owner) gk.o = adminKpi.owner;
-        // Update progress based on actual vs target
-        if (adminKpi.actual > 0 && adminKpi.target > 0) {
-          gk.p = adminKpi.lowerBetter
-            ? Math.max(0, Math.round((1 - (adminKpi.actual - adminKpi.target) / adminKpi.target) * 100))
-            : Math.min(100, Math.round(adminKpi.actual / adminKpi.target * 100));
-        }
+    cfg.kpis.forEach(function(ak, i) {
+      if (i >= GROUP_KPIS.length) return;
+      var gk = GROUP_KPIS[i];
+      // Sync all rich fields from admin
+      if (ak.label)  gk.l    = ak.label;
+      if (ak.owner)  gk.o    = ak.owner;
+      if (ak.icon)   gk.icon = ak.icon;
+      if (ak.cat)    gk.cat  = ak.cat;
+      if (ak.def)    gk.def  = ak.def;
+      if (ak.why)    gk.why  = ak.why;
+      if (ak.how)    gk.how  = ak.how;
+      if (ak.bench)  gk.bench = ak.bench;
+      if (ak.split)  gk.split = ak.split;
+      // Format target string from numeric value
+      if (ak.target !== undefined) {
+        var u = ak.unit || '';
+        var v = ak.target;
+        if (u === '%')        gk.t = v + '%';
+        else if (u === '£')   gk.t = '£' + v;
+        else if (u === 'mins') gk.t = '< ' + v + ' min';
+        else if (v >= 1000)   gk.t = v.toLocaleString() + (u ? ' ' + u : '');
+        else                  gk.t = v + (u ? ' ' + u : '');
+      }
+      // Update progress from actual vs target
+      if (ak.target > 0) {
+        var pct = ak.actual > 0 ? (ak.lowerBetter
+          ? Math.max(0, Math.round((2 - ak.actual / ak.target) * 100))
+          : Math.min(100, Math.round(ak.actual / ak.target * 100))) : gk.p;
+        gk.p = pct;
       }
     });
-    // Re-render KPIs with updated data
     if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
   }
 
