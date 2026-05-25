@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Swansway Marketing Hub — Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
@@ -237,7 +237,6 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
   <div class="sidebar-section">
     <div class="sidebar-label">System</div>
     <button class="snav" onclick="showPage('users',this)">👥 Users</button>
-    <button class="snav" onclick="showPage('sheets',this)">🔗 Google Sheets Setup</button>
     <button class="snav" onclick="showPage('history',this)">🕐 History</button>
     <button class="snav" onclick="showPage('security',this)">🔒 Security</button>
     <button class="snav" onclick="showPage('data',this)">💾 Data & Export</button>
@@ -416,88 +415,7 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
     <div id="brand-page-content"></div>
   </div>
 
-  <!-- ══ GOOGLE SHEETS SETUP ══ -->
-  <div class="page" id="page-sheets">
-    <div class="page-title">Google Sheets Setup</div>
-    <div class="page-sub">Connect your admin to Google Sheets for persistent, year-on-year storage</div>
 
-    <div class="card mb2" style="border-left:4px solid var(--sw)">
-      <div class="card-header"><div class="card-title">🔗 Web App URL</div><span id="sheets-status-pill" class="tag t-amber">Not configured</span></div>
-      <div class="card-body">
-        <div class="form-group mb2">
-          <label class="form-label">Google Apps Script Web App URL</label>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input class="form-input" id="sheets-url-input" placeholder="https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec" style="flex:1;font-family:var(--fm);font-size:12px">
-            <button class="btn btn-primary" onclick="testAndSaveSheetsUrl()">Test & Save</button>
-            <button class="btn" onclick="clearSheetsUrl()">Clear</button>
-          </div>
-          <div class="form-hint" style="margin-top:4px">Paste the Web App URL from your Google Apps Script deployment here</div>
-        </div>
-        <div id="sheets-test-result" style="display:none;padding:10px 14px;border-radius:3px;font-size:13px;margin-top:8px"></div>
-      </div>
-    </div>
-
-    <div class="card mb2">
-      <div class="card-header"><div class="card-title">📋 Step-by-step setup guide</div></div>
-      <div class="card-body">
-        <div style="display:flex;flex-direction:column;gap:16px">
-          <div style="display:flex;gap:14px;align-items:flex-start">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--sw);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">1</div>
-            <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">Create a new Google Sheet</div><div style="font-size:12px;color:var(--ink-soft)">Go to <a href="https://sheets.google.com" target="_blank" style="color:var(--sw)">sheets.google.com</a> → create a blank spreadsheet → name it <strong>"Swansway Marketing Hub 2026"</strong></div></div>
-          </div>
-          <div style="display:flex;gap:14px;align-items:flex-start">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--sw);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">2</div>
-            <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">Open Apps Script</div><div style="font-size:12px;color:var(--ink-soft)">In the sheet: <strong>Extensions → Apps Script</strong>. Delete the default <code>myFunction()</code> code.</div></div>
-          </div>
-          <div style="display:flex;gap:14px;align-items:flex-start">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--sw);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">3</div>
-            <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">Paste Code.gs</div><div style="font-size:12px;color:var(--ink-soft)">Paste the entire contents of <strong>Code.gs</strong> (downloaded alongside this file) into the Apps Script editor. Click <strong>Save</strong>.</div></div>
-          </div>
-          <div style="display:flex;gap:14px;align-items:flex-start">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--sw);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">4</div>
-            <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">Run setupSpreadsheet()</div><div style="font-size:12px;color:var(--ink-soft)">In Apps Script: click the <strong>function dropdown → select "setupSpreadsheet" → click Run</strong>. Grant permissions when prompted. This creates all 7 tabs with headers and seeds default data.</div></div>
-          </div>
-          <div style="display:flex;gap:14px;align-items:flex-start">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--sw);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">5</div>
-            <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">Deploy as Web App</div><div style="font-size:12px;color:var(--ink-soft)"><strong>Deploy → New deployment → Type: Web App → Execute as: Me → Who has access: Anyone → Deploy</strong>. Copy the Web App URL.</div></div>
-          </div>
-          <div style="display:flex;gap:14px;align-items:flex-start">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--success);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">6</div>
-            <div><div style="font-size:13px;font-weight:600;margin-bottom:3px">Paste URL above and test</div><div style="font-size:12px;color:var(--ink-soft)">Paste the Web App URL in the field above → click <strong>Test & Save</strong>. If it shows ✅ Connected, you're done. All saves will now go to Google Sheets.</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card mb2">
-      <div class="card-header"><div class="card-title">📊 Google Sheet tabs created</div></div>
-      <div class="card-body">
-        <table class="brand-table">
-          <thead><tr><th>Tab</th><th>Purpose</th><th>Key fields</th></tr></thead>
-          <tbody>
-            <tr><td><strong>Config</strong></td><td>Group-level settings and strategic priorities</td><td>name, year, budget, targets, priority1–6 titles/descriptions</td></tr>
-            <tr><td><strong>Brands</strong></td><td>All 12 brand plans with every configurable field</td><td>id, budget, leads, newUnits, evPct, convRate, cpl, retention, nps, q2Focus…</td></tr>
-            <tr><td><strong>Channels</strong></td><td>Marketing channel mix and budget allocation</td><td>name, pct, color, note</td></tr>
-            <tr><td><strong>KPIs</strong></td><td>Group KPI framework with targets and actuals</td><td>label, target, actual, unit, lowerBetter, owner</td></tr>
-            <tr><td><strong>Calendar</strong></td><td>All campaign calendar events by quarter</td><td>quarter, brand, label, color</td></tr>
-            <tr><td><strong>History</strong></td><td>Archived snapshots for year-on-year comparison</td><td>timestamp, label, year, budget, units, full JSON</td></tr>
-            <tr><td><strong>AuditLog</strong></td><td>Every save action logged with timestamp</td><td>timestamp, action, user, payload</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card mb2">
-      <div class="card-header"><div class="card-title">📅 Year-on-year archiving</div></div>
-      <div class="card-body">
-        <p style="font-size:13px;color:var(--ink-soft);margin-bottom:1rem">At the end of each year, run <code>archiveAndNewYear()</code> in Apps Script. This archives the full plan as a snapshot, increments the year, and resets KPI actuals to zero so you start fresh. All historical data is preserved in the History tab.</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="takeSnapshot()">📸 Take snapshot now</button>
-          <button class="btn" onclick="showPage('history', document.querySelector(\'.snav:has(+ .snav)\'))">View history</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- ══ HISTORY ══ -->
   <div class="page" id="page-history">
