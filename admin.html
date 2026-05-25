@@ -6,6 +6,7 @@
 <title>Swansway Marketing Hub — Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
@@ -674,30 +675,18 @@ const SHEETS_API_URL = '';
 
 const ADMIN_SECRET = 'swansway2026'; // Must match Code.gs ADMIN_SECRET
 
-let sheetsAvailable = false;
 let isSaving = false;
 
 /* ── CONNECTION STATUS ── */
 function updateConnectionStatus(ok, msg) {} // Sheets removed
 
 /* Sheets removed - using Supabase */
-function pingSheets() {}
 
 /* ── LOAD FROM SHEETS ── */
-async function loadFromSheets(url) {
-  const resp = await fetch(url + '?action=load&secret=' + ADMIN_SECRET);
-  const data = await resp.json();
-  if (!data.ok) throw new Error(data.error || 'Load failed');
-  return data;
-}
+
 
 /* ── SAVE TO SHEETS ── */
-async function saveToSheets(payload) {
-  const url = getSheetsUrl();
-  if (!url) throw new Error('No Sheets URL configured');
-  const resp = await fetch(url, {
-    method: 'POST',
-    body: JSON.stringify({ action:'save_all', secret:ADMIN_SECRET, data:payload }),
+),
   });
   const data = await resp.json();
   if (!data.ok) throw new Error(data.error || 'Save failed');
@@ -1667,6 +1656,53 @@ async function inviteUser() {
   }
 }
 
+
+
+/* ── EXPORT / IMPORT JSON ── */
+function exportJSON() {
+  const payload = {
+    exported: new Date().toISOString(),
+    version: '2026',
+    group:    STATE.group,
+    brands:   STATE.brands,
+    channels: STATE.channels,
+    kpis:     STATE.kpis,
+    calendar: STATE.calendar,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'swansway-admin-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  showToast('✓ Config exported as JSON', 'success');
+}
+
+function importJSON() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = function(e) {
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.group && !data.brands) throw new Error('Invalid config file');
+        if (data.group)    STATE.group    = { ...STATE.group,    ...data.group };
+        if (data.brands?.length)   STATE.brands   = data.brands;
+        if (data.channels?.length) STATE.channels = data.channels;
+        if (data.kpis?.length)     STATE.kpis     = data.kpis;
+        if (data.calendar?.length) STATE.calendar = data.calendar;
+        buildSidebarBrands();
+        refreshDashboard();
+        showToast('✓ Config imported — click Save to persist', 'success');
+      } catch(err) {
+        showToast('Import failed: ' + err.message, 'error');
+      }
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
+}
 
 function init() {
   initAdminSupabase();
