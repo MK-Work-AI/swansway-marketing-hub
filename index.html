@@ -730,12 +730,7 @@ td strong{font-weight:600}
     <div><div class="page-title">Group Channel Mix & Budget</div><div class="page-subtitle">Group budget allocation across all marketing channels</div></div>
     <button class="btn btn-accent" onclick="openAIModal('channels')">⚡ AI Prompts</button>
   </div>
-  <div class="metrics-row">
-    <div class="metric" style="color:#1E3A8A"><div class="metric-label">Digital (PPC/Display)</div><div class="metric-val">30%</div><div class="metric-sub">£1.26M — largest channel</div></div>
-    <div class="metric" style="color:#14532D"><div class="metric-label">Social & Content</div><div class="metric-val">20%</div><div class="metric-sub">£840K — group + brand</div></div>
-    <div class="metric" style="color:#78350F"><div class="metric-label">Manufacturer Co-op</div><div class="metric-val">15%</div><div class="metric-sub">£630K — match funding</div></div>
-    <div class="metric" style="color:#4C1D95"><div class="metric-label">CRM & Email</div><div class="metric-val">12%</div><div class="metric-sub">£504K — lifecycle nurture</div></div>
-  </div>
+  <div class="metrics-row" id="channel-summary-cards"></div>
   <div class="sh"><div><div class="sh-title">Full Channel Breakdown</div></div></div>
   <div class="channel-list" id="group-channel-list"></div>
   <div class="chart-wrap">
@@ -2423,6 +2418,31 @@ function renderGroupCalendar() {
 function renderGroupChannels() {
   const g = document.getElementById('group-channel-list');
   if (!g) return;
+  // Get group total from site budgets
+  var groupTotal = Object.values(SITE_BUDGETS).reduce(function(s, d) {
+    return s + (d.annual_planned || 0);
+  }, 0);
+  if (groupTotal === 0) {
+    groupTotal = BUDGET_BRANDS.reduce(function(s, b) { return s + (b.annual || 0); }, 0);
+  }
+
+  // Update summary cards with top 4 channels
+  var cardsEl = document.getElementById('channel-summary-cards');
+  if (cardsEl && GROUP_CHANNELS.length >= 4) {
+    cardsEl.innerHTML = GROUP_CHANNELS.slice(0,4).map(function(c) {
+      var budgetVal = groupTotal > 0
+        ? '£' + (groupTotal * c.pct / 100 / 1000).toFixed(0) + 'K'
+        : '—';
+      // Extract short note (first part before em dash)
+      var shortNote = c.note.split('—')[0].trim().split('.')[0].trim();
+      if (shortNote.length > 30) shortNote = shortNote.substring(0,30) + '…';
+      return '<div class="metric" style="color:' + c.color + '">'
+        + '<div class="metric-label">' + c.n + '</div>'
+        + '<div class="metric-val">' + c.pct + '%</div>'
+        + '<div class="metric-sub">' + budgetVal + ' — ' + shortNote + '</div>'
+        + '</div>';
+    }).join('');
+  }
   // Get group total from site budgets (single source of truth)
   var groupTotal = Object.values(SITE_BUDGETS).reduce(function(s, d) {
     return s + (d.annual_planned || 0);
