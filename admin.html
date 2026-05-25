@@ -179,6 +179,12 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
 .flex-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .mb1{margin-bottom:0.75rem} .mb2{margin-bottom:1.5rem}
 @media(max-width:768px){.layout{grid-template-columns:1fr}.sidebar{display:none}.form-grid,.form-grid-4{grid-template-columns:1fr 1fr}.metrics-row{grid-template-columns:1fr 1fr}}
+
+.cal-q-tab{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:4px;background:var(--white);cursor:pointer;font-family:var(--font-b);font-size:12px;font-weight:600;color:var(--ink-soft);transition:all .2s;text-align:center;display:block}
+.cal-q-tab span{display:block;font-size:10px;font-weight:400;color:var(--ink-faint);margin-top:2px;font-family:var(--font-m)}
+.cal-q-tab.active{background:var(--swansway);color:#fff;border-color:var(--swansway)}
+.cal-q-tab.active span{color:rgba(255,255,255,0.65)}
+.cal-q-tab:hover:not(.active){border-color:var(--swansway);color:var(--swansway)}
 </style>
 </head>
 <body>

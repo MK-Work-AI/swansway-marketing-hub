@@ -530,6 +530,12 @@ td strong{font-weight:600}
 .quiz-score-bar-wrap{height:8px;background:rgba(255,255,255,0.2);border-radius:4px;margin:16px 0}
 .quiz-score-bar{height:8px;border-radius:4px;background:#fff;transition:width 1s}
 
+
+.cal-q-tab{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:4px;background:var(--white);cursor:pointer;font-family:var(--font-b);font-size:12px;font-weight:600;color:var(--ink-soft);transition:all .2s;text-align:center;display:block}
+.cal-q-tab span{display:block;font-size:10px;font-weight:400;color:var(--ink-faint);margin-top:2px;font-family:var(--font-m)}
+.cal-q-tab.active{background:var(--swansway);color:#fff;border-color:var(--swansway)}
+.cal-q-tab.active span{color:rgba(255,255,255,0.65)}
+.cal-q-tab:hover:not(.active){border-color:var(--swansway);color:var(--swansway)}
 </style>
 </head>
 <body>
@@ -4049,6 +4055,69 @@ function calBuildBrief(brandName, campaignName) {
   var brandId = brandMap[brandName] || 'audi';
   switchView('brief', document.querySelector('[data-view=brief]'));
   setTimeout(function() { bbSelectBrand(brandId); }, 300);
+}
+
+
+function renderBrandCampaigns(brandId) {
+  var listEl = document.getElementById(brandId + '-campaigns-list');
+  if (!listEl) return;
+  var brand = BRANDS.find(function(b){ return b.id === brandId; });
+  var brandName = brand ? brand.name : brandId;
+  var calCamps = BUILT_IN_CAMPAIGNS.filter(function(c){ return c.brand === brandName || c.brand === 'All brands'; });
+  var briefs = BRIEFS_CACHE.filter(function(b){
+    var d = b.data || {};
+    return d.brand && (d.brand.id === brandId || d.brand.name === brandName);
+  });
+  if (!calCamps.length && !briefs.length) {
+    listEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--ink-faint);font-size:13px">No campaigns yet.<br><button class="btn btn-sm btn-accent" style="margin-top:10px" onclick="switchView('brief',document.querySelector('[data-view=brief]'))">+ Build first brief</button></div>';
+    return;
+  }
+  var MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var html = '';
+  if (calCamps.length) {
+    html += '<div style="margin-bottom:1.5rem"><div style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Scheduled campaigns</div>';
+    calCamps.forEach(function(c){
+      var timing = MN[c.start] + (c.end !== c.start ? ' – ' + MN[c.end] : '') + ' 2026';
+      html += '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--white);border:1px solid var(--border);border-left:3px solid ' + c.color + ';border-radius:3px;margin-bottom:6px"><div style="flex:1"><div style="font-size:13px;font-weight:600">' + c.name + '</div><div style="font-size:11px;color:var(--ink-soft);margin-top:2px">' + timing + '</div></div><span style="font-size:10px;font-family:var(--font-m);color:var(--ink-faint);background:var(--surface);padding:2px 8px;border-radius:10px">' + c.brand + '</span></div>';
+    });
+    html += '</div>';
+  }
+  if (briefs.length) {
+    html += '<div><div style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Campaign briefs</div>';
+    briefs.forEach(function(b){
+      var d = b.data || {};
+      var title = d.title || (d.ctype && d.ctype.name) || 'Campaign brief';
+      var budget = d.budget ? '£' + parseInt(d.budget).toLocaleString() : '';
+      var updated = new Date(b.updated_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+      html += '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--white);border:1px solid var(--border);border-radius:3px;cursor:pointer;margin-bottom:6px" onclick="loadBriefFromSupabase('' + b.id + '')"><div style="flex:1"><div style="font-size:13px;font-weight:600">' + title + '</div></div>' + (budget ? '<span style="font-family:var(--font-m);font-size:12px;font-weight:600;color:var(--swansway)">' + budget + '</span>' : '') + '<span style="font-size:11px;color:var(--ink-faint);font-family:var(--font-m)">' + updated + '</span><span style="color:var(--swansway)">→</span></div>';
+    });
+    html += '</div>';
+  }
+  listEl.innerHTML = html;
+}
+
+function renderBrandKPIs(brandId) {
+  var el = document.getElementById(brandId + '-brand-kpis');
+  if (!el) return;
+  var brand = BRANDS.find(function(b){ return b.id === brandId; });
+  if (!brand) return;
+  var items = [
+    {label:'Annual budget', val: brand.budget || '—'},
+    {label:'New units target', val: brand.newTarget || '—'},
+    {label:'EV/PHEV target', val: brand.evTarget || '—'},
+    {label:'Leads target/mo', val: brand.leads ? brand.leads.toLocaleString() : '—'},
+    {label:'Target CPL', val: brand.cpl ? '£' + brand.cpl : '—'},
+    {label:'Conversion rate', val: brand.convRate ? brand.convRate + '%' : '—'},
+    {label:'Service retention', val: brand.retention ? brand.retention + '%' : '—'},
+    {label:'Used units', val: brand.usedUnits ? brand.usedUnits.toLocaleString() : '—'},
+    {label:'Fleet units', val: brand.fleetUnits ? brand.fleetUnits.toLocaleString() : '—'},
+    {label:'NPS target', val: brand.nps ? String(brand.nps) : '—'},
+  ];
+  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:1.5rem">'
+    + items.map(function(item){
+      return '<div style="background:var(--white);border:1px solid var(--border);border-radius:4px;padding:12px 14px"><div style="font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">' + item.label + '</div><div style="font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--swansway)">' + item.val + '</div></div>';
+    }).join('') + '</div>'
+    + (brand.q2 ? '<div style="padding:12px 14px;background:rgba(200,16,46,0.05);border:1px solid rgba(200,16,46,0.15);border-radius:4px;font-size:13px"><strong>Q2 Focus:</strong> ' + brand.q2 + '</div>' : '');
 }
 
 /* Brief builder wired into switchView above */
