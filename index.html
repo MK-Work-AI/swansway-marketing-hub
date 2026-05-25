@@ -4368,10 +4368,18 @@ function sbInit() {
       redirectTo: 'https://mk-work-ai.github.io/swansway-marketing-hub/',
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      flowType: 'pkce'
     }
   });
-  // Restore session
+  // Handle OAuth code in URL (Google redirect brings ?code=xxx)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('code')) {
+    // Exchange code for session — Supabase does this automatically via detectSessionInUrl
+    // Clean the URL immediately
+    history.replaceState(null, '', window.location.pathname);
+  }
+  // Get session (works after code exchange or existing session)
   SB.auth.getSession().then(({ data:{ session } }) => {
     if(session) sbHandleSession(session);
     else showSignInButton();
