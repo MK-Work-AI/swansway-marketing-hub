@@ -2683,10 +2683,8 @@ function applyAdminConfig(cfg) {
     // Update BRANDS array budget strings from site sums
     updateBrandBudgetsFromSites();
 
-    // Update group budget metric
-    var total = BUDGET_BRANDS.reduce(function(s, b) { return s + (b.annual || 0); }, 0);
-    var budgetEl = document.getElementById('group-budget-val');
-    if (budgetEl && total > 0) budgetEl.textContent = '£' + (total / 1000000).toFixed(2) + 'M';
+    // Group budget only from site budgets — never from admin config (avoids flash)
+    // updateBrandBudgetsFromSites() handles this after loadSiteBudgets()
   }
 
   // ── 2. UPDATE GROUP METRICS ───────────────────────────────────
