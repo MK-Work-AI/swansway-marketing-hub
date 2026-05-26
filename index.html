@@ -4071,7 +4071,86 @@ async function competitorScan() {
   try {
     var proxyUrl = 'https://swansway-marketing-hub.vercel.app/api/claude';
 
-    var prompt = 'You are a UK automotive retail marketing analyst for Swansway Motor Group (Audi, VW, SEAT, CUPRA, Land Rover, Jaguar, Honda, Peugeot, BYD, OMODA/JAECOO, Motor Match — North West England, Midlands and North Wales).\n\nBased on your knowledge of the UK automotive retail market in 2025-2026, provide a detailed competitive intelligence report on: Arnold Clark, Lookers, Evans Halshaw, Marshall Motors.\n\nReturn ONLY valid JSON with no markdown or explanation:\n{"scan_date":"May 2026","competitors":[{"name":"Arnold Clark","current_push":"their main marketing focus","headline_offers":["offer1","offer2"],"featured_models":["model1","model2"],"channels_active":["Google Ads","Meta","AutoTrader","TV"],"autotrader_presence":"their AutoTrader strategy","tone":"marketing tone","swansway_threat":"specific threat in North West/Midlands","insight":"one specific action Swansway should take"}],"market_themes":["theme1","theme2","theme3"],"regional_intel":"North West / Midlands / North Wales market context","autotrader_landscape":"competitive AutoTrader picture","swansway_opportunity":"biggest gap identified","recommended_actions":["action this week","action this month","action this quarter"]}';
+    // Build rich prompt with live Swansway context from hub data
+    var groupBudget = Object.values(SITE_BUDGETS).reduce(function(s,d){ return s+(d.annual_planned||0); },0);
+    var groupActual = Object.values(SITE_BUDGETS).reduce(function(s,d){
+      for(var i=0;i<12;i++) s+=(d['m'+i+'_actual']||0); return s; },0);
+    var brandSummary = BRANDS.map(function(b){
+      var sites = HUB_SITES.filter(function(s){ return s.brand_id===b.id; });
+      var planned = sites.reduce(function(s,site){ var d=SITE_BUDGETS[site.site_id]||{}; return s+(d.annual_planned||0); },0);
+      return b.name+' ('+sites.length+' sites, £'+Math.round(planned/1000)+'K planned)';
+    }).join(', ');
+    var channelSummary = GROUP_CHANNELS.map(function(c){
+      return c.n+' '+c.pct+'%';
+    }).join(' | ');
+    var kpiSummary = GROUP_KPIS.slice(0,4).map(function(k){
+      return k.l+': '+(k.t||'TBC');
+    }).join('; ');
+
+    var prompt = [
+      'You are a senior UK automotive retail marketing strategist providing a confidential competitive intelligence briefing for Swansway Motor Group.',
+      '',
+      '== SWANSWAY CONTEXT (use this to make recommendations specific and actionable) ==',
+      '',
+      'ABOUT SWANSWAY:',
+      '- Independent family-owned dealer group, founded in Crewe, operating since 1999',
+      '- 11 franchised brands across 35 sites in North West England, West Midlands and North Wales',
+      '- Premium-to-volume mix: Audi, VW, SEAT, CUPRA, Land Rover, Jaguar, Honda, Peugeot, BYD, OMODA/JAECOO',
+      '- Also operates Motor Match used car supermarkets at 5 sites',
+      '- HQ: Crewe. Key clusters: Manchester corridor (Stockport, Oldham, Bolton), North Wales (Wrexham, Chester), Staffordshire (Stafford, Stoke)',
+      '- Won Fleet Procure Dealer Group of the Year — strong B2B fleet position',
+      '- Strong EV/PHEV portfolio: BYD, CUPRA, VW ID range, Peugeot E-308/E-3008, Jaguar all-electric pivot',
+      '',
+      'BRAND BREAKDOWN: ' + brandSummary,
+      '',
+      'ANNUAL MARKETING BUDGET: £' + groupBudget.toLocaleString() + ' planned | £' + groupActual.toLocaleString() + ' spent YTD',
+      '',
+      'CHANNEL MIX: ' + channelSummary,
+      '',
+      'KEY 2026 TARGETS: ' + kpiSummary,
+      '',
+      'CURRENT STRATEGIC PRIORITIES:',
+      '- Grow EV/PHEV to 35%+ of new sales mix (ZEV mandate compliance)',
+      '- Scale digital leads from ~1,320/month to 2,400/month',
+      '- Improve AutoTrader response time below 30 minutes (currently ~47 mins avg)',
+      '- Grow fleet accounts from ~95 to 200+ active B2B accounts',
+      '- Improve service retention to 68%+ group average',
+      '- Scale Motor Match used car to 1,200+ units/year',
+      '- Maximise manufacturer co-op fund utilisation (est. £380-420K available)',
+      '',
+      'KNOWN WEAKNESSES TO ADDRESS:',
+      '- Digital lead response time lagging industry best practice',
+      '- New brands (BYD, OMODA/JAECOO) need awareness building from zero',
+      '- Geographic spread creates inconsistent brand experience across 35 sites',
+      '- Social media following ~48K combined — below competitor scale',
+      '- Some markets (Wrexham/Wales) have lower brand awareness vs Manchester corridor',
+      '',
+      '== COMPETITIVE INTELLIGENCE BRIEF ==',
+      '',
+      'Analyse these four major UK dealer group competitors: Arnold Clark, Lookers, Evans Halshaw, Marshall Motors.',
+      '',
+      'For each competitor, assess:',
+      '1. Their current primary marketing push and Q2 2026 campaign focus',
+      '2. Specific offers or promotions they are leading with (finance deals, PCP rates, part-ex offers)',
+      '3. Which models they are featuring most heavily in advertising',
+      '4. Which channels they invest most in (TV, digital, social, AutoTrader, outdoor)',
+      '5. Their AutoTrader strategy — stock levels, review scores, response times, sponsored listings',
+      '6. Their tone and positioning (premium, value, family, tech-forward etc)',
+      '7. The SPECIFIC threat they pose to Swansway in overlapping geographies (North West, Midlands, North Wales)',
+      '8. One high-impact action Swansway should take THIS MONTH in direct response',
+      '',
+      'Also provide:',
+      '- 3 dominant market themes shaping UK automotive retail marketing in Q2 2026',
+      '- Regional intelligence specific to North West England, West Midlands and North Wales car market',
+      '- Assessment of the AutoTrader competitive landscape and where Swansway can gain an edge',
+      '- The single biggest opportunity Swansway is currently not exploiting',
+      '- 3 concrete recommended actions ranked by impact: one this week, one this month, one this quarter',
+      '',
+      'Be specific, commercial and direct. Reference real competitor campaigns, actual price points, named models and genuine market dynamics where you know them. This is for internal strategic use by Swansway\'s marketing director.',
+      '',
+      'Return ONLY valid JSON, no markdown, no explanation:',
+      '{"scan_date":"May 2026","competitors":[{"name":"Arnold Clark","current_push":"string","headline_offers":["string"],"featured_models":["string"],"channels_active":["string"],"autotrader_presence":"string","tone":"string","swansway_threat":"string","insight":"string"}],"market_themes":["string"],"regional_intel":"string","autotrader_landscape":"string","swansway_opportunity":"string","recommended_actions":["this week: string","this month: string","this quarter: string"]}',
+    ].join('\n');
 
     var resp = await fetch(proxyUrl, {
       method: 'POST',
