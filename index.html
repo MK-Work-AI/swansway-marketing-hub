@@ -2353,6 +2353,14 @@ function renderBrand(b) {
   `;
   // After HTML is set, render all tab content so it's ready when tabs are clicked
   setTimeout(function() {
+    var sitesEl = document.getElementById(b.id + '-sites-list');
+    var campsEl = document.getElementById(b.id + '-campaigns-list');
+    var kpisEl  = document.getElementById(b.id + '-brand-kpis');
+    console.log('renderBrand post-render check:', b.id,
+      'sites-list:', sitesEl ? 'found' : 'MISSING',
+      'campaigns-list:', campsEl ? 'found' : 'MISSING',
+      'brand-kpis:', kpisEl ? 'found' : 'MISSING'
+    );
     if (typeof renderBrandSites === 'function')     renderBrandSites(b.id);
     if (typeof renderBrandCentres === 'function')   renderBrandCentres(b.id);
     if (typeof renderBrandCampaigns === 'function') renderBrandCampaigns(b.id);
