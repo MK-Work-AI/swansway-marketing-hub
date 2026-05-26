@@ -246,6 +246,7 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
     <button class="snav" onclick="showPage('users',this)">👥 Users</button>
     <button class="snav" onclick="showPage('sitebudgets',this)">💷 Site Budgets</button>
     <button class="snav" onclick="showPage('sitekpis',this)">📊 Site KPIs</button>
+    <button class="snav" onclick="showPage('sitecontacts',this)">📋 Site Directory</button>
     <button class="snav" onclick="showPage('history',this)">🕐 History</button>
     <button class="snav" onclick="showPage('security',this)">🔒 Security</button>
     <button class="snav" onclick="showPage('data',this)">💾 Data & Export</button>
@@ -472,6 +473,25 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
       </div>
     </div>
     <div class="metrics-row" id="sk-metrics" style="margin-top:1rem"></div>
+  </div>
+
+
+  <!-- ══ SITE CONTACTS ══ -->
+  <div class="page" id="page-sitecontacts">
+    <div class="page-title">Site Contacts &amp; Directory</div>
+    <div class="page-sub">Address, phone, website and management team per dealership</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:1.5rem" id="sc-brand-tabs">
+      <button class="cal-q-tab" id="sc-tab-audi" onclick="scSelectBrand('audi')">Audi</button><button class="cal-q-tab" id="sc-tab-vw" onclick="scSelectBrand('vw')">Volkswagen</button><button class="cal-q-tab" id="sc-tab-vwcv" onclick="scSelectBrand('vwcv')">VW Commercial</button><button class="cal-q-tab" id="sc-tab-seat" onclick="scSelectBrand('seat')">SEAT</button><button class="cal-q-tab" id="sc-tab-cupra" onclick="scSelectBrand('cupra')">CUPRA</button><button class="cal-q-tab" id="sc-tab-landrover" onclick="scSelectBrand('landrover')">Land Rover</button><button class="cal-q-tab" id="sc-tab-jaguar" onclick="scSelectBrand('jaguar')">Jaguar</button><button class="cal-q-tab" id="sc-tab-honda" onclick="scSelectBrand('honda')">Honda</button><button class="cal-q-tab" id="sc-tab-peugeot" onclick="scSelectBrand('peugeot')">Peugeot</button><button class="cal-q-tab" id="sc-tab-byd" onclick="scSelectBrand('byd')">BYD</button><button class="cal-q-tab" id="sc-tab-omoda" onclick="scSelectBrand('omoda')">OMODA/JAECOO</button><button class="cal-q-tab" id="sc-tab-motormatch" onclick="scSelectBrand('motormatch')">Motor Match</button>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" id="sc-brand-title">Select a brand above</div>
+        <button class="btn btn-primary" onclick="scSave()">&#10003; Save changes</button>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div id="sc-content"></div>
+      </div>
+    </div>
   </div>
 
 
@@ -1028,7 +1048,8 @@ function changePassword() {
 function showPage(id, el) {
   if(id === 'users') setTimeout(loadUsers, 100);
   if(id === 'sitebudgets') { sbLoad(); sbSelectBrand(SB_CURRENT_BRAND); }
-  if(id === 'sitekpis')    { skLoad(); skSelectBrand(SK_CURRENT_BRAND); }
+  if(id === 'sitekpis')      { skLoad(); skSelectBrand(SK_CURRENT_BRAND); }
+  if(id === 'sitecontacts')  { scLoad(); scSelectBrand(SC_CURRENT_BRAND); }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.snav').forEach(s=>s.classList.remove('active'));
   const page = document.getElementById('page-'+id);
@@ -2418,6 +2439,152 @@ async function skSave() {
     if (!resp.ok) throw new Error(await resp.text());
     showToast('✓ Site KPIs saved', 'success');
     skUpdateMetrics(SK_CURRENT_BRAND);
+  } catch(e) { showToast('Save error: ' + e.message, 'error'); }
+}
+
+
+
+/* ════ SITE CONTACTS ════ */
+var SC_DATA = {};  // site_id -> row
+var SC_CURRENT_BRAND = 'audi';
+var SC_BRAND_NAMES = {"audi": "Audi", "vw": "Volkswagen", "vwcv": "VW Commercial", "seat": "SEAT", "cupra": "CUPRA", "landrover": "Land Rover", "jaguar": "Jaguar", "honda": "Honda", "peugeot": "Peugeot", "byd": "BYD", "omoda": "OMODA/JAECOO", "motormatch": "Motor Match"};
+var SC_API_URL = SB_ADMIN_URL + '/rest/v1/site_contacts';
+
+var SC_MANAGERS = [
+  {key:'general_manager',    label:'General Manager'},
+  {key:'head_of_business',   label:'Head of Business'},
+  {key:'sales_manager',      label:'Sales Manager'},
+  {key:'service_manager',    label:'Service Manager'},
+  {key:'parts_manager',      label:'Parts Manager'},
+];
+
+function scSelectBrand(brandId) {
+  SC_CURRENT_BRAND = brandId;
+  document.querySelectorAll('[id^="sc-tab-"]').forEach(function(t) {
+    t.className = 'cal-q-tab' + (t.id === 'sc-tab-' + brandId ? ' active' : '');
+  });
+  var el = document.getElementById('sc-brand-title');
+  if (el) el.textContent = SC_BRAND_NAMES[brandId] + ' — Site Directory';
+  scRenderContent(brandId);
+}
+
+function scRenderContent(brandId) {
+  var el = document.getElementById('sc-content');
+  if (!el) return;
+  var sites = SB_SITES.filter(function(s) { return s.brand_id === brandId; });
+  el.innerHTML = '';
+
+  sites.forEach(function(site, si) {
+    var d = SC_DATA[site.site_id] || {};
+    var section = document.createElement('div');
+    section.style.cssText = 'border-bottom:2px solid var(--border);padding:20px;' + (si % 2 === 0 ? '' : 'background:var(--surface)');
+
+    // Site header
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:14px';
+    hdr.textContent = site.site_name;
+    section.appendChild(hdr);
+
+    // Contact info grid (read-only display + editable fields)
+    var infoGrid = document.createElement('div');
+    infoGrid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px';
+
+    // Read-only info boxes
+    [
+      ['Address', (d.address || '') + (d.town ? ', ' + d.town : '') + (d.postcode ? ', ' + d.postcode : '')],
+      ['Phone', d.phone || ''],
+      ['Website', d.website_url ? '<a href="' + d.website_url + '" target="_blank" style="color:var(--swansway);font-size:11px">View site</a>' : '—'],
+    ].forEach(function(item) {
+      var box = document.createElement('div');
+      box.style.cssText = 'background:var(--white);border:1px solid var(--border);border-radius:3px;padding:10px 12px';
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px';
+      lbl.textContent = item[0];
+      var val = document.createElement('div');
+      val.style.cssText = 'font-size:12px;color:var(--ink)';
+      val.innerHTML = item[1] || '<span style="color:var(--ink-faint)">—</span>';
+      box.appendChild(lbl); box.appendChild(val);
+      infoGrid.appendChild(box);
+    });
+    section.appendChild(infoGrid);
+
+    // Management team inputs
+    var mgmtLbl = document.createElement('div');
+    mgmtLbl.style.cssText = 'font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px';
+    mgmtLbl.textContent = 'Management team';
+    section.appendChild(mgmtLbl);
+
+    var mgmtGrid = document.createElement('div');
+    mgmtGrid.style.cssText = 'display:grid;grid-template-columns:repeat(5,1fr);gap:8px';
+
+    SC_MANAGERS.forEach(function(m) {
+      var wrap = document.createElement('div');
+      var lbl = document.createElement('label');
+      lbl.style.cssText = 'font-size:10px;color:var(--ink-soft);display:block;margin-bottom:3px';
+      lbl.textContent = m.label;
+      var inp = document.createElement('input');
+      inp.type = 'text';
+      inp.value = d[m.key] || '';
+      inp.placeholder = m.label;
+      inp.style.cssText = 'width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:var(--font-m);box-sizing:border-box';
+      inp.dataset.siteId = site.site_id;
+      inp.dataset.field = m.key;
+      inp.addEventListener('input', function() {
+        if (!SC_DATA[this.dataset.siteId]) SC_DATA[this.dataset.siteId] = {};
+        SC_DATA[this.dataset.siteId][this.dataset.field] = this.value;
+      });
+      wrap.appendChild(lbl); wrap.appendChild(inp);
+      mgmtGrid.appendChild(wrap);
+    });
+    section.appendChild(mgmtGrid);
+    el.appendChild(section);
+  });
+}
+
+async function scLoad() {
+  var svcKey = window.SWANSWAY_CONFIG && window.SWANSWAY_CONFIG.serviceKey;
+  if (!svcKey) return;
+  try {
+    var resp = await fetch(SC_API_URL + '?select=*', {
+      headers: {'apikey': svcKey, 'Authorization': 'Bearer ' + svcKey}
+    });
+    if (!resp.ok) return;
+    var rows = await resp.json();
+    rows.forEach(function(row) { SC_DATA[row.site_id] = row; });
+    console.log('Site contacts loaded: ' + rows.length);
+    scRenderContent(SC_CURRENT_BRAND);
+  } catch(e) { console.warn('scLoad error:', e); }
+}
+
+async function scSave() {
+  var svcKey = window.SWANSWAY_CONFIG && window.SWANSWAY_CONFIG.serviceKey;
+  if (!svcKey) { showToast('No service key', 'error'); return; }
+  try {
+    var rows = Object.keys(SC_DATA).map(function(sid) {
+      var d = SC_DATA[sid];
+      return {
+        site_id: sid,
+        site_name: d.site_name || sid,
+        brand_id: d.brand_id || '',
+        general_manager: d.general_manager || '',
+        head_of_business: d.head_of_business || '',
+        sales_manager: d.sales_manager || '',
+        service_manager: d.service_manager || '',
+        parts_manager: d.parts_manager || '',
+        updated_at: new Date().toISOString()
+      };
+    });
+    if (!rows.length) { showToast('No data to save', 'error'); return; }
+    var resp = await fetch(SC_API_URL + '?on_conflict=site_id', {
+      method: 'POST',
+      headers: {
+        'apikey': svcKey, 'Authorization': 'Bearer ' + svcKey,
+        'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify(rows)
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    showToast('\u2713 Site directory saved', 'success');
   } catch(e) { showToast('Save error: ' + e.message, 'error'); }
 }
 

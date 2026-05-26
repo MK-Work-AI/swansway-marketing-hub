@@ -2919,6 +2919,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadAdminConfig();
   loadSiteBudgets();
   loadSiteKPIs();
+  loadSiteContacts();
   syncBrandSitesFromHubSites();
   renderGroupBrandCards();
   renderGroupCalendar();
@@ -4650,27 +4651,56 @@ function renderBrandCentres(brandId) {
   var el = document.getElementById(brandId + '-centres-list');
   if (!el) return;
   var sites = HUB_SITES.filter(function(s) { return s.brand_id === brandId; });
-  if (!sites.length) { el.innerHTML = '<div style="padding:20px;color:var(--ink-faint);font-size:13px">No sites configured.</div>'; return; }
+  if (!sites.length) { el.innerHTML = '<div style="padding:20px;color:var(--ink-faint)">No sites found.</div>'; return; }
 
-  var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;padding:4px 0">';
-  sites.forEach(function(site) {
-    var d = SITE_BUDGETS[site.site_id] || {};
-    var kd = SITE_KPIS[site.site_id] || {};
-    var budget = d.annual_planned > 0 ? '\u00a3' + d.annual_planned.toLocaleString() : null;
-    var units = 0; for (var i=0;i<12;i++) units += kd['m'+i+'_units']||0;
-    var tgt = kd.units_target || 0;
+  var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+  html += '<thead><tr style="background:var(--swansway);color:#fff">';
+  html += '<th style="padding:10px 12px;text-align:left;font-family:var(--font-m);font-size:10px;font-weight:500;min-width:160px">Dealership</th>';
+  html += '<th style="padding:10px 12px;text-align:left;font-family:var(--font-m);font-size:10px;font-weight:500">Address</th>';
+  html += '<th style="padding:10px 12px;text-align:left;font-family:var(--font-m);font-size:10px;font-weight:500">Phone</th>';
+  html += '<th style="padding:10px 12px;text-align:left;font-family:var(--font-m);font-size:10px;font-weight:500">General Manager</th>';
+  html += '<th style="padding:10px 12px;text-align:left;font-family:var(--font-m);font-size:10px;font-weight:500">Head of Business</th>';
+  html += '<th style="padding:10px 12px;text-align:left;font-family:var(--font-m);font-size:10px;font-weight:500">Sales Manager</th>';
+  html += '<th style="padding:10px 12px;text-align:left;font-family:var(--font-m);font-size:10px;font-weight:500">Service Manager</th>';
+  html += '<th style="padding:10px 12px;text-align:left;font-family:var(--font-m);font-size:10px;font-weight:500">Parts Manager</th>';
+  html += '<th style="padding:10px 12px;text-align:left;font-family:var(--font-m);font-size:10px;font-weight:500">Links</th>';
+  html += '</tr></thead><tbody>';
 
-    html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:4px;padding:16px 18px">';
-    html += '<div style="font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px">' + site.site_name + '</div>';
-    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">';
-    if (budget) html += '<div style="font-size:11px;background:var(--surface);padding:3px 10px;border-radius:10px;font-family:var(--font-m)">Budget: ' + budget + '</div>';
-    if (tgt) html += '<div style="font-size:11px;background:var(--surface);padding:3px 10px;border-radius:10px;font-family:var(--font-m)">Units target: ' + tgt + '</div>';
-    if (units) html += '<div style="font-size:11px;background:var(--surface);padding:3px 10px;border-radius:10px;font-family:var(--font-m)">Units YTD: ' + units + '</div>';
-    html += '</div></div>';
+  sites.forEach(function(site, idx) {
+    var c = SITE_CONTACTS[site.site_id] || {};
+    var bg = idx % 2 === 0 ? 'var(--white)' : 'var(--surface)';
+    var addr = [c.address, c.town, c.postcode].filter(Boolean).join(', ');
+    var mgr = function(val) { return val ? val : '<span style="color:var(--ink-faint)">\u2014</span>'; };
+
+    html += '<tr style="background:' + bg + ';border-bottom:1px solid var(--border)">';
+    html += '<td style="padding:10px 12px;font-weight:700;font-size:13px">' + site.site_name + '</td>';
+    html += '<td style="padding:10px 12px;color:var(--ink-soft)">' + (addr || '\u2014') + '</td>';
+    html += '<td style="padding:10px 12px;white-space:nowrap">' + (c.phone ? '<a href="tel:' + c.phone + '" style="color:var(--swansway)">' + c.phone + '</a>' : '\u2014') + '</td>';
+    html += '<td style="padding:10px 12px">' + mgr(c.general_manager) + '</td>';
+    html += '<td style="padding:10px 12px">' + mgr(c.head_of_business) + '</td>';
+    html += '<td style="padding:10px 12px">' + mgr(c.sales_manager) + '</td>';
+    html += '<td style="padding:10px 12px">' + mgr(c.service_manager) + '</td>';
+    html += '<td style="padding:10px 12px">' + mgr(c.parts_manager) + '</td>';
+    html += '<td style="padding:10px 12px;white-space:nowrap">';
+    if (c.website_url) html += '<a href="' + c.website_url + '" target="_blank" style="color:var(--swansway);font-size:11px;margin-right:8px">Website</a>';
+    if (c.google_maps_url) html += '<a href="' + c.google_maps_url + '" target="_blank" style="color:var(--swansway);font-size:11px">Map</a>';
+    html += '</td></tr>';
   });
-  html += '</div>';
+
+  html += '</tbody></table></div>';
+
+  // Note if managers not yet entered
+  var hasManagers = sites.some(function(s) {
+    var c = SITE_CONTACTS[s.site_id] || {};
+    return c.general_manager || c.head_of_business || c.sales_manager;
+  });
+  if (!hasManagers) {
+    html += '<div style="padding:12px 16px;font-size:12px;color:var(--ink-faint);border-top:1px solid var(--border)">Management team not yet entered. Add in Admin \u2192 Site Directory.</div>';
+  }
+
   el.innerHTML = html;
 }
+
 
 function renderBrandCampaigns(brandId) {
   var listEl = document.getElementById(brandId + '-campaigns-list');
@@ -5214,6 +5244,25 @@ function renderBrandSiteKPIs(brandId) {
 
   html += '</tbody></table></div>';
   el.innerHTML = html;
+}
+
+
+/* ════ SITE CONTACTS — HUB ════ */
+var SITE_CONTACTS = {};  // site_id -> row
+
+async function loadSiteContacts() {
+  try {
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/site_contacts?select=*', {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
+    });
+    if (!resp.ok) return;
+    var rows = await resp.json();
+    rows.forEach(function(row) { SITE_CONTACTS[row.site_id] = row; });
+    console.log('Site contacts loaded: ' + rows.length);
+  } catch(e) { console.warn('loadSiteContacts error:', e); }
 }
 
 const QPLAN_CACHE = {};
