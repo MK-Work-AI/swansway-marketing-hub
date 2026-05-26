@@ -2812,42 +2812,9 @@ function applyAdminConfig(cfg) {
     if (g.nps)       setEl('group-nps-target',   g.nps);
   }
 
-  // ── 3. UPDATE KPIs — 4 group-only KPIs set by label, rest from site data ──
-  // Only these 4 KPIs are set via admin config — others come from site_kpis aggregation
-  var GROUP_ONLY_KPIS = ['AutoTrader response time', 'Fleet accounts active', 'Social media follower growth', 'Manufacturer co-op utilisation'];
-  if (cfg.kpis && cfg.kpis.length) {
-    cfg.kpis.forEach(function(ak) {
-      // Only apply if this is one of the 4 group-only KPIs
-      if (GROUP_ONLY_KPIS.indexOf(ak.label) === -1) return;
-      var gk = GROUP_KPIS.find(function(k) { return k.l === ak.label; });
-      if (!gk) return;
-      var u = ak.unit || gk.unit || '';
-      if (ak.owner && ak.owner !== '--') gk.o = ak.owner;
-      var tVal = parseFloat(ak.target);
-      var aVal = parseFloat(ak.actual);
-      var hasTarget = !isNaN(tVal) && tVal > 0;
-      var hasActual = !isNaN(aVal) && aVal > 0;
-      if (hasTarget) {
-        if (u === '%')         gk.t = tVal + '%';
-        else if (u === 'GBP')  gk.t = '£' + tVal.toLocaleString();
-        else if (u === 'mins') gk.t = '< ' + tVal + ' min';
-        else if (tVal >= 1000) gk.t = tVal.toLocaleString();
-        else                   gk.t = String(tVal);
-      } else { gk.t = '--'; }
-      if (hasActual) {
-        if (u === '%')         gk.a = aVal + '%';
-        else if (u === 'GBP')  gk.a = '£' + aVal.toLocaleString();
-        else if (u === 'mins') gk.a = aVal + ' min';
-        else if (aVal >= 1000) gk.a = aVal.toLocaleString();
-        else                   gk.a = String(aVal);
-        gk.p = hasTarget ? (ak.lowerBetter
-          ? Math.max(0, Math.round((2 - aVal/tVal) * 100))
-          : Math.min(100, Math.round(aVal/tVal * 100))) : 0;
-      } else { gk.a = ''; gk.p = 0; }
-      gk.lowerBetter = ak.lowerBetter || false;
-    });
-    if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
-  }
+  // ── 3. UPDATE KPIs — disabled, all KPIs now come from site_kpis aggregation ──
+  // The 4 group-only KPIs (AutoTrader, Fleet, Social, Co-op) are entered directly
+  // in the hub KPI cards via future inline editing — not from admin config
 
 // ── 4. UPDATE CHANNELS ────────────────────────────────────────
   if (cfg.channels && cfg.channels.length) {
@@ -4549,7 +4516,7 @@ switchView = function(id, el) {
   if (id === 'kpis') {
     setTimeout(function() {
       if (typeof updateGroupKPIsFromSites === 'function') updateGroupKPIsFromSites();
-      if (typeof applyAdminKPITargets === 'function') applyAdminKPITargets();
+      // applyAdminKPITargets disabled
       renderGroupKPIs();
     }, 1000);
   }
@@ -5092,7 +5059,7 @@ async function loadSiteKPIs() {
     // Re-render KPIs if that view is currently active
     var kpiView = document.getElementById('view-kpis');
     if (kpiView && kpiView.classList.contains('active')) {
-      if (typeof applyAdminKPITargets === 'function') applyAdminKPITargets();
+      // applyAdminKPITargets disabled
       if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
     }
     console.log('Site KPIs loaded: ' + rows.length + ' sites');
