@@ -4550,7 +4550,7 @@ switchView = function(id, el) {
       if (typeof updateGroupKPIsFromSites === 'function') updateGroupKPIsFromSites();
       if (typeof applyAdminKPITargets === 'function') applyAdminKPITargets();
       renderGroupKPIs();
-    }, 200);
+    }, 1000);
   }
   if (id === 'budget')     { setTimeout(renderBudgetTracker, 100); }
   if (id === 'autopsy')    { renderAutopsyList(); }
@@ -4917,7 +4917,12 @@ async function loadSiteKPIs() {
     if (!rows || !rows.length) { console.log('loadSiteKPIs: no data'); return; }
     rows.forEach(function(row) { SITE_KPIS[row.site_id] = row; });
     updateGroupKPIsFromSites();
-    if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
+    // Re-render KPIs if that view is currently active
+    var kpiView = document.getElementById('view-kpis');
+    if (kpiView && kpiView.classList.contains('active')) {
+      if (typeof applyAdminKPITargets === 'function') applyAdminKPITargets();
+      if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
+    }
     console.log('Site KPIs loaded: ' + rows.length + ' sites');
   } catch(e) { console.warn('loadSiteKPIs exception:', e); }
 }
