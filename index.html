@@ -2247,8 +2247,7 @@ function switchView(id, el) {
 
 function renderBrand(b) {
   const container = document.getElementById(b.id+'-content');
-  if(container.dataset.rendered) return;
-  container.dataset.rendered = '1';
+  if(!container) return;
 
   container.innerHTML = `
     <div class="page-strip">
