@@ -1423,7 +1423,7 @@ const BRANDS = [
   {
     id:'audi', name:'Audi', color:'#CC0000', segment:'Premium',
     sites:6, sitenames:'Blackburn · Carlisle · Crewe · Preston · Stafford · Stoke',
-    budget:'—', newTarget:'1,800 units', evTarget:'45%', q2:'A6 e-tron Avant launch + Summer Drive VIP event',
+    budget:'—', newTarget:'—', evTarget:'45%', q2:'A6 e-tron Avant launch + Summer Drive VIP event',
     progress:78,
     tags:['A6 e-tron launch','VIP events','Fleet B2B','RS halo','Approved Used'],
     pillars:[
@@ -1466,7 +1466,7 @@ const BRANDS = [
       {n:'OOH & Print',pct:5,budget:'—',note:'Plate-change outdoor, Cumbria press for Carlisle, trade press fleet ads.',color:'#CD5C5C'},
     ],
     kpis:[
-      {l:'New car units (all 6 centres)',t:'1,800 units',p:62,o:'HoBs + Sales'},
+      {l:'New car units',t:'—',p:0,o:'HoBs + Sales'},
       {l:'EV/PHEV % of new sales',t:'45% mix',p:38,o:'Sales + Marketing'},
       {l:'Digital leads per month',t:'420 total',p:55,o:'Digital team'},
       {l:'Lead-to-sale conversion',t:'12% avg',p:48,o:'Sales managers'},
@@ -1536,7 +1536,7 @@ const BRANDS = [
       {l:'Digital leads per month',t:'380 total',p:60,o:'Digital team'},
       {l:'Oldham site leads (new)',t:'80/month',p:30,o:'Oldham HoB'},
       {l:'Service retention',t:'68%+',p:55,o:'Aftersales mgrs'},
-      {l:'Approved Used units',t:'1,200 units',p:65,o:'Used car mgrs'},
+      {l:'Approved Used units',t:'—',p:0,o:'Used car mgrs'},
       {l:'Cost per lead',t:'< £26',p:70,o:'Digital team'},
     ],
     aiPrompts:[
@@ -1865,7 +1865,7 @@ const BRANDS = [
   {
     id:'peugeot', name:'Peugeot', color:'#1B3A6B', segment:'Mainstream EV',
     sites:2, sitenames:'Chester · Crewe',
-    budget:'—', newTarget:'1,200 units', evTarget:'40%', q2:'E-308 summer lease push + 3008 PHEV launch',
+    budget:'—', newTarget:'—', evTarget:'40%', q2:'E-308 summer lease push + 3008 PHEV launch',
     progress:62,
     tags:['E-208 EV','E-308','3008 PHEV','French design','Lease deals'],
     pillars:[
@@ -1900,7 +1900,7 @@ const BRANDS = [
       {n:'Events & OOH',pct:8,budget:'—',note:'3008 PHEV launch events, plate-change outdoor.',color:'#7AA3E6'},
     ],
     kpis:[
-      {l:'New car units (all 3 sites)',t:'1,200 units',p:62,o:'HoBs + Sales'},
+      {l:'New car units',t:'—',p:0,o:'HoBs + Sales'},
       {l:'EV/PHEV % of new sales',t:'40% mix',p:40,o:'Sales + Mktg'},
       {l:'PCH/lease as % of sales',t:'35%',p:50,o:'Sales + Finance'},
       {l:'E-208 units',t:'350 units',p:55,o:'Sales'},
@@ -2135,7 +2135,7 @@ const GROUP_CHANNELS = [
    GROUP KPIs
 ══════════════════════════════════════ */
 const GROUP_KPIS = [
-  {l:'Total new car/van units',       t:'8,530 units', p:62, o:'All HoBs + Directors',
+  {l:'Total new car/van units',       t:'—', p:0, o:'All HoBs + Directors',
    icon:'🚗', cat:'Volume', unit:'',
    def:'Total new retail and fleet registrations across all 11 brands and 30 sites in 2026.',
    why:'The primary commercial output. Every marketing activity should trace back to unit contribution. 2025 actual: 7,980 units.',
@@ -2535,7 +2535,7 @@ const MODAL_PROMPTS = {
     {icon:'📊',cat:'Planning',text:'Build a full 12-month Swansway group marketing calendar in table format — all brands, all key dates, all campaigns'},
   ],
   channels:[
-    {icon:'💰',cat:'Budget',text:'How should Swansway optimise its £630K manufacturer co-op budget — which brands have the most available and how to claim it effectively?'},
+    {icon:'💰',cat:'Budget',text:'How should Swansway optimise its manufacturer co-op budget — which brands have the most available and how to claim it effectively?'},
     {icon:'📱',cat:'Social',text:'What should Swansway\'s group social media content calendar look like — how to manage 11 brand channels plus the group channel?'},
     {icon:'🔍',cat:'SEO',text:'Write an SEO and Google Business Profile strategy for all 30 Swansway sites — how to dominate local search for each brand in each location'},
   ],

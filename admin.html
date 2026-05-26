@@ -621,7 +621,7 @@ const BRAND_DEFAULTS = [
 const GROUP_DEFAULTS = {
   name:'Swansway Motor Group', year:'2026', desc:'11 brands · 30 dealerships · North West, Midlands & North Wales',
   fystart:'January', budget:0, evPct:38, digSplit:'70% digital / 30% traditional', coopPct:15,
-  units:8530, leads:2400, evSales:35, conv:11, retention:68, used:6000, nps:72, cpl:32,
+  units:0, leads:0, evSales:0, conv:0, retention:0, used:0, nps:0, cpl:0,
   priorities:[
     {title:'EV Transition Leadership',desc:'Drive electric adoption across BYD, CUPRA, VW, Peugeot and OMODA/JAECOO. Education-first campaigns, home charger incentives, BIK savings calculators for fleet.'},
     {title:'Digital Lead Generation',desc:'Group-level PPC, AutoTrader prominence, social-first content strategy. Target 2,400+ digital leads/month across all brands. Sub-£38 CPL for premium, sub-£22 mainstream.'},
@@ -643,7 +643,7 @@ const CHANNEL_DEFAULTS = [
 ];
 
 const KPI_DEFAULTS = [
-  {label:'Total new car/van units',target:8530,actual:0,owner:'All HoBs + Directors',icon:'🚗',cat:'Volume',unit:'',
+  {label:'Total new car/van units',target:0,actual:0,owner:'All HoBs + Directors',icon:'🚗',cat:'Volume',unit:'',
    def:'Total new retail and fleet registrations across all 11 brands and 30 sites in 2026.',
    why:'The primary commercial output — every marketing activity should trace back to unit contribution. 2025 actual: 7,980 units, target represents 6.9% growth.',
    how:'Pulled monthly from manufacturer portals (VWFS, JLR, Honda Connect). Reviewed at monthly board.',
@@ -655,7 +655,7 @@ const KPI_DEFAULTS = [
    how:'Calculated monthly from registration data. BEV and PHEV counted separately.',
    bench:'UK industry avg: 24% BEV. Swansway target 35% reflects premium/EV brand weighting.',
    split:'BEV: 22% | PHEV: 13% — Led by BYD, CUPRA Born, VW ID., Peugeot E-308'},
-  {label:'Digital leads per month',target:2400,actual:0,owner:'Group digital team',icon:'📱',cat:'Lead Generation',unit:'',
+  {label:'Digital leads per month',target:0,actual:0,owner:'Group digital team',icon:'📱',cat:'Lead Generation',unit:'',
    def:'Total qualified digital enquiries per month — website forms, AutoTrader, chat, social DMs. Excludes walk-ins and phone-only.',
    why:'Digital leads are the primary pipeline. At 11% conversion and £32 CPL, 2,400 leads generates ~264 units and costs ~£76,800/month.',
    how:'Aggregated via group CRM. Each lead needs name, email and model of interest to qualify. Reported weekly to HoBs.',
@@ -679,7 +679,7 @@ const KPI_DEFAULTS = [
    how:'Tracked via CDK aftersales system at 12-month and 24-month intervals post-sale.',
    bench:'Industry avg: 62%. Premium brands typically achieve 70%+. Stafford Audi leads at 74%.',
    split:'Service plan target: 60% penetration at POS | MOT reminder: 3-touch CRM | Lapsed: 3yr+ recovery'},
-  {label:'Approved Used + Motor Match units',target:6000,actual:0,owner:'Used car managers',icon:'🏷',cat:'Used Car',unit:'',
+  {label:'Approved Used + Motor Match units',target:0,actual:0,owner:'Used car managers',icon:'🏷',cat:'Used Car',unit:'',
    def:'Total approved used car sales across all 30 franchised sites plus all 5 Motor Match sites in 2026.',
    why:'Used car is the second-largest revenue stream. Higher margin flexibility, faster stock turn, less manufacturer dependency.',
    how:'Tracked daily via stock management system. Weekly aged stock reviews at site level.',
