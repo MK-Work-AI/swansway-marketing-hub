@@ -2283,7 +2283,7 @@ function renderBrand(b) {
       <button class="inner-tab" onclick="switchInner('${b.id}','audiences',this)">Audiences</button>
       <button class="inner-tab" onclick="switchInner('${b.id}','budget',this)">Channel Mix</button>
       <button class="inner-tab" onclick="switchInner('${b.id}','kpis',this)">KPI Framework by Site</button>
-      <button class="inner-tab" id="qplan-tab-${b.id}" onclick="switchInner('${b.id}','qplan',this)" style="border-color:var(--accent);color:var(--accent)">📋 Q-Plan</button>
+      <button class="inner-tab" id="qplan-tab-${b.id}" onclick="switchInner('${b.id}','qplan',this)" style="border-color:var(--accent);color:var(--accent)">Quarterly Brand Plan</button>
     </div>
 
     <div class="inner-section active" id="${b.id}-strategy">
@@ -2296,21 +2296,10 @@ function renderBrand(b) {
     </div>
 
     <div class="inner-section" id="${b.id}-centres">
-      <div class="sh"><div><div class="sh-title">Centre-by-Centre Priorities</div><div class="sh-sub">Each site has a distinct local angle and primary campaign focus</div></div></div>
-      <div class="centres-grid" style="--brand-color:${b.color}">
-        ${b.centres.map(c=>`
-          <div class="centre-card ${c.flagship?'flagship':''}">
-            ${c.flag?`<div class="centre-flag" style="color:${b.color}">${c.flag}</div>`:''}
-            <div class="centre-name">${c.name}</div>
-            <div class="centre-area">${c.area}</div>
-            <div class="centre-desc">${c.desc}</div>
-            <div style="margin-bottom:8px">${c.tagLabels.map((l,i)=>`<span class="tag ${c.tags[i]||'t-slate'}">${l}</span>`).join('')}</div>
-            <div class="centre-row"><span>Priority channel</span><span>${c.channel}</span></div>
-            <div class="centre-row"><span>2026 hero campaign</span><span>${c.hero}</span></div>
-          </div>
-        `).join('')}
+      <div class="sh"><div><div class="sh-title">Dealerships</div><div class="sh-sub">All sites for this brand</div></div></div>
+      <div id="${b.id}-centres-list">
+        <div style="padding:20px;color:var(--ink-faint);font-size:13px">Loading dealerships...</div>
       </div>
-    </div>
 
     <div class="inner-section" id="${b.id}-campaigns">
       <div class="sh"><div><div class="sh-title">Priority Campaigns 2026</div><div class="sh-sub">From admin calendar and Brief Builder</div></div><div class="action-row"><button class="btn btn-sm btn-accent" onclick="switchView('brief',document.querySelector('[data-view=brief]'))">+ New brief</button></div></div>
@@ -2369,6 +2358,7 @@ function switchInner(brandId, secId, el) {
   document.querySelectorAll(`#${brandId}-content .inner-section`).forEach(s=>s.classList.remove('active'));
   el.classList.add('active');
   if(secId === 'campaigns') { setTimeout(function(){ if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(brandId); }, 50); }
+  if(secId === 'centres')   { setTimeout(function(){ if(typeof renderBrandCentres==='function') renderBrandCentres(brandId); }, 50); }
   if(secId === 'sites') { setTimeout(function(){ if(typeof renderBrandSites==='function') renderBrandSites(brandId); }, 50); }
   if(secId === 'kpis') { setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(brandId);  }, 50); }
   document.getElementById(brandId+'-'+secId).classList.add('active');
@@ -4636,6 +4626,32 @@ function calBuildBrief(brandName, campaignName) {
 }
 
 
+
+function renderBrandCentres(brandId) {
+  var el = document.getElementById(brandId + '-centres-list');
+  if (!el) return;
+  var sites = HUB_SITES.filter(function(s) { return s.brand_id === brandId; });
+  if (!sites.length) { el.innerHTML = '<div style="padding:20px;color:var(--ink-faint);font-size:13px">No sites configured.</div>'; return; }
+
+  var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;padding:4px 0">';
+  sites.forEach(function(site) {
+    var d = SITE_BUDGETS[site.site_id] || {};
+    var kd = SITE_KPIS[site.site_id] || {};
+    var budget = d.annual_planned > 0 ? '\u00a3' + d.annual_planned.toLocaleString() : null;
+    var units = 0; for (var i=0;i<12;i++) units += kd['m'+i+'_units']||0;
+    var tgt = kd.units_target || 0;
+
+    html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:4px;padding:16px 18px">';
+    html += '<div style="font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px">' + site.site_name + '</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">';
+    if (budget) html += '<div style="font-size:11px;background:var(--surface);padding:3px 10px;border-radius:10px;font-family:var(--font-m)">Budget: ' + budget + '</div>';
+    if (tgt) html += '<div style="font-size:11px;background:var(--surface);padding:3px 10px;border-radius:10px;font-family:var(--font-m)">Units target: ' + tgt + '</div>';
+    if (units) html += '<div style="font-size:11px;background:var(--surface);padding:3px 10px;border-radius:10px;font-family:var(--font-m)">Units YTD: ' + units + '</div>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
 
 function renderBrandCampaigns(brandId) {
   var listEl = document.getElementById(brandId + '-campaigns-list');
