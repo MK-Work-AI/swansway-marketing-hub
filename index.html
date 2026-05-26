@@ -2760,9 +2760,6 @@ function loadAdminConfig() {
 function applyAdminConfig(cfg) {
   if (!cfg) return;
   console.log('Applying admin config to hub...');
-  console.log('cfg keys:', Object.keys(cfg).join(','));
-  var kpisInfo = cfg.kpis ? (cfg.kpis.length + ' items, first target=' + (cfg.kpis[0] && cfg.kpis[0].target)) : 'MISSING';
-  console.log('cfg.kpis:', kpisInfo);
 
   // ── 1. UPDATE BRANDS ARRAY (used everywhere in hub) ──────────
   if (cfg.brands && cfg.brands.length) {
@@ -2822,35 +2819,36 @@ function applyAdminConfig(cfg) {
 
   // ── 3. UPDATE KPIs — only sync target/actual/owner from admin (not narrative fields) ──
   if (cfg.kpis && cfg.kpis.length) {
-    console.log('KPI sync running, first gk.t before:', GROUP_KPIS[0].t, 'ak.target:', cfg.kpis[0].target);
     cfg.kpis.forEach(function(ak, i) {
       if (i >= GROUP_KPIS.length) return;
       var gk = GROUP_KPIS[i];
-      // Only sync operational fields — never overwrite def/why/how/bench/split from saved data
-      if (ak.owner && ak.owner !== '--') gk.o = ak.owner;
-      if (ak.icon)  gk.icon = ak.icon;
-      if (ak.cat)   gk.cat  = ak.cat;
-      // Only apply target if it's a real non-zero value
-      if (ak.target && ak.target > 0) {
-        var u = ak.unit || '';
-        var v = ak.target;
-        if (u === '%')         gk.t = v + '%';
-        else if (u === 'GBP' || u === '£') gk.t = '£' + v;
-        else if (u === 'mins') gk.t = '< ' + v + ' min';
-        else if (v >= 1000)    gk.t = v.toLocaleString() + (u ? ' ' + u : '');
-        else                   gk.t = String(v) + (u ? ' ' + u : '');
-        // Progress from actual vs target
-        var pct = ak.actual > 0 ? (ak.lowerBetter
-          ? Math.max(0, Math.round((2 - ak.actual / ak.target) * 100))
-          : Math.min(100, Math.round(ak.actual / ak.target * 100))) : 0;
-        gk.p = pct;
-      } else {
-        // No real target set — keep as blank/amber
-        gk.t = '--';
-        gk.p = 0;
-      }
+      var u = ak.unit || gk.unit || '';
+      if (ak.owner && ak.owner !== '--' && ak.owner.trim() !== '') gk.o = ak.owner;
+      var tVal = parseFloat(ak.target);
+      var aVal = parseFloat(ak.actual);
+      var hasTarget = !isNaN(tVal) && tVal > 0;
+      var hasActual = !isNaN(aVal) && aVal > 0;
+      // Format and set target
+      if (hasTarget) {
+        if (u === '%')        gk.t = tVal + '%';
+        else if (u === 'GBP') gk.t = '£' + tVal.toLocaleString();
+        else if (u === 'mins') gk.t = '< ' + tVal + ' min';
+        else if (tVal >= 1000) gk.t = tVal.toLocaleString();
+        else                   gk.t = String(tVal);
+      } else { gk.t = '--'; }
+      // Format and set actual
+      if (hasActual) {
+        if (u === '%')        gk.a = aVal + '%';
+        else if (u === 'GBP') gk.a = '£' + aVal.toLocaleString();
+        else if (u === 'mins') gk.a = aVal + ' min';
+        else if (aVal >= 1000) gk.a = aVal.toLocaleString();
+        else                   gk.a = String(aVal);
+        gk.p = hasTarget ? (ak.lowerBetter
+          ? Math.max(0, Math.round((2 - aVal / tVal) * 100))
+          : Math.min(100, Math.round(aVal / tVal * 100))) : 0;
+      } else { gk.a = ''; gk.p = 0; }
+      gk.lowerBetter = ak.lowerBetter || false;
     });
-    console.log('KPI sync done, GROUP_KPIS[0].t now:', GROUP_KPIS[0].t, 'GROUP_KPIS[0].a:', GROUP_KPIS[0].a);
     if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
   }
 
