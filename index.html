@@ -2239,7 +2239,7 @@ function switchView(id, el) {
   if(brandForQplan) {
     setTimeout(()=>qplanAutoLoad(id, brandForQplan.color), 400);
     setTimeout(function(){ if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(id); }, 100);
-    setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(id); if(typeof renderBrandSiteKPIs==='function') renderBrandSiteKPIs(id); }, 150);
+    setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(id);  }, 150);
     setTimeout(function(){ if(typeof renderBrandSites==='function') renderBrandSites(id); }, 200);
   }
   window.scrollTo({top:0,behavior:'smooth'});
@@ -2345,12 +2345,7 @@ function renderBrand(b) {
     </div>
 
     <div class="inner-section" id="${b.id}-kpis">
-      <div class="sh"><div><div class="sh-title">KPI Framework</div><div class="sh-sub">Targets from admin · Actuals from site data</div></div></div>
       <div id="${b.id}-brand-kpis"></div>
-      <div style="margin-top:1.5rem">
-        <div style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Site KPI Breakdown</div>
-        <div id="${b.id}-kpis-sites"><div style="padding:16px;color:var(--ink-faint);font-size:13px">Loading site KPI data...</div></div>
-      </div>
     </div>
 
     <div class="inner-section" id="${b.id}-qplan">
@@ -2375,7 +2370,7 @@ function switchInner(brandId, secId, el) {
   el.classList.add('active');
   if(secId === 'campaigns') { setTimeout(function(){ if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(brandId); }, 50); }
   if(secId === 'sites') { setTimeout(function(){ if(typeof renderBrandSites==='function') renderBrandSites(brandId); }, 50); }
-  if(secId === 'kpis') { setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(brandId); if(typeof renderBrandSiteKPIs==='function') renderBrandSiteKPIs(brandId); }, 50); }
+  if(secId === 'kpis') { setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(brandId);  }, 50); }
   document.getElementById(brandId+'-'+secId).classList.add('active');
 }
 
@@ -4726,44 +4721,160 @@ function renderBrandCampaigns(brandId) {
 function renderBrandKPIs(brandId) {
   var el = document.getElementById(brandId + '-brand-kpis');
   if (!el) return;
-  var brand = BRANDS.find(function(b){ return b.id === brandId; });
+  var brand = BRANDS.find(function(b) { return b.id === brandId; });
   if (!brand) return;
-  var items = [
-    {label:'Annual budget', val: brand.budget || '\u2014'},
-    {label:'New units target', val: brand.newTarget || '\u2014'},
-    {label:'EV/PHEV target', val: brand.evTarget || '\u2014'},
-    {label:'Leads target/mo', val: brand.leads ? String(brand.leads.toLocaleString()) : '\u2014'},
-    {label:'Target CPL', val: brand.cpl ? '\u00a3' + brand.cpl : '\u2014'},
-    {label:'Conversion rate', val: brand.convRate ? brand.convRate + '%' : '\u2014'},
-    {label:'Service retention', val: brand.retention ? brand.retention + '%' : '\u2014'},
-    {label:'Used units', val: brand.usedUnits ? String(brand.usedUnits.toLocaleString()) : '\u2014'},
-    {label:'Fleet units', val: brand.fleetUnits ? String(brand.fleetUnits.toLocaleString()) : '\u2014'},
-    {label:'NPS target', val: brand.nps ? String(brand.nps) : '\u2014'},
-  ];
+  var sites = HUB_SITES.filter(function(s) { return s.brand_id === brandId; });
+  var hasSiteData = sites.length > 0 && Object.keys(SITE_KPIS).length > 0;
+
   el.innerHTML = '';
-  var grid = document.createElement('div');
-  grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:1.5rem';
-  items.forEach(function(item){
+
+  // ── Header ──
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'margin-bottom:1.5rem';
+  var htitle = document.createElement('div');
+  htitle.style.cssText = 'font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px';
+  htitle.textContent = brand.name + ' KPI Framework 2026';
+  var hsub = document.createElement('div');
+  hsub.style.cssText = 'font-size:12px;color:var(--ink-soft)';
+  hsub.textContent = 'Targets from Admin \u2192 KPIs \u00b7 Actuals from Site KPIs \u00b7 Jan\u2013May 2026';
+  hdr.appendChild(htitle); hdr.appendChild(hsub);
+  el.appendChild(hdr);
+
+  if (!hasSiteData) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'padding:24px;text-align:center;color:var(--ink-faint);font-size:13px;background:var(--white);border:1px solid var(--border);border-radius:4px';
+    empty.textContent = 'No site KPI data yet. Enter in Admin \u2192 Site KPIs.';
+    el.appendChild(empty);
+    return;
+  }
+
+  // ── KPI columns ──
+  var COLS = [
+    {key:'units', label:'New Units', target:'units_target', monthly:true, prefix:'units', ytd:false},
+    {key:'used',  label:'Used Units', target:'used_target', monthly:true, prefix:'used',  ytd:false},
+    {key:'ev',    label:'EV%', target:'ev_pct_target', monthly:true, prefix:'ev', ytd:false, pct:true},
+    {key:'leads', label:'Leads', target:'leads_target', monthly:true, prefix:'leads', ytd:false},
+    {key:'conv',  label:'Conv%', target:'conversion_target', monthly:false, field:'conversion_actual', ytd:true, pct:true},
+    {key:'ret',   label:'Retention%', target:'retention_target', monthly:false, field:'retention_actual', ytd:true, pct:true},
+    {key:'nps',   label:'NPS', target:'nps_target', monthly:false, field:'nps_actual', ytd:true},
+    {key:'cpl',   label:'CPL £', target:'cpl_target', monthly:false, field:'cpl_actual', ytd:true, gbp:true},
+  ];
+
+  // ── Table ──
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'overflow-x:auto;margin-bottom:1.5rem';
+  var table = document.createElement('table');
+  table.style.cssText = 'width:100%;border-collapse:collapse;font-size:12px';
+
+  // Header row
+  var thead = document.createElement('thead');
+  var hrow = document.createElement('tr');
+  hrow.style.cssText = 'background:var(--swansway);color:#fff';
+  var th0 = document.createElement('th');
+  th0.style.cssText = 'padding:8px 12px;text-align:left;font-family:var(--font-m);font-size:10px;font-weight:500;min-width:140px';
+  th0.textContent = 'Site';
+  hrow.appendChild(th0);
+  COLS.forEach(function(col) {
+    var th = document.createElement('th');
+    th.style.cssText = 'padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500;min-width:70px';
+    th.innerHTML = col.label + '<br><span style="font-weight:400;opacity:.7">' + (col.ytd ? 'YTD' : 'YTD sum') + '</span>';
+    hrow.appendChild(th);
+  });
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  // Site rows
+  var tbody = document.createElement('tbody');
+  var brandTotals = {};
+  COLS.forEach(function(col) { brandTotals[col.key] = {val:0, tgt:0, count:0}; });
+
+  sites.forEach(function(site, idx) {
+    var d = SITE_KPIS[site.site_id] || {};
+    var row = document.createElement('tr');
+    row.style.cssText = 'background:' + (idx % 2 === 0 ? 'var(--white)' : 'var(--surface)') + ';border-bottom:1px solid var(--border)';
+
+    var td0 = document.createElement('td');
+    td0.style.cssText = 'padding:8px 12px;font-weight:600';
+    td0.textContent = site.site_name;
+    row.appendChild(td0);
+
+    COLS.forEach(function(col) {
+      var val = 0, tgt = parseFloat(d[col.target]) || 0;
+      if (col.monthly) {
+        for (var i = 0; i < 12; i++) val += parseFloat(d['m' + i + '_' + col.prefix]) || 0;
+        if (col.pct) {
+          // Average not sum for percentages
+          var moCount = 0;
+          val = 0;
+          for (var i = 0; i < 12; i++) { var mv = parseFloat(d['m' + i + '_' + col.prefix]); if (mv > 0) { val += mv; moCount++; } }
+          val = moCount > 0 ? Math.round(val / moCount * 10) / 10 : 0;
+        }
+      } else {
+        val = parseFloat(d[col.field]) || 0;
+      }
+
+      brandTotals[col.key].val += val;
+      brandTotals[col.key].tgt += tgt;
+      brandTotals[col.key].count++;
+
+      var pct = tgt > 0 ? Math.min(200, Math.round(val / tgt * 100)) : 0;
+      var col_color = val === 0 ? 'var(--ink-faint)' : pct >= 75 ? '#059669' : pct >= 50 ? '#D97706' : '#DC2626';
+      var display = val === 0 ? '\u2014' : (col.gbp ? '\u00a3' + Math.round(val) : (col.pct ? val + '%' : val.toLocaleString()));
+
+      var td = document.createElement('td');
+      td.style.cssText = 'padding:7px 10px;text-align:right';
+      var vDiv = document.createElement('div');
+      vDiv.style.cssText = 'font-weight:600;color:' + col_color;
+      vDiv.textContent = display;
+      td.appendChild(vDiv);
+      if (tgt > 0 && val > 0) {
+        var tDiv = document.createElement('div');
+        tDiv.style.cssText = 'font-size:10px;color:var(--ink-faint)';
+        tDiv.textContent = 'tgt: ' + (col.gbp ? '\u00a3' + tgt : col.pct ? tgt + '%' : tgt.toLocaleString());
+        td.appendChild(tDiv);
+      }
+      row.appendChild(td);
+    });
+    tbody.appendChild(row);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  el.appendChild(wrap);
+
+  // ── Brand summary row ──
+  var sumHdr = document.createElement('div');
+  sumHdr.style.cssText = 'font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px';
+  sumHdr.textContent = brand.name + ' brand total / average';
+  el.appendChild(sumHdr);
+
+  var sumGrid = document.createElement('div');
+  sumGrid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px';
+
+  COLS.forEach(function(col) {
+    var t = brandTotals[col.key];
+    var val = col.pct ? Math.round(t.val / Math.max(1, t.count) * 10) / 10 : t.val;
+    var tgt = col.pct ? Math.round(t.tgt / Math.max(1, t.count) * 10) / 10 : t.tgt;
+    var pct = tgt > 0 ? Math.min(200, Math.round(val / tgt * 100)) : 0;
+    var col_color = val === 0 ? 'var(--ink-faint)' : pct >= 75 ? '#059669' : pct >= 50 ? '#D97706' : '#DC2626';
+    var display = val === 0 ? '\u2014' : (col.gbp ? '\u00a3' + Math.round(val) : col.pct ? val + '%' : val.toLocaleString());
+
     var card = document.createElement('div');
-    var isUnset = !item.val || item.val === '—';
-    card.style.cssText = 'background:' + (isUnset ? 'rgba(245,158,11,0.03)' : 'var(--white)') + ';border:1px solid ' + (isUnset ? '#F59E0B' : 'var(--border)') + ';border-radius:4px;padding:12px 14px';
+    card.style.cssText = 'background:var(--white);border:1px solid var(--border);border-radius:4px;padding:12px 14px';
     var lbl = document.createElement('div');
     lbl.style.cssText = 'font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px';
-    lbl.textContent = item.label;
-    var val = document.createElement('div');
-    val.style.cssText = 'font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--swansway)';
-    val.textContent = item.val;
-    card.appendChild(lbl); card.appendChild(val);
-    grid.appendChild(card);
+    lbl.textContent = col.label;
+    var valEl = document.createElement('div');
+    valEl.style.cssText = 'font-family:var(--font-d);font-size:18px;font-weight:700;color:' + col_color;
+    valEl.textContent = display;
+    var tgtEl = document.createElement('div');
+    tgtEl.style.cssText = 'font-size:10px;color:var(--ink-faint);margin-top:2px';
+    tgtEl.textContent = tgt > 0 ? 'Target: ' + (col.gbp ? '\u00a3' + tgt : col.pct ? tgt + '%' : tgt.toLocaleString()) : 'No target set';
+    card.appendChild(lbl); card.appendChild(valEl); card.appendChild(tgtEl);
+    sumGrid.appendChild(card);
   });
-  el.appendChild(grid);
-  if (brand.q2) {
-    var focus = document.createElement('div');
-    focus.style.cssText = 'padding:12px 14px;background:rgba(200,16,46,0.05);border:1px solid rgba(200,16,46,0.15);border-radius:4px;font-size:13px';
-    focus.innerHTML = '<strong>Q2 Focus:</strong> ' + brand.q2;
-    el.appendChild(focus);
-  }
+  el.appendChild(sumGrid);
 }
+
 
 
 /* Brief builder wired into switchView above */
