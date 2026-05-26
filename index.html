@@ -2248,6 +2248,17 @@ function switchView(id, el) {
 function renderBrand(b) {
   const container = document.getElementById(b.id+'-content');
   if(!container) return;
+  if(container.dataset.rendered) {
+    // Already rendered — just re-run the content functions to refresh data
+    setTimeout(function() {
+      if (typeof renderBrandSites === 'function')     renderBrandSites(b.id);
+      if (typeof renderBrandCentres === 'function')   renderBrandCentres(b.id);
+      if (typeof renderBrandCampaigns === 'function') renderBrandCampaigns(b.id);
+      if (typeof renderBrandKPIs === 'function')      renderBrandKPIs(b.id);
+    }, 50);
+    return;
+  }
+  container.dataset.rendered = '1';
 
   container.innerHTML = `
     <div class="page-strip">
