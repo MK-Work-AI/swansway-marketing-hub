@@ -245,6 +245,7 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
     <div class="sidebar-label">System</div>
     <button class="snav" onclick="showPage('users',this)">👥 Users</button>
     <button class="snav" onclick="showPage('sitebudgets',this)">💷 Site Budgets</button>
+    <button class="snav" onclick="showPage('sitekpis',this)">📊 Site KPIs</button>
     <button class="snav" onclick="showPage('history',this)">🕐 History</button>
     <button class="snav" onclick="showPage('security',this)">🔒 Security</button>
     <button class="snav" onclick="showPage('data',this)">💾 Data & Export</button>
@@ -451,6 +452,26 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
       </div>
     </div>
     <div class="metrics-row" id="sb-metrics" style="margin-top:1rem"></div>
+  </div>
+
+
+  <!-- ══ SITE KPIs ══ -->
+  <div class="page" id="page-sitekpis">
+    <div class="page-title">Site KPIs</div>
+    <div class="page-sub">Performance targets and monthly actuals per dealership</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:1.5rem" id="sk-brand-tabs">
+      <button class="cal-q-tab" id="sk-tab-audi" onclick="skSelectBrand('audi')">Audi</button><button class="cal-q-tab" id="sk-tab-vw" onclick="skSelectBrand('vw')">Volkswagen</button><button class="cal-q-tab" id="sk-tab-vwcv" onclick="skSelectBrand('vwcv')">VW Commercial</button><button class="cal-q-tab" id="sk-tab-seat" onclick="skSelectBrand('seat')">SEAT</button><button class="cal-q-tab" id="sk-tab-cupra" onclick="skSelectBrand('cupra')">CUPRA</button><button class="cal-q-tab" id="sk-tab-landrover" onclick="skSelectBrand('landrover')">Land Rover</button><button class="cal-q-tab" id="sk-tab-jaguar" onclick="skSelectBrand('jaguar')">Jaguar</button><button class="cal-q-tab" id="sk-tab-honda" onclick="skSelectBrand('honda')">Honda</button><button class="cal-q-tab" id="sk-tab-peugeot" onclick="skSelectBrand('peugeot')">Peugeot</button><button class="cal-q-tab" id="sk-tab-byd" onclick="skSelectBrand('byd')">BYD</button><button class="cal-q-tab" id="sk-tab-omoda" onclick="skSelectBrand('omoda')">OMODA/JAECOO</button><button class="cal-q-tab" id="sk-tab-motormatch" onclick="skSelectBrand('motormatch')">Motor Match</button>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" id="sk-brand-title">Select a brand above</div>
+        <button class="btn btn-primary" onclick="skSave()">&#10003; Save all</button>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div id="sk-content"></div>
+      </div>
+    </div>
+    <div class="metrics-row" id="sk-metrics" style="margin-top:1rem"></div>
   </div>
 
 
@@ -1007,6 +1028,7 @@ function changePassword() {
 function showPage(id, el) {
   if(id === 'users') setTimeout(loadUsers, 100);
   if(id === 'sitebudgets') { sbLoad(); sbSelectBrand(SB_CURRENT_BRAND); }
+  if(id === 'sitekpis')    { skLoad(); skSelectBrand(SK_CURRENT_BRAND); }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.snav').forEach(s=>s.classList.remove('active'));
   const page = document.getElementById('page-'+id);
@@ -2171,10 +2193,240 @@ function syncAdminBrandSites() {
   refreshDashboard();
 }
 
+
+/* ════ SITE KPIs ════ */
+var SK_SITE_DATA = {};  // site_id -> row
+var SK_CURRENT_BRAND = 'audi';
+var SK_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+var SK_BRAND_NAMES = {"audi": "Audi", "vw": "Volkswagen", "vwcv": "VW Commercial", "seat": "SEAT", "cupra": "CUPRA", "landrover": "Land Rover", "jaguar": "Jaguar", "honda": "Honda", "peugeot": "Peugeot", "byd": "BYD", "omoda": "OMODA/JAECOO", "motormatch": "Motor Match"};
+var SK_API_URL = SB_ADMIN_URL + '/rest/v1/site_kpis';
+
+var SK_TARGETS = [
+  {key:'units_target',    label:'New units target', unit:''},
+  {key:'used_target',     label:'Used units target', unit:''},
+  {key:'ev_pct_target',   label:'EV/PHEV % target', unit:'%'},
+  {key:'leads_target',    label:'Leads target/mo',  unit:''},
+  {key:'conversion_target',label:'Conversion %',    unit:'%'},
+  {key:'retention_target', label:'Retention %',     unit:'%'},
+  {key:'nps_target',      label:'NPS target',       unit:''},
+  {key:'cpl_target',      label:'CPL target (£)',   unit:''},
+];
+
+var SK_MONTHLY = [
+  {prefix:'units', label:'New units'},
+  {prefix:'used',  label:'Used units'},
+  {prefix:'ev',    label:'EV% actual'},
+  {prefix:'leads', label:'Leads'},
+];
+
+var SK_YTD = [
+  {key:'conversion_actual', label:'Conversion %'},
+  {key:'retention_actual',  label:'Retention %'},
+  {key:'nps_actual',        label:'NPS actual'},
+  {key:'cpl_actual',        label:'CPL actual (£)'},
+];
+
+function skSelectBrand(brandId) {
+  SK_CURRENT_BRAND = brandId;
+  document.querySelectorAll('[id^="sk-tab-"]').forEach(function(t) {
+    t.className = 'cal-q-tab' + (t.id === 'sk-tab-' + brandId ? ' active' : '');
+  });
+  var el = document.getElementById('sk-brand-title');
+  if (el) el.textContent = SK_BRAND_NAMES[brandId] + ' — Site KPIs';
+  skRenderContent(brandId);
+  skUpdateMetrics(brandId);
+}
+
+function skRenderContent(brandId) {
+  var el = document.getElementById('sk-content');
+  if (!el) return;
+  var sites = SB_SITES.filter(function(s) { return s.brand_id === brandId; });
+  el.innerHTML = '';
+
+  sites.forEach(function(site) {
+    var d = SK_SITE_DATA[site.site_id] || {};
+    var section = document.createElement('div');
+    section.style.cssText = 'border-bottom:2px solid var(--border);padding:18px 20px 20px';
+
+    // Site name header
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'font-family:var(--font-d);font-size:14px;font-weight:700;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:10px';
+    hdr.textContent = site.site_name;
+    section.appendChild(hdr);
+
+    // Targets row
+    var tgtGrid = document.createElement('div');
+    tgtGrid.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px';
+    var tgtLbl = document.createElement('div');
+    tgtLbl.style.cssText = 'grid-column:1/-1;font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px';
+    tgtLbl.textContent = 'Annual targets';
+    tgtGrid.appendChild(tgtLbl);
+    SK_TARGETS.forEach(function(t) {
+      var wrap = document.createElement('div');
+      var lbl = document.createElement('label');
+      lbl.style.cssText = 'font-size:10px;color:var(--ink-soft);display:block;margin-bottom:3px';
+      lbl.textContent = t.label;
+      var inp = document.createElement('input');
+      inp.type = 'number';
+      inp.min = '0';
+      inp.value = d[t.key] || 0;
+      inp.style.cssText = 'width:100%;padding:4px 7px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:var(--font-m)';
+      inp.dataset.siteId = site.site_id;
+      inp.dataset.field = t.key;
+      inp.addEventListener('change', function() {
+        skSetVal(this.dataset.siteId, this.dataset.field, this.value);
+      });
+      wrap.appendChild(lbl); wrap.appendChild(inp);
+      tgtGrid.appendChild(wrap);
+    });
+    section.appendChild(tgtGrid);
+
+    // Monthly actuals
+    SK_MONTHLY.forEach(function(m) {
+      var mGrid = document.createElement('div');
+      mGrid.style.cssText = 'margin-bottom:10px';
+      var mLbl = document.createElement('div');
+      mLbl.style.cssText = 'font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px';
+      mLbl.textContent = m.label + ' — monthly actuals';
+      mGrid.appendChild(mLbl);
+      var mRow = document.createElement('div');
+      mRow.style.cssText = 'display:grid;grid-template-columns:repeat(12,1fr);gap:4px';
+      SK_MONTHS.forEach(function(mon, mi) {
+        var wrap = document.createElement('div');
+        var ml = document.createElement('label');
+        ml.style.cssText = 'font-size:9px;color:var(--ink-faint);display:block;text-align:center;margin-bottom:2px';
+        ml.textContent = mon;
+        var inp = document.createElement('input');
+        inp.type = 'number';
+        inp.min = '0';
+        inp.value = d['m' + mi + '_' + m.prefix] || 0;
+        inp.style.cssText = 'width:100%;padding:3px 4px;border:1px solid var(--border);border-radius:2px;font-size:10px;font-family:var(--font-m);text-align:center;background:#fff';
+        inp.dataset.siteId = site.site_id;
+        inp.dataset.field = 'm' + mi + '_' + m.prefix;
+        inp.addEventListener('change', function() {
+          skSetVal(this.dataset.siteId, this.dataset.field, this.value);
+        });
+        wrap.appendChild(ml); wrap.appendChild(inp);
+        mRow.appendChild(wrap);
+      });
+      mGrid.appendChild(mRow);
+      section.appendChild(mGrid);
+    });
+
+    // YTD actuals
+    var ytdGrid = document.createElement('div');
+    ytdGrid.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px';
+    var ytdLbl = document.createElement('div');
+    ytdLbl.style.cssText = 'grid-column:1/-1;font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px';
+    ytdLbl.textContent = 'YTD actuals';
+    ytdGrid.appendChild(ytdLbl);
+    SK_YTD.forEach(function(t) {
+      var wrap = document.createElement('div');
+      var lbl = document.createElement('label');
+      lbl.style.cssText = 'font-size:10px;color:var(--ink-soft);display:block;margin-bottom:3px';
+      lbl.textContent = t.label;
+      var inp = document.createElement('input');
+      inp.type = 'number';
+      inp.min = '0';
+      inp.step = '0.1';
+      inp.value = d[t.key] || 0;
+      inp.style.cssText = 'width:100%;padding:4px 7px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:var(--font-m)';
+      inp.dataset.siteId = site.site_id;
+      inp.dataset.field = t.key;
+      inp.addEventListener('change', function() {
+        skSetVal(this.dataset.siteId, this.dataset.field, this.value);
+      });
+      wrap.appendChild(lbl); wrap.appendChild(inp);
+      ytdGrid.appendChild(wrap);
+    });
+    section.appendChild(ytdGrid);
+    el.appendChild(section);
+  });
+}
+
+function skSetVal(siteId, field, value) {
+  if (!SK_SITE_DATA[siteId]) SK_SITE_DATA[siteId] = {};
+  SK_SITE_DATA[siteId][field] = parseFloat(value) || 0;
+}
+
+function skUpdateMetrics(brandId) {
+  var el = document.getElementById('sk-metrics');
+  if (!el) return;
+  var sites = SB_SITES.filter(function(s) { return s.brand_id === brandId; });
+  var totalUnits = 0, totalUsed = 0, totalLeads = 0, totalUnitsTarget = 0;
+  sites.forEach(function(site) {
+    var d = SK_SITE_DATA[site.site_id] || {};
+    totalUnitsTarget += d.units_target || 0;
+    for (var i = 0; i < 12; i++) {
+      totalUnits += d['m' + i + '_units'] || 0;
+      totalUsed  += d['m' + i + '_used']  || 0;
+      totalLeads += d['m' + i + '_leads'] || 0;
+    }
+  });
+  el.innerHTML = [
+    {label:'Units target', val: totalUnitsTarget > 0 ? totalUnitsTarget.toLocaleString() : '—', color:'var(--swansway)'},
+    {label:'Units YTD',    val: totalUnits > 0 ? totalUnits.toLocaleString() : '—', color:'#059669'},
+    {label:'Used YTD',     val: totalUsed > 0 ? totalUsed.toLocaleString() : '—', color:'#6B7280'},
+    {label:'Leads YTD',    val: totalLeads > 0 ? totalLeads.toLocaleString() : '—', color:'#D97706'},
+  ].map(function(m) {
+    return '<div class="metric" style="border-top-color:' + m.color + '"><div class="metric-label">' + m.label + '</div><div class="metric-val" style="color:' + m.color + '">' + m.val + '</div></div>';
+  }).join('');
+}
+
+async function skLoad() {
+  var svcKey = window.SWANSWAY_CONFIG && window.SWANSWAY_CONFIG.serviceKey;
+  if (!svcKey) return;
+  try {
+    var resp = await fetch(SK_API_URL + '?select=*', {
+      headers: {'apikey': svcKey, 'Authorization': 'Bearer ' + svcKey}
+    });
+    if (!resp.ok) return;
+    var rows = await resp.json();
+    rows.forEach(function(row) { SK_SITE_DATA[row.site_id] = row; });
+    console.log('Site KPIs loaded: ' + rows.length + ' sites');
+    skRenderContent(SK_CURRENT_BRAND);
+    skUpdateMetrics(SK_CURRENT_BRAND);
+  } catch(e) { console.warn('skLoad error:', e); }
+}
+
+async function skSave() {
+  var svcKey = window.SWANSWAY_CONFIG && window.SWANSWAY_CONFIG.serviceKey;
+  if (!svcKey) { showToast('No service key', 'error'); return; }
+  try {
+    var rows = SB_SITES.map(function(site) {
+      var d = SK_SITE_DATA[site.site_id] || {};
+      var row = {
+        site_id: site.site_id, site_name: site.site_name,
+        brand_id: site.brand_id, brand_name: site.brand_name,
+        updated_at: new Date().toISOString()
+      };
+      SK_TARGETS.forEach(function(t) { row[t.key] = d[t.key] || 0; });
+      SK_MONTHLY.forEach(function(m) {
+        for (var i = 0; i < 12; i++) row['m' + i + '_' + m.prefix] = d['m' + i + '_' + m.prefix] || 0;
+      });
+      SK_YTD.forEach(function(t) { row[t.key] = d[t.key] || 0; });
+      return row;
+    });
+    var resp = await fetch(SK_API_URL + '?on_conflict=site_id', {
+      method: 'POST',
+      headers: {
+        'apikey': svcKey, 'Authorization': 'Bearer ' + svcKey,
+        'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify(rows)
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    showToast('✓ Site KPIs saved', 'success');
+    skUpdateMetrics(SK_CURRENT_BRAND);
+  } catch(e) { showToast('Save error: ' + e.message, 'error'); }
+}
+
+
 function init() {
   initAdminSupabase();
   syncAdminBrandSites();
   setTimeout(sbLoad, 600);
+  setTimeout(skLoad, 800);
   buildSidebarBrands();
   refreshDashboard();
   // Populate sheets URL field if stored
