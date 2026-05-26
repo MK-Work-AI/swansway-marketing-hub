@@ -4976,27 +4976,42 @@ function updateGroupKPIsFromSites() {
   var npsAvg  = ytdCount  > 0 ? Math.round(npsSum   / ytdCount)           : 0;
   var cplAvg  = ytdCount  > 0 ? Math.round(cplSum   / ytdCount)           : 0;
 
-  // Map to GROUP_KPIS by label
-  var mapping = {
-    'Total new car/van units':       { t: totalUnitsTarget > 0 ? totalUnitsTarget.toLocaleString() : null, a: totalUnits > 0 ? totalUnits.toLocaleString() : null, p: totalUnitsTarget > 0 ? Math.min(100, Math.round(totalUnits/totalUnitsTarget*100)) : 0 },
-    'EV/PHEV % of new sales':        { t: null, a: evAvg   > 0 ? evAvg   + '%' : null, p: 0 },
-    'Digital leads per month':        { t: totalLeadsTarget > 0 ? Math.round(totalLeadsTarget/12).toLocaleString() : null, a: totalLeads > 0 ? Math.round(totalLeads/6).toLocaleString() + '/mo avg' : null, p: 0 },
-    'Lead-to-sale conversion':        { t: null, a: convAvg > 0 ? convAvg + '%' : null, p: 0 },
-    'Service retention rate':         { t: null, a: retAvg  > 0 ? retAvg  + '%' : null, p: 0 },
-    'Approved Used + Motor Match':    { t: totalUsedTarget > 0 ? totalUsedTarget.toLocaleString() : null, a: totalUsed > 0 ? totalUsed.toLocaleString() : null, p: totalUsedTarget > 0 ? Math.min(100, Math.round(totalUsed/totalUsedTarget*100)) : 0 },
-    'Group NPS':                      { t: null, a: npsAvg  > 0 ? String(npsAvg)      : null, p: 0 },
-    'Group blended CPL':              { t: null, a: cplAvg  > 0 ? '\u00a3' + cplAvg   : null, p: 0 },
-  };
+  // Apply to GROUP_KPIS by index (robust — no label matching)
+  // Index: 0=units, 1=ev%, 2=leads, 3=conversion, 4=autotrader(skip),
+  //        5=retention, 6=used, 7=nps, 8=fleet(skip), 9=social(skip),
+  //        10=coop(skip), 11=cpl
+  var idxData = [
+    // [target_val, actual_val, progress]
+    [totalUnitsTarget > 0 ? totalUnitsTarget.toLocaleString() : null,
+     totalUnits > 0 ? totalUnits.toLocaleString() : null,
+     totalUnitsTarget > 0 ? Math.min(100, Math.round(totalUnits/totalUnitsTarget*100)) : 0],
+    [null, evAvg > 0 ? evAvg + '%' : null, 0],
+    [totalLeadsTarget > 0 ? Math.round(totalLeadsTarget/12).toLocaleString() + '/mo' : null,
+     totalLeads > 0 ? Math.round(totalLeads/5).toLocaleString() + '/mo avg' : null, 0],
+    [null, convAvg > 0 ? convAvg + '%' : null, 0],
+    [null, null, 0], // AutoTrader — no site data
+    [null, retAvg > 0 ? retAvg + '%' : null, 0],
+    [totalUsedTarget > 0 ? totalUsedTarget.toLocaleString() : null,
+     totalUsed > 0 ? totalUsed.toLocaleString() : null,
+     totalUsedTarget > 0 ? Math.min(100, Math.round(totalUsed/totalUsedTarget*100)) : 0],
+    [null, npsAvg > 0 ? String(npsAvg) : null, 0],
+    [null, null, 0], // Fleet accounts — no site data
+    [null, null, 0], // Social — no site data
+    [null, null, 0], // Co-op — no site data
+    [null, cplAvg > 0 ? '£' + cplAvg : null, 0],
+  ];
 
-  GROUP_KPIS.forEach(function(kpi) {
-    var m = mapping[kpi.l];
-    if (!m) return;
-    // Only override target if not already set from admin config
-    if (m.t && (!kpi.t || kpi.t === '--')) kpi.t = m.t;
-    // Always set actual from site data (site data is authoritative for actuals)
-    if (m.a) { kpi.a = m.a; kpi.p = m.p || kpi.p; }
+  GROUP_KPIS.forEach(function(kpi, i) {
+    if (i >= idxData.length) return;
+    var d = idxData[i];
+    if (!d[0] && !d[1]) return; // no data for this KPI
+    // Only set target from sites if not already set from admin config
+    if (d[0] && (!kpi.t || kpi.t === '--')) kpi.t = d[0];
+    // Always update actual from site data
+    if (d[1]) { kpi.a = d[1]; kpi.p = d[2] || kpi.p; }
   });
 }
+
 
 function renderBrandSiteKPIs(brandId) {
   var el = document.getElementById(brandId + '-kpis-sites');
