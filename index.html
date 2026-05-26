@@ -4025,7 +4025,6 @@ async function competitorScan() {
   var btn       = document.getElementById('competitor-scan-btn');
   var msgEl     = document.getElementById('comp-scan-msg');
   var subEl     = document.getElementById('comp-scan-sub');
-  if (!ANTHROPIC_API_KEY) { alert('Anthropic API key not configured.'); return; }
 
   statusEl.style.display = 'block';
   resultsEl.innerHTML = '';
@@ -4333,7 +4332,6 @@ async function generateQuiz() {
   var topic = document.getElementById('quiz-topic').value;
   var diff  = document.getElementById('quiz-difficulty').value;
   var container = document.getElementById('training-quiz-container');
-  if (!ANTHROPIC_API_KEY) { alert('Anthropic API key not configured.'); return; }
   container.style.display = 'block';
   container.innerHTML = '<div style="text-align:center;padding:2rem"><div class="qplan-spinner"></div><div style="font-size:14px;font-weight:600;margin-top:12px">Generating quiz...</div></div>';
   container.scrollIntoView({behavior:'smooth'});
@@ -4952,9 +4950,6 @@ Extract as much detail as possible. If a field is not mentioned in the document,
           { type: 'text', text: 'Extract all campaign information from this quarterly plan document and return structured JSON.' }
         ];
 
-    if (ANTHROPIC_API_KEY === 'YOUR_ANTHROPIC_API_KEY') {
-      throw new Error('Anthropic API key not configured. Add your API key to index.html where it says YOUR_ANTHROPIC_API_KEY.');
-    }
 
     const response = await fetch('https://swansway-marketing-hub.vercel.app/api/claude', {
       method: 'POST',
