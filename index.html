@@ -2278,7 +2278,7 @@ function renderBrand(b) {
     <div class="inner-tabs" id="itabs-${b.id}">
       <button class="inner-tab active" onclick="switchInner('${b.id}','strategy',this)">Strategy</button>
         <button class="inner-tab" onclick="switchInner('${b.id}','sites',this)">Site Budget Breakdown</button>
-      ${b.centres.length>0?`<button class="inner-tab" onclick="switchInner('${b.id}','centres',this)">Centres (${b.centres.length})</button>`:''}
+      ${b.centres.length>0?`<button class="inner-tab" onclick="switchInner('${b.id}','centres',this)">Dealership/s (${b.sites})</button>`:''}
       <button class="inner-tab" onclick="switchInner('${b.id}','campaigns',this)">Campaigns</button>
       <button class="inner-tab" onclick="switchInner('${b.id}','audiences',this)">Audiences</button>
       <button class="inner-tab" onclick="switchInner('${b.id}','budget',this)">Channel Mix</button>
