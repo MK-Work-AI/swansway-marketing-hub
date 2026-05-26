@@ -2373,7 +2373,10 @@ function switchInner(brandId, secId, el) {
   var targetEl = document.getElementById(brandId+'-'+secId);
   console.log('target element:', targetEl ? 'found' : 'NOT FOUND');
   document.querySelectorAll(`#itabs-${brandId} .inner-tab`).forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll(`#${brandId}-content .inner-section`).forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll(`#${brandId}-content .inner-section`).forEach(function(s) {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
   el.classList.add('active');
   if(secId === 'campaigns') { setTimeout(function(){ if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(brandId); }, 50); }
   if(secId === 'centres')   { setTimeout(function(){ if(typeof renderBrandCentres==='function') renderBrandCentres(brandId); }, 50); }
@@ -2381,6 +2384,7 @@ function switchInner(brandId, secId, el) {
   if(secId === 'kpis') { setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(brandId);  }, 50); }
   var sec = document.getElementById(brandId+'-'+secId);
   sec.classList.add('active');
+  sec.style.display = 'block';  // Force visible in case CSS is overridden
   console.log('active classes on sections:', Array.from(document.querySelectorAll('#'+brandId+'-content .inner-section')).map(function(s){return s.id+':'+s.classList.contains('active');}));
   console.log('sec display:', window.getComputedStyle(sec).display);
 }
