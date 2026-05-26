@@ -2351,6 +2351,13 @@ function renderBrand(b) {
       </div>
     </div>
   `;
+  // After HTML is set, render all tab content so it's ready when tabs are clicked
+  setTimeout(function() {
+    if (typeof renderBrandSites === 'function')     renderBrandSites(b.id);
+    if (typeof renderBrandCentres === 'function')   renderBrandCentres(b.id);
+    if (typeof renderBrandCampaigns === 'function') renderBrandCampaigns(b.id);
+    if (typeof renderBrandKPIs === 'function')      renderBrandKPIs(b.id);
+  }, 150);
 }
 
 function switchInner(brandId, secId, el) {
