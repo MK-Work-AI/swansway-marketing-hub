@@ -2239,7 +2239,7 @@ function switchView(id, el) {
   if(brandForQplan) {
     setTimeout(()=>qplanAutoLoad(id, brandForQplan.color), 400);
     setTimeout(function(){ if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(id); }, 100);
-    setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(id); }, 150);
+    setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(id); if(typeof renderBrandSiteKPIs==='function') renderBrandSiteKPIs(id); }, 150);
     setTimeout(function(){ if(typeof renderBrandSites==='function') renderBrandSites(id); }, 200);
   }
   window.scrollTo({top:0,behavior:'smooth'});
@@ -2381,7 +2381,7 @@ function switchInner(brandId, secId, el) {
   el.classList.add('active');
   if(secId === 'campaigns') { setTimeout(function(){ if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(brandId); }, 50); }
   if(secId === 'sites') { setTimeout(function(){ if(typeof renderBrandSites==='function') renderBrandSites(brandId); }, 50); }
-  if(secId === 'kpis') { setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(brandId); }, 50); }
+  if(secId === 'kpis') { setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(brandId); if(typeof renderBrandSiteKPIs==='function') renderBrandSiteKPIs(brandId); }, 50); }
   document.getElementById(brandId+'-'+secId).classList.add('active');
 }
 
@@ -2919,6 +2919,7 @@ function showConfigBadge() {
 document.addEventListener('DOMContentLoaded',()=>{
   loadAdminConfig();
   loadSiteBudgets();
+  loadSiteKPIs();
   syncBrandSitesFromHubSites();
   renderGroupBrandCards();
   renderGroupCalendar();
@@ -4891,6 +4892,142 @@ function syncBrandSitesFromHubSites() {
   });
 }
 
+
+/* ════ SITE KPIs — HUB ════ */
+var SITE_KPIS = {};  // site_id -> row
+
+async function loadSiteKPIs() {
+  try {
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/site_kpis?select=*', {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (!resp.ok) { console.warn('loadSiteKPIs error:', resp.status); return; }
+    var rows = await resp.json();
+    if (!rows || !rows.length) { console.log('loadSiteKPIs: no data'); return; }
+    rows.forEach(function(row) { SITE_KPIS[row.site_id] = row; });
+    updateGroupKPIsFromSites();
+    if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
+    console.log('Site KPIs loaded: ' + rows.length + ' sites');
+  } catch(e) { console.warn('loadSiteKPIs exception:', e); }
+}
+
+function updateGroupKPIsFromSites() {
+  if (!Object.keys(SITE_KPIS).length) return;
+  var sites = HUB_SITES;
+  // Aggregate across all sites
+  var totalUnits = 0, totalUsed = 0, totalLeads = 0;
+  var totalUnitsTarget = 0, totalUsedTarget = 0, totalLeadsTarget = 0;
+  var evSum = 0, evCount = 0;
+  var convSum = 0, retSum = 0, npsSum = 0, cplSum = 0, ytdCount = 0;
+
+  sites.forEach(function(site) {
+    var d = SITE_KPIS[site.site_id] || {};
+    totalUnitsTarget += d.units_target || 0;
+    totalUsedTarget  += d.used_target  || 0;
+    totalLeadsTarget += (d.leads_target || 0) * 12;
+    for (var i = 0; i < 12; i++) {
+      totalUnits += d['m' + i + '_units'] || 0;
+      totalUsed  += d['m' + i + '_used']  || 0;
+      totalLeads += d['m' + i + '_leads'] || 0;
+      if (d['m' + i + '_ev'] > 0) { evSum += d['m' + i + '_ev']; evCount++; }
+    }
+    if (d.conversion_actual > 0 || d.retention_actual > 0 || d.nps_actual > 0 || d.cpl_actual > 0) {
+      convSum += d.conversion_actual || 0;
+      retSum  += d.retention_actual  || 0;
+      npsSum  += d.nps_actual        || 0;
+      cplSum  += d.cpl_actual        || 0;
+      ytdCount++;
+    }
+  });
+
+  var evAvg   = evCount   > 0 ? Math.round(evSum   / evCount * 10) / 10 : 0;
+  var convAvg = ytdCount  > 0 ? Math.round(convSum  / ytdCount * 10) / 10 : 0;
+  var retAvg  = ytdCount  > 0 ? Math.round(retSum   / ytdCount * 10) / 10 : 0;
+  var npsAvg  = ytdCount  > 0 ? Math.round(npsSum   / ytdCount)           : 0;
+  var cplAvg  = ytdCount  > 0 ? Math.round(cplSum   / ytdCount)           : 0;
+
+  // Map to GROUP_KPIS by label
+  var mapping = {
+    'Total new car/van units':       { t: totalUnitsTarget > 0 ? totalUnitsTarget.toLocaleString() : null, a: totalUnits > 0 ? totalUnits.toLocaleString() : null, p: totalUnitsTarget > 0 ? Math.min(100, Math.round(totalUnits/totalUnitsTarget*100)) : 0 },
+    'EV/PHEV % of new sales':        { t: null, a: evAvg   > 0 ? evAvg   + '%' : null, p: 0 },
+    'Digital leads per month':        { t: totalLeadsTarget > 0 ? Math.round(totalLeadsTarget/12).toLocaleString() : null, a: totalLeads > 0 ? Math.round(totalLeads/6).toLocaleString() + '/mo avg' : null, p: 0 },
+    'Lead-to-sale conversion':        { t: null, a: convAvg > 0 ? convAvg + '%' : null, p: 0 },
+    'Service retention rate':         { t: null, a: retAvg  > 0 ? retAvg  + '%' : null, p: 0 },
+    'Approved Used + Motor Match':    { t: totalUsedTarget > 0 ? totalUsedTarget.toLocaleString() : null, a: totalUsed > 0 ? totalUsed.toLocaleString() : null, p: totalUsedTarget > 0 ? Math.min(100, Math.round(totalUsed/totalUsedTarget*100)) : 0 },
+    'Group NPS':                      { t: null, a: npsAvg  > 0 ? String(npsAvg)      : null, p: 0 },
+    'Group blended CPL':              { t: null, a: cplAvg  > 0 ? '\u00a3' + cplAvg   : null, p: 0 },
+  };
+
+  GROUP_KPIS.forEach(function(kpi) {
+    var m = mapping[kpi.l];
+    if (!m) return;
+    // Only override target if not already set from admin config
+    if (m.t && (!kpi.t || kpi.t === '--')) kpi.t = m.t;
+    // Always set actual from site data (site data is authoritative for actuals)
+    if (m.a) { kpi.a = m.a; kpi.p = m.p || kpi.p; }
+  });
+}
+
+function renderBrandSiteKPIs(brandId) {
+  var el = document.getElementById(brandId + '-kpis-sites');
+  if (!el) return;
+  var sites = HUB_SITES.filter(function(s) { return s.brand_id === brandId; });
+  if (!sites.length || !Object.keys(SITE_KPIS).length) {
+    el.innerHTML = '<div style="padding:16px;color:var(--ink-faint);font-size:13px">No KPI data yet. Enter in Admin \u2192 Site KPIs.</div>';
+    return;
+  }
+
+  var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+  html += '<thead><tr style="background:var(--swansway);color:#fff">';
+  html += '<th style="padding:8px 12px;text-align:left;font-family:var(--font-m);font-size:10px;font-weight:500">Site</th>';
+  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Units<br>Target</th>';
+  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Units<br>YTD</th>';
+  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Used<br>YTD</th>';
+  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">EV%<br>avg</th>';
+  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Leads<br>YTD</th>';
+  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Conv<br>%</th>';
+  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Ret<br>%</th>';
+  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">NPS</th>';
+  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">CPL<br>\u00a3</th>';
+  html += '</tr></thead><tbody>';
+
+  sites.forEach(function(site, idx) {
+    var d = SITE_KPIS[site.site_id] || {};
+    var units = 0, used = 0, evSum = 0, evMos = 0, leads = 0;
+    for (var i = 0; i < 12; i++) {
+      units += d['m' + i + '_units'] || 0;
+      used  += d['m' + i + '_used']  || 0;
+      leads += d['m' + i + '_leads'] || 0;
+      if (d['m' + i + '_ev'] > 0) { evSum += d['m' + i + '_ev']; evMos++; }
+    }
+    var evAvg = evMos > 0 ? Math.round(evSum / evMos * 10) / 10 : 0;
+    var tgt   = d.units_target || 0;
+    var pct   = tgt > 0 ? Math.min(100, Math.round(units / tgt * 100)) : 0;
+    var pctCol = pct >= 75 ? '#059669' : pct >= 50 ? '#D97706' : units > 0 ? '#DC2626' : 'var(--ink-faint)';
+    var bg = idx % 2 === 0 ? 'var(--white)' : 'var(--surface)';
+
+    html += '<tr style="background:' + bg + '">';
+    html += '<td style="padding:8px 12px;font-weight:600">' + site.site_name + '</td>';
+    html += '<td style="padding:8px 10px;text-align:right;color:var(--ink-soft)">' + (tgt > 0 ? tgt.toLocaleString() : '\u2014') + '</td>';
+    html += '<td style="padding:8px 10px;text-align:right;font-weight:600;color:' + pctCol + '">' + (units > 0 ? units.toLocaleString() + ' <small>(' + pct + '%)</small>' : '\u2014') + '</td>';
+    html += '<td style="padding:8px 10px;text-align:right">'       + (used   > 0 ? used.toLocaleString()      : '\u2014') + '</td>';
+    html += '<td style="padding:8px 10px;text-align:right">'       + (evAvg  > 0 ? evAvg  + '%'               : '\u2014') + '</td>';
+    html += '<td style="padding:8px 10px;text-align:right">'       + (leads  > 0 ? leads.toLocaleString()     : '\u2014') + '</td>';
+    html += '<td style="padding:8px 10px;text-align:right">'       + (d.conversion_actual > 0 ? d.conversion_actual + '%' : '\u2014') + '</td>';
+    html += '<td style="padding:8px 10px;text-align:right">'       + (d.retention_actual  > 0 ? d.retention_actual  + '%' : '\u2014') + '</td>';
+    html += '<td style="padding:8px 10px;text-align:right">'       + (d.nps_actual        > 0 ? d.nps_actual              : '\u2014') + '</td>';
+    html += '<td style="padding:8px 10px;text-align:right">'       + (d.cpl_actual        > 0 ? '\u00a3' + d.cpl_actual   : '\u2014') + '</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
 const QPLAN_CACHE = {};
 
 /* ── TRIGGER UPLOAD ── */
@@ -5494,6 +5631,7 @@ function sbHandleSession(session) {
   if(typeof loadBriefs === 'function')         loadBriefs();
   if(typeof loadBudgetActuals === 'function')  loadBudgetActuals();
   if(typeof loadSiteBudgets === 'function')   loadSiteBudgets();
+  if(typeof loadSiteKPIs === 'function')      loadSiteKPIs();
   if(typeof loadAutopsies === 'function')      loadAutopsies();
   if(typeof loadCompetitorScans === 'function') loadCompetitorScans();
   if(typeof loadQplanActions === 'function')   loadQplanActions();
