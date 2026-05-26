@@ -2477,7 +2477,7 @@ function renderGroupKPIs() {
   if (!g) return;
   g.innerHTML = GROUP_KPIS.map(function(k, i) {
     var pctColor = k.p >= 70 ? '#15803D' : k.p >= 50 ? '#D97706' : '#C8102E';
-    var isPlaceholder = !k.t || k.t === '—' || k.t === '0' || k.t === 0;
+    var isPlaceholder = !k.t || k.t === '—' || k.t === '0' || k.t === 0 || k.t === '--';
     var cardBorder = isPlaceholder ? '2px solid #F59E0B' : '2px solid #15803D';
     var cardBg     = isPlaceholder ? 'rgba(245,158,11,0.04)' : 'rgba(21,128,61,0.03)';
     var html = '<div class="kpi-card" id="kpi-row-' + i + '" style="background:' + cardBg + ';border:' + cardBorder + ';border-radius:4px;padding:18px 20px;margin-bottom:10px">';
@@ -2490,11 +2490,21 @@ function renderGroupKPIs() {
     html += '<div style="font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px">' + (k.l || k.label || '') + '</div>';
     html += '<div style="font-size:12px;color:var(--ink-soft);line-height:1.5">' + (k.def || '') + '</div>';
     html += '</div>';
+    var hasActual = k.a && k.a !== '--' && k.a !== '';
+    var actualColor = k.lowerBetter
+      ? (k.p >= 70 ? '#15803D' : k.p >= 50 ? '#D97706' : '#C8102E')
+      : (k.p >= 70 ? '#15803D' : k.p >= 50 ? '#D97706' : '#C8102E');
     html += '<div style="text-align:right;flex-shrink:0">';
-    html += '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--swansway)" id="kpi-target-' + i + '">' + (k.t || '') + '</div>';
-    html += '<div style="font-size:10px;color:var(--ink-soft);font-family:var(--font-m);margin-top:2px;display:flex;align-items:center;gap:6px">Target'
-      + (isPlaceholder ? '<span style="background:#F59E0B;color:#fff;font-size:8px;padding:1px 6px;border-radius:8px;letter-spacing:0.06em;font-family:var(--font-m)">SET IN ADMIN</span>' : '')
-      + '</div>';
+    html += '<div style="display:flex;align-items:flex-end;gap:16px;justify-content:flex-end;margin-bottom:4px">';
+    if (hasActual) {
+      html += '<div><div style="font-family:var(--font-d);font-size:20px;font-weight:700;color:' + actualColor + '">' + k.a + '</div>';
+      html += '<div style="font-size:9px;color:var(--ink-soft);font-family:var(--font-m);text-transform:uppercase;letter-spacing:0.06em;text-align:center">Actual</div></div>';
+    }
+    html += '<div><div style="font-family:var(--font-d);font-size:' + (hasActual ? '14' : '20') + 'px;font-weight:700;color:' + (hasActual ? 'var(--ink-soft)' : 'var(--swansway)') + '" id="kpi-target-' + i + '">' + (k.t || '--') + '</div>';
+    html += '<div style="font-size:9px;color:var(--ink-soft);font-family:var(--font-m);text-transform:uppercase;letter-spacing:0.06em;display:flex;align-items:center;gap:4px;justify-content:center">Target'
+      + (isPlaceholder ? '<span style="background:#F59E0B;color:#fff;font-size:8px;padding:1px 5px;border-radius:8px">SET IN ADMIN</span>' : '')
+      + '</div></div>';
+    html += '</div>';
     html += '</div></div>';
     html += '<div style="height:5px;background:var(--surface-2);border-radius:3px;margin-bottom:10px"><div style="height:5px;border-radius:3px;background:' + pctColor + ';width:' + Math.min(k.p || 0, 100) + '%;transition:width .6s cubic-bezier(0.16,1,0.3,1)"></div></div>';
     if (k.why || k.how) {
