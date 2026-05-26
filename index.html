@@ -745,6 +745,11 @@ td strong{font-weight:600}
     <button class="btn btn-accent" onclick="openAIModal('kpis')">⚡ AI Prompts</button>
   </div>
   <div class="sh"><div><div class="sh-title">Group-Level KPIs</div></div></div>
+  <div style="display:flex;gap:16px;margin-bottom:1rem;align-items:center;flex-wrap:wrap;padding:10px 0">
+    <div style="font-size:12px;color:var(--ink-soft);font-weight:600">Key:</div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px"><div style="width:14px;height:14px;border-radius:2px;border:2px solid #F59E0B;background:rgba(245,158,11,0.08)"></div>Target not yet set &mdash; configure in Admin &rarr; KPIs</div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px"><div style="width:14px;height:14px;border-radius:2px;border:2px solid #15803D;background:rgba(21,128,61,0.08)"></div>Target confirmed</div>
+  </div>
   <div class="kpi-list" id="group-kpi-list"></div>
   <div class="sh" style="margin-top:1.5rem"><div><div class="sh-title">By-Brand Performance Tracker</div><div class="sh-sub">Indicative 2026 Q1 progress against annual targets</div></div></div>
   <div class="chart-wrap">
@@ -2508,8 +2513,8 @@ function renderGroupKPIs() {
   g.innerHTML = GROUP_KPIS.map(function(k, i) {
     var pctColor = k.p >= 70 ? '#15803D' : k.p >= 50 ? '#D97706' : '#C8102E';
     var isPlaceholder = !k.t || k.t === '—' || k.t === '0' || k.t === 0;
-    var cardBorder = isPlaceholder ? '1px solid #F59E0B' : '1px solid var(--border)';
-    var cardBg     = isPlaceholder ? 'rgba(245,158,11,0.03)' : 'var(--white)';
+    var cardBorder = isPlaceholder ? '2px solid #F59E0B' : '2px solid #15803D';
+    var cardBg     = isPlaceholder ? 'rgba(245,158,11,0.04)' : 'rgba(21,128,61,0.03)';
     var html = '<div class="kpi-card" id="kpi-row-' + i + '" style="background:' + cardBg + ';border:' + cardBorder + ';border-radius:4px;padding:18px 20px;margin-bottom:10px">';
     html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:10px">';
     html += '<div style="flex:1">';
@@ -4467,6 +4472,7 @@ var _origSVNew = switchView;
 switchView = function(id, el) {
   _origSVNew(id, el);
   if (id === 'crosscal')   { setTimeout(calInit, 100); }
+  if (id === 'kpis')       { setTimeout(renderGroupKPIs, 100); }
   if (id === 'budget')     { setTimeout(renderBudgetTracker, 100); }
   if (id === 'autopsy')    { renderAutopsyList(); }
   if (id === 'competitor') { updateCompetitorMetrics(); }
