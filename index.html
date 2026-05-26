@@ -5255,13 +5255,24 @@ async function loadSiteContacts() {
     var resp = await fetch(SUPABASE_URL + '/rest/v1/site_contacts?select=*', {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
       }
     });
-    if (!resp.ok) return;
+    if (!resp.ok) {
+      var err = await resp.text();
+      console.warn('loadSiteContacts error:', resp.status, err);
+      return;
+    }
     var rows = await resp.json();
     rows.forEach(function(row) { SITE_CONTACTS[row.site_id] = row; });
     console.log('Site contacts loaded: ' + rows.length);
+    // Re-render dealerships if a brand page is open
+    var activeBrand = document.querySelector('.bnav-btn.active');
+    if (activeBrand) {
+      var bid = activeBrand.dataset.view;
+      if (bid && typeof renderBrandCentres === 'function') renderBrandCentres(bid);
+    }
   } catch(e) { console.warn('loadSiteContacts error:', e); }
 }
 
