@@ -802,19 +802,19 @@ td strong{font-weight:600}
 
     <div style="background:var(--white);border:1px solid var(--border);border-radius:4px;padding:18px 20px">
       <div style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">What the scan does</div>
-      <div style="font-size:13px;color:var(--ink);margin-bottom:10px">Runs <strong>4 live web searches</strong> via Claude AI before synthesising:</div>
+      <div style="font-size:13px;color:var(--ink);margin-bottom:10px">Uses <strong>Claude AI</strong> competitive intelligence (upgrade account for live web search):</div>
       <ol style="font-size:12px;color:var(--ink-soft);padding-left:18px;margin:0;line-height:1.9">
-        <li>Arnold Clark current deals &amp; campaigns</li>
-        <li>Lookers, Evans Halshaw &amp; Marshall Motors promotions</li>
-        <li>AutoTrader &amp; advertising activity — North West</li>
-        <li>UK automotive retail marketing trends 2026</li>
+        <li>Arnold Clark marketing &amp; positioning</li>
+        <li>Lookers, Evans Halshaw &amp; Marshall Motors</li>
+        <li>AutoTrader competitive landscape</li>
+        <li>UK automotive retail trends 2026</li>
       </ol>
     </div>
 
     <div style="background:var(--white);border:1px solid var(--border);border-radius:4px;padding:18px 20px">
       <div style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">What you get back</div>
       <div style="display:flex;flex-direction:column;gap:7px">
-        <div style="display:flex;gap:8px;align-items:flex-start;font-size:12px"><span style="background:#059669;color:#fff;font-size:9px;padding:2px 6px;border-radius:8px;white-space:nowrap;margin-top:1px">LIVE</span><span>Real-time results badge vs cached scans</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:12px"><span style="background:#6B7280;color:#fff;font-size:9px;padding:2px 6px;border-radius:8px;white-space:nowrap;margin-top:1px">AI</span><span>Knowledge-based analysis (live search on higher API tier)</span></div>
         <div style="display:flex;gap:8px;align-items:flex-start;font-size:12px"><span style="color:var(--swansway);font-weight:700;font-size:14px;line-height:1">&#9790;</span><span>Market themes dominating right now</span></div>
         <div style="display:flex;gap:8px;align-items:flex-start;font-size:12px"><span style="color:var(--swansway);font-weight:700;font-size:14px;line-height:1">&#128205;</span><span>Regional intel — North West, Midlands &amp; North Wales</span></div>
         <div style="display:flex;gap:8px;align-items:flex-start;font-size:12px"><span style="color:var(--swansway);font-weight:700;font-size:14px;line-height:1">&#9888;</span><span>Per competitor: offers, models, channels, AutoTrader presence, threat &amp; action</span></div>
@@ -4058,134 +4058,53 @@ async function competitorScan() {
   btn.disabled = true;
 
   var steps = [
-    ['Searching competitor websites...', 'Live web search'],
-    ['Scanning AutoTrader listings...', 'autotrader.co.uk'],
-    ['Checking Google Ads activity...', 'adstransparency.google.com'],
-    ['Analysing market position...', 'AI synthesis'],
+    ['Analysing Arnold Clark...', 'competitor intelligence'],
+    ['Analysing Lookers & Evans Halshaw...', 'competitor intelligence'],
+    ['Reviewing AutoTrader landscape...', 'market positioning'],
+    ['Synthesising opportunities...', 'AI analysis'],
   ];
   var si = 0;
   var st = setInterval(function() {
     if (si < steps.length) { msgEl.textContent = steps[si][0]; subEl.textContent = steps[si][1]; si++; }
-  }, 6000);
+  }, 4000);
 
   try {
     var proxyUrl = 'https://swansway-marketing-hub.vercel.app/api/claude';
 
-    var prompt = [
-      'You are a UK automotive retail marketing analyst working for Swansway Motor Group.',
-      'Swansway operates Audi, VW, SEAT, CUPRA, Land Rover, Jaguar, Honda, Peugeot, BYD, OMODA/JAECOO and Motor Match sites across North West England, Midlands and North Wales.',
-      '',
-      'Use your web_search tool to research the following RIGHT NOW in 2026:',
-      '',
-      '1. Search "Arnold Clark car deals marketing 2026"',
-      '2. Search "Lookers Evans Halshaw Marshall Motors promotions 2026"',
-      '3. Search "UK car dealer group AutoTrader advertising North West 2026"',
-      '4. Search "automotive retail marketing trends UK 2026"',
-      '',
-      'After searching, return ONLY valid JSON (no markdown, no explanation):',
-      '{',
-      '  "scan_date": "today date",',
-      '  "competitors": [',
-      '    {',
-      '      "name": "Arnold Clark",',
-      '      "current_push": "what they are actively promoting right now",',
-      '      "headline_offers": ["specific offer 1", "specific offer 2"],',
-      '      "featured_models": ["model1", "model2"],',
-      '      "channels_active": ["Google Ads", "Meta", "AutoTrader", "TV"],',
-      '      "autotrader_presence": "description of their AutoTrader activity",',
-      '      "tone": "their marketing tone/style",',
-      '      "swansway_threat": "specific threat to Swansway in overlapping markets",',
-      '      "insight": "one specific action Swansway should take in response"',
-      '    }',
-      '  ],',
-      '  "market_themes": ["theme1", "theme2", "theme3"],',
-      '  "regional_intel": "what is happening in North West / Midlands / North Wales car market",',
-      '  "autotrader_landscape": "overall AutoTrader competitive picture",',
-      '  "swansway_opportunity": "biggest gap or opportunity identified from research",',
-      '  "recommended_actions": ["action 1 this week", "action 2 this month", "action 3 this quarter"]',
-      '}',
-    ].join('\n');
+    var prompt = 'You are a UK automotive retail marketing analyst for Swansway Motor Group (Audi, VW, SEAT, CUPRA, Land Rover, Jaguar, Honda, Peugeot, BYD, OMODA/JAECOO, Motor Match — North West England, Midlands and North Wales).\n\nBased on your knowledge of the UK automotive retail market in 2025-2026, provide a detailed competitive intelligence report on: Arnold Clark, Lookers, Evans Halshaw, Marshall Motors.\n\nReturn ONLY valid JSON with no markdown or explanation:\n{"scan_date":"May 2026","competitors":[{"name":"Arnold Clark","current_push":"their main marketing focus","headline_offers":["offer1","offer2"],"featured_models":["model1","model2"],"channels_active":["Google Ads","Meta","AutoTrader","TV"],"autotrader_presence":"their AutoTrader strategy","tone":"marketing tone","swansway_threat":"specific threat in North West/Midlands","insight":"one specific action Swansway should take"}],"market_themes":["theme1","theme2","theme3"],"regional_intel":"North West / Midlands / North Wales market context","autotrader_landscape":"competitive AutoTrader picture","swansway_opportunity":"biggest gap identified","recommended_actions":["action this week","action this month","action this quarter"]}';
 
-    // Use multi-turn loop to handle web search tool calls
-    var messages = [{ role: 'user', content: prompt }];
-    var raw = '';
-    var maxTurns = 8; // Max tool call rounds
-
-    for (var turn = 0; turn < maxTurns; turn++) {
-      var reqBody = JSON.stringify({
+    var resp = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: messages
-      });
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
 
-      var resp = await fetch(proxyUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: reqBody
-      });
-
-      var rawText = await resp.text();
-      if (!rawText) throw new Error('Empty response from proxy');
-      var data;
-      try { data = JSON.parse(rawText); } catch(e) { throw new Error('Non-JSON: ' + rawText.substring(0, 200)); }
-      if (data.error) {
-        var errMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
-        throw new Error('API error: ' + errMsg);
-      }
-
-      // Add assistant response to messages
-      messages.push({ role: 'assistant', content: data.content });
-
-      // If stop reason is end_turn, we have the final response
-      if (data.stop_reason === 'end_turn') {
-        data.content.forEach(function(block) {
-          if (block.type === 'text') raw += block.text;
-        });
-        break;
-      }
-
-      // If tool_use, collect tool results and send back — wait 3s to avoid rate limits
-      if (data.stop_reason === 'tool_use') {
-        await new Promise(function(r){ setTimeout(r, 3000); });
-        var toolResults = [];
-        data.content.forEach(function(block) {
-          if (block.type === 'tool_use') {
-            // web_search results come back in the block
-            toolResults.push({
-              type: 'tool_result',
-              tool_use_id: block.id,
-              content: block.input ? JSON.stringify(block.input) : 'Search completed'
-            });
-          }
-          if (block.type === 'text') raw += block.text;
-        });
-        if (toolResults.length > 0) {
-          messages.push({ role: 'user', content: toolResults });
-        } else {
-          break; // No tool results to send, exit loop
-        }
-      } else {
-        // Unknown stop reason, extract any text and exit
-        data.content.forEach(function(block) {
-          if (block.type === 'text') raw += block.text;
-        });
-        break;
-      }
+    var rawText = await resp.text();
+    if (!rawText) throw new Error('Empty response');
+    var data = JSON.parse(rawText);
+    if (data.error) {
+      var errMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+      throw new Error(errMsg);
     }
 
-    if (!raw) throw new Error('No text content after ' + maxTurns + ' turns');
+    var raw = '';
+    if (data.content && Array.isArray(data.content)) {
+      data.content.forEach(function(block) { if (block.type === 'text') raw += block.text; });
+    }
+    if (!raw) throw new Error('No text in response');
 
-    // Parse JSON from response
     var match = raw.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('No JSON found in response');
+    if (!match) throw new Error('No JSON in response');
     var scan = JSON.parse(match[0]);
     scan._timestamp = new Date().toISOString();
-    scan._live = true; // Flag that this used real web search
+    scan._live = false; // Knowledge-based, not live search
 
     COMP_SCANS.unshift(scan);
     if (COMP_SCANS.length > 10) COMP_SCANS = COMP_SCANS.slice(0, 10);
-
     if (SB && SB_USER) {
       SB.from('competitor_scans').insert({ user_id: SB_USER.id, data: scan }).then(function(){});
     }
@@ -4195,13 +4114,13 @@ async function competitorScan() {
 
   } catch(e) {
     resultsEl.innerHTML = '<div style="color:var(--accent);padding:16px;font-size:13px"><strong>Scan error:</strong> ' + e.message + '</div>';
-    console.error('Competitor scan error:', e);
   }
 
   clearInterval(st);
   statusEl.style.display = 'none';
   btn.disabled = false;
 }
+
 
 
 function renderCompetitorResults(scan) {
