@@ -4050,13 +4050,10 @@ async function competitorScan() {
       '',
       'Use your web_search tool to research the following RIGHT NOW in 2026:',
       '',
-      '1. Search "Arnold Clark current car deals promotions 2026" and "Arnold Clark marketing campaigns"',
-      '2. Search "Lookers car deals offers 2026" and "Lookers Group marketing"',
-      '3. Search "Evans Halshaw promotions 2026" and "Evans Halshaw advertising"',
-      '4. Search "Marshall Motors deals 2026" and "Marshall Motors marketing"',
-      '5. Search "site:autotrader.co.uk Arnold Clark" to see their AutoTrader presence',
-      '6. Search "Google Ads car dealer North West England 2026" for regional ad activity',
-      '7. Search "UK car dealer group marketing 2026 trends" for market context',
+      '1. Search "Arnold Clark car deals marketing 2026"',
+      '2. Search "Lookers Evans Halshaw Marshall Motors promotions 2026"',
+      '3. Search "UK car dealer group AutoTrader advertising North West 2026"',
+      '4. Search "automotive retail marketing trends UK 2026"',
       '',
       'After searching, return ONLY valid JSON (no markdown, no explanation):',
       '{',
@@ -4090,7 +4087,7 @@ async function competitorScan() {
     for (var turn = 0; turn < maxTurns; turn++) {
       var reqBody = JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
+        max_tokens: 2000,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: messages
       });
@@ -4121,8 +4118,9 @@ async function competitorScan() {
         break;
       }
 
-      // If tool_use, collect tool results and send back
+      // If tool_use, collect tool results and send back — wait 3s to avoid rate limits
       if (data.stop_reason === 'tool_use') {
+        await new Promise(function(r){ setTimeout(r, 3000); });
         var toolResults = [];
         data.content.forEach(function(block) {
           if (block.type === 'tool_use') {
