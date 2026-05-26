@@ -2475,59 +2475,160 @@ function renderGroupChannels() {
 function renderGroupKPIs() {
   var g = document.getElementById('group-kpi-list');
   if (!g) return;
-  g.innerHTML = GROUP_KPIS.map(function(k, i) {
-    var pctColor = k.p >= 70 ? '#15803D' : k.p >= 50 ? '#D97706' : '#C8102E';
-    var isPlaceholder = !k.t || k.t === '—' || k.t === '0' || k.t === 0 || k.t === '--';
-    var cardBorder = isPlaceholder ? '2px solid #F59E0B' : '2px solid #15803D';
-    var cardBg     = isPlaceholder ? 'rgba(245,158,11,0.04)' : 'rgba(21,128,61,0.03)';
-    var html = '<div class="kpi-card" id="kpi-row-' + i + '" style="background:' + cardBg + ';border:' + cardBorder + ';border-radius:4px;padding:18px 20px;margin-bottom:10px">';
-    html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:10px">';
-    html += '<div style="flex:1">';
-    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">';
-    html += '<span style="font-size:18px">' + (k.icon || '📊') + '</span>';
-    html += '<span style="font-family:var(--font-m);font-size:9px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:0.1em;background:var(--surface);padding:2px 8px;border-radius:10px">' + (k.cat || '') + '</span>';
-    html += '</div>';
-    html += '<div style="font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px">' + (k.l || k.label || '') + '</div>';
-    html += '<div style="font-size:12px;color:var(--ink-soft);line-height:1.5">' + (k.def || '') + '</div>';
-    html += '</div>';
+  g.innerHTML = '';
+  console.log('renderGroupKPIs: ' + GROUP_KPIS.length + ' KPIs');
+
+  GROUP_KPIS.forEach(function(k, i) {
+    var isPlaceholder = !k.t || k.t === '\u2014' || k.t === '0' || k.t === 0 || k.t === '--';
     var hasActual = k.a && k.a !== '--' && k.a !== '';
-    var actualColor = k.lowerBetter
-      ? (k.p >= 70 ? '#15803D' : k.p >= 50 ? '#D97706' : '#C8102E')
-      : (k.p >= 70 ? '#15803D' : k.p >= 50 ? '#D97706' : '#C8102E');
-    html += '<div style="text-align:right;flex-shrink:0">';
-    html += '<div style="display:flex;align-items:flex-end;gap:16px;justify-content:flex-end;margin-bottom:4px">';
+    var pctColor = k.p >= 70 ? '#15803D' : k.p >= 50 ? '#D97706' : '#C8102E';
+
+    // Card
+    var card = document.createElement('div');
+    card.id = 'kpi-row-' + i;
+    card.style.cssText = 'background:' + (isPlaceholder ? 'rgba(245,158,11,0.04)' : 'rgba(21,128,61,0.03)') +
+      ';border:2px solid ' + (isPlaceholder ? '#F59E0B' : '#15803D') +
+      ';border-radius:4px;padding:18px 20px;margin-bottom:10px';
+
+    // Top row: label + values
+    var topRow = document.createElement('div');
+    topRow.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:10px';
+
+    // Left: icon, category, label, definition
+    var left = document.createElement('div');
+    left.style.flex = '1';
+
+    var catRow = document.createElement('div');
+    catRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:5px';
+    if (k.icon) {
+      var icon = document.createElement('span');
+      icon.style.fontSize = '18px';
+      icon.textContent = k.icon;
+      catRow.appendChild(icon);
+    }
+    var catTag = document.createElement('span');
+    catTag.style.cssText = 'font-family:var(--font-m);font-size:9px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:0.1em;background:var(--surface);padding:2px 8px;border-radius:10px';
+    catTag.textContent = k.cat || '';
+    catRow.appendChild(catTag);
+    left.appendChild(catRow);
+
+    var label = document.createElement('div');
+    label.style.cssText = 'font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px';
+    label.textContent = k.l || k.label || '';
+    left.appendChild(label);
+
+    var def = document.createElement('div');
+    def.style.cssText = 'font-size:12px;color:var(--ink-soft);line-height:1.5';
+    def.textContent = k.def || '';
+    left.appendChild(def);
+
+    topRow.appendChild(left);
+
+    // Right: actual + target
+    var right = document.createElement('div');
+    right.style.cssText = 'text-align:right;flex-shrink:0';
+
+    var valRow = document.createElement('div');
+    valRow.style.cssText = 'display:flex;align-items:flex-end;gap:16px;justify-content:flex-end;margin-bottom:4px';
+
     if (hasActual) {
-      html += '<div><div style="font-family:var(--font-d);font-size:20px;font-weight:700;color:' + actualColor + '">' + k.a + '</div>';
-      html += '<div style="font-size:9px;color:var(--ink-soft);font-family:var(--font-m);text-transform:uppercase;letter-spacing:0.06em;text-align:center">Actual</div></div>';
+      var actDiv = document.createElement('div');
+      var actVal = document.createElement('div');
+      actVal.style.cssText = 'font-family:var(--font-d);font-size:22px;font-weight:700;color:' + pctColor;
+      actVal.textContent = k.a;
+      var actLbl = document.createElement('div');
+      actLbl.style.cssText = 'font-size:9px;color:var(--ink-soft);font-family:var(--font-m);text-transform:uppercase;letter-spacing:0.06em;text-align:center';
+      actLbl.textContent = 'Actual';
+      actDiv.appendChild(actVal);
+      actDiv.appendChild(actLbl);
+      valRow.appendChild(actDiv);
     }
-    html += '<div><div style="font-family:var(--font-d);font-size:' + (hasActual ? '14' : '20') + 'px;font-weight:700;color:' + (hasActual ? 'var(--ink-soft)' : 'var(--swansway)') + '" id="kpi-target-' + i + '">' + (k.t || '--') + '</div>';
-    html += '<div style="font-size:9px;color:var(--ink-soft);font-family:var(--font-m);text-transform:uppercase;letter-spacing:0.06em;display:flex;align-items:center;gap:4px;justify-content:center">Target'
-      + (isPlaceholder ? '<span style="background:#F59E0B;color:#fff;font-size:8px;padding:1px 5px;border-radius:8px">SET IN ADMIN</span>' : '')
-      + '</div></div>';
-    html += '</div>';
-    html += '</div></div>';
-    html += '<div style="height:5px;background:var(--surface-2);border-radius:3px;margin-bottom:10px"><div style="height:5px;border-radius:3px;background:' + pctColor + ';width:' + Math.min(k.p || 0, 100) + '%;transition:width .6s cubic-bezier(0.16,1,0.3,1)"></div></div>';
+
+    var tgtDiv = document.createElement('div');
+    var tgtVal = document.createElement('div');
+    tgtVal.id = 'kpi-target-' + i;
+    tgtVal.style.cssText = 'font-family:var(--font-d);font-size:' + (hasActual ? '14' : '22') + 'px;font-weight:700;color:' + (hasActual ? 'var(--ink-soft)' : (isPlaceholder ? '#F59E0B' : 'var(--swansway)'));
+    tgtVal.textContent = k.t || '--';
+    var tgtLbl = document.createElement('div');
+    tgtLbl.style.cssText = 'font-size:9px;color:var(--ink-soft);font-family:var(--font-m);text-transform:uppercase;letter-spacing:0.06em;text-align:center;display:flex;align-items:center;gap:4px;justify-content:center';
+    tgtLbl.textContent = 'Target';
+    if (isPlaceholder) {
+      var badge = document.createElement('span');
+      badge.style.cssText = 'background:#F59E0B;color:#fff;font-size:8px;padding:1px 5px;border-radius:8px;font-family:var(--font-m)';
+      badge.textContent = 'SET IN ADMIN';
+      tgtLbl.appendChild(badge);
+    }
+    tgtDiv.appendChild(tgtVal);
+    tgtDiv.appendChild(tgtLbl);
+    valRow.appendChild(tgtDiv);
+    right.appendChild(valRow);
+    topRow.appendChild(right);
+    card.appendChild(topRow);
+
+    // Progress bar
+    var barWrap = document.createElement('div');
+    barWrap.style.cssText = 'height:5px;background:var(--surface-2);border-radius:3px;margin-bottom:10px';
+    var barFill = document.createElement('div');
+    barFill.style.cssText = 'height:5px;border-radius:3px;background:' + pctColor + ';width:' + Math.min(k.p || 0, 100) + '%;transition:width .6s ease';
+    barWrap.appendChild(barFill);
+    card.appendChild(barWrap);
+
+    // Why / How
     if (k.why || k.how) {
-      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">';
-      if (k.why) html += '<div style="background:var(--surface);border-radius:3px;padding:10px 12px"><div style="font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Why it matters</div><div style="font-size:11px;color:var(--ink);line-height:1.6">' + k.why + '</div></div>';
-      if (k.how) html += '<div style="background:var(--surface);border-radius:3px;padding:10px 12px"><div style="font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">How measured</div><div style="font-size:11px;color:var(--ink);line-height:1.6">' + k.how + '</div></div>';
-      html += '</div>';
+      var whyRow = document.createElement('div');
+      whyRow.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px';
+      ['why','how'].forEach(function(field) {
+        if (!k[field] || k[field].indexOf('Admin') > -1) return;
+        var box = document.createElement('div');
+        box.style.cssText = 'background:var(--surface);border-radius:3px;padding:10px 12px';
+        var lbl = document.createElement('div');
+        lbl.style.cssText = 'font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px';
+        lbl.textContent = field === 'why' ? 'Why it matters' : 'How measured';
+        var txt = document.createElement('div');
+        txt.style.cssText = 'font-size:11px;color:var(--ink);line-height:1.6';
+        txt.textContent = k[field];
+        box.appendChild(lbl); box.appendChild(txt);
+        whyRow.appendChild(box);
+      });
+      if (whyRow.children.length) card.appendChild(whyRow);
     }
-    if (k.bench || k.o || k.split) {
-      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
-      if (k.bench) html += '<div style="padding:8px 12px;border:1px solid var(--border);border-radius:3px"><div style="font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Benchmark</div><div style="font-size:11px;color:var(--ink-soft);line-height:1.5">' + k.bench + '</div></div>';
-      if (k.o || k.split) {
-        html += '<div style="padding:8px 12px;border:1px solid var(--border);border-radius:3px"><div style="font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Owner</div>';
-        html += '<div style="font-size:11px;font-weight:600;color:var(--ink);margin-bottom:4px">' + (k.o || k.owner || '') + '</div>';
-        if (k.split) html += '<div style="font-size:10px;color:var(--ink-faint);line-height:1.5">' + k.split + '</div>';
-        html += '</div>';
+
+    // Bench / Owner
+    if ((k.bench && k.bench.indexOf('Admin') === -1) || (k.o && k.o !== '--')) {
+      var benchRow = document.createElement('div');
+      benchRow.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:10px';
+      if (k.bench && k.bench.indexOf('Admin') === -1) {
+        var bBox = document.createElement('div');
+        bBox.style.cssText = 'padding:8px 12px;border:1px solid var(--border);border-radius:3px';
+        var bLbl = document.createElement('div');
+        bLbl.style.cssText = 'font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px';
+        bLbl.textContent = 'Benchmark';
+        var bTxt = document.createElement('div');
+        bTxt.style.cssText = 'font-size:11px;color:var(--ink-soft);line-height:1.5';
+        bTxt.textContent = k.bench;
+        bBox.appendChild(bLbl); bBox.appendChild(bTxt);
+        benchRow.appendChild(bBox);
       }
-      html += '</div>';
+      if (k.o && k.o !== '--') {
+        var oBox = document.createElement('div');
+        oBox.style.cssText = 'padding:8px 12px;border:1px solid var(--border);border-radius:3px';
+        var oLbl = document.createElement('div');
+        oLbl.style.cssText = 'font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px';
+        oLbl.textContent = 'Owner';
+        var oTxt = document.createElement('div');
+        oTxt.style.cssText = 'font-size:11px;font-weight:600;color:var(--ink)';
+        oTxt.textContent = k.o;
+        oBox.appendChild(oLbl); oBox.appendChild(oTxt);
+        benchRow.appendChild(oBox);
+      }
+      if (benchRow.children.length) card.appendChild(benchRow);
     }
-    html += '</div>';
-    return html;
-  }).join('');
+
+    g.appendChild(card);
+  });
+  console.log('renderGroupKPIs: done, ' + g.children.length + ' cards rendered');
 }
+
 
 /* ── AI MODAL ── */
 const MODAL_PROMPTS = {
