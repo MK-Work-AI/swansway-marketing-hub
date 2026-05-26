@@ -2822,6 +2822,7 @@ function applyAdminConfig(cfg) {
 
   // ── 3. UPDATE KPIs — only sync target/actual/owner from admin (not narrative fields) ──
   if (cfg.kpis && cfg.kpis.length) {
+    console.log('KPI sync running, first gk.t before:', GROUP_KPIS[0].t, 'ak.target:', cfg.kpis[0].target);
     cfg.kpis.forEach(function(ak, i) {
       if (i >= GROUP_KPIS.length) return;
       var gk = GROUP_KPIS[i];
@@ -2849,6 +2850,7 @@ function applyAdminConfig(cfg) {
         gk.p = 0;
       }
     });
+    console.log('KPI sync done, GROUP_KPIS[0].t now:', GROUP_KPIS[0].t, 'GROUP_KPIS[0].a:', GROUP_KPIS[0].a);
     if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
   }
 
