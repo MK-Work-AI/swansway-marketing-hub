@@ -2345,18 +2345,12 @@ function renderBrand(b) {
     </div>
 
     <div class="inner-section" id="${b.id}-kpis">
-      <div class="sh"><div><div class="sh-title">KPI Framework</div><div class="sh-sub">Targets, measures and ownership for 2026</div></div></div>
-      <div class="kpi-list">
-        ${b.kpis.map(k=>`
-          <div class="kpi-item">
-            <div class="kpi-label">${k.l}</div>
-            <div class="kpi-target">${k.t}</div>
-            <div class="kpi-bar-wrap"><div class="kpi-bar" style="width:${k.p}%;background:${b.color}"></div></div>
-            <div class="kpi-owner">${k.o}</div>
-          </div>
-        `).join('')}
+      <div class="sh"><div><div class="sh-title">KPI Framework</div><div class="sh-sub">Targets from admin · Actuals from site data</div></div></div>
+      <div id="${b.id}-brand-kpis"></div>
+      <div style="margin-top:1.5rem">
+        <div style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Site KPI Breakdown</div>
+        <div id="${b.id}-kpis-sites"><div style="padding:16px;color:var(--ink-faint);font-size:13px">Loading site KPI data...</div></div>
       </div>
-      <div style="font-size:11px;color:#9CA3AF;margin-top:8px">Progress bars show indicative Q1 baseline tracking — update monthly with actual data.</div>
     </div>
 
     <div class="inner-section" id="${b.id}-qplan">
