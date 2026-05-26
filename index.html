@@ -2364,14 +2364,6 @@ function renderBrand(b) {
   `;
   // After HTML is set, render all tab content so it's ready when tabs are clicked
   setTimeout(function() {
-    var sitesEl = document.getElementById(b.id + '-sites-list');
-    var campsEl = document.getElementById(b.id + '-campaigns-list');
-    var kpisEl  = document.getElementById(b.id + '-brand-kpis');
-    console.log('renderBrand post-render check:', b.id,
-      'sites-list:', sitesEl ? 'found' : 'MISSING',
-      'campaigns-list:', campsEl ? 'found' : 'MISSING',
-      'brand-kpis:', kpisEl ? 'found' : 'MISSING'
-    );
     if (typeof renderBrandSites === 'function')     renderBrandSites(b.id);
     if (typeof renderBrandCentres === 'function')   renderBrandCentres(b.id);
     if (typeof renderBrandCampaigns === 'function') renderBrandCampaigns(b.id);
@@ -2380,14 +2372,8 @@ function renderBrand(b) {
 }
 
 function switchInner(brandId, secId, el) {
-  console.log('switchInner:', brandId, secId);
-  var targetEl = document.getElementById(brandId+'-'+secId);
-  console.log('target element:', targetEl ? 'found' : 'NOT FOUND');
   document.querySelectorAll(`#itabs-${brandId} .inner-tab`).forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll(`#${brandId}-content .inner-section`).forEach(function(s) {
-    s.classList.remove('active');
-    s.style.display = 'none';
-  });
+  document.querySelectorAll(`#${brandId}-content .inner-section`).forEach(s=>s.classList.remove('active'));
   el.classList.add('active');
   if(secId === 'campaigns') { setTimeout(function(){ if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(brandId); }, 50); }
   if(secId === 'centres')   { setTimeout(function(){ if(typeof renderBrandCentres==='function') renderBrandCentres(brandId); }, 50); }
@@ -2395,9 +2381,6 @@ function switchInner(brandId, secId, el) {
   if(secId === 'kpis') { setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(brandId);  }, 50); }
   var sec = document.getElementById(brandId+'-'+secId);
   sec.classList.add('active');
-  sec.style.display = 'block';  // Force visible in case CSS is overridden
-  console.log('active classes on sections:', Array.from(document.querySelectorAll('#'+brandId+'-content .inner-section')).map(function(s){return s.id+':'+s.classList.contains('active');}));
-  console.log('sec display:', window.getComputedStyle(sec).display);
 }
 
 /* ── RENDER GROUP BRAND CARDS ── */
