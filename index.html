@@ -4020,71 +4020,244 @@ function autopsyLoadSaved() { renderAutopsyList(); }
 var COMP_SCANS = []; // Loaded from Supabase on init
 
 async function competitorScan() {
-  var statusEl = document.getElementById('competitor-scan-status');
+  var statusEl  = document.getElementById('competitor-scan-status');
   var resultsEl = document.getElementById('competitor-results');
-  var btn = document.getElementById('competitor-scan-btn');
-  var msgEl = document.getElementById('comp-scan-msg');
-  var subEl = document.getElementById('comp-scan-sub');
+  var btn       = document.getElementById('competitor-scan-btn');
+  var msgEl     = document.getElementById('comp-scan-msg');
+  var subEl     = document.getElementById('comp-scan-sub');
   if (!ANTHROPIC_API_KEY) { alert('Anthropic API key not configured.'); return; }
-  statusEl.style.display = 'block'; resultsEl.innerHTML = ''; btn.disabled = true;
-  var steps = [['Scanning Arnold Clark...','arnoldclark.com'],['Scanning Lookers...','lookers.co.uk'],['Scanning Evans Halshaw...','evanshalshaw.com'],['Scanning Marshall Motors...','marshall.co.uk']];
+
+  statusEl.style.display = 'block';
+  resultsEl.innerHTML = '';
+  btn.disabled = true;
+
+  var steps = [
+    ['Searching competitor websites...', 'Live web search'],
+    ['Scanning AutoTrader listings...', 'autotrader.co.uk'],
+    ['Checking Google Ads activity...', 'adstransparency.google.com'],
+    ['Analysing market position...', 'AI synthesis'],
+  ];
   var si = 0;
-  var st = setInterval(function() { if (si < steps.length) { msgEl.textContent = steps[si][0]; subEl.textContent = steps[si][1]; si++; } }, 5000);
+  var st = setInterval(function() {
+    if (si < steps.length) { msgEl.textContent = steps[si][0]; subEl.textContent = steps[si][1]; si++; }
+  }, 6000);
+
   try {
     var proxyUrl = 'https://swansway-marketing-hub.vercel.app/api/claude';
+
+    var prompt = [
+      'You are a UK automotive retail marketing analyst working for Swansway Motor Group.',
+      'Swansway operates Audi, VW, SEAT, CUPRA, Land Rover, Jaguar, Honda, Peugeot, BYD, OMODA/JAECOO and Motor Match sites across North West England, Midlands and North Wales.',
+      '',
+      'Use your web_search tool to research the following RIGHT NOW in 2026:',
+      '',
+      '1. Search "Arnold Clark current car deals promotions 2026" and "Arnold Clark marketing campaigns"',
+      '2. Search "Lookers car deals offers 2026" and "Lookers Group marketing"',
+      '3. Search "Evans Halshaw promotions 2026" and "Evans Halshaw advertising"',
+      '4. Search "Marshall Motors deals 2026" and "Marshall Motors marketing"',
+      '5. Search "site:autotrader.co.uk Arnold Clark" to see their AutoTrader presence',
+      '6. Search "Google Ads car dealer North West England 2026" for regional ad activity',
+      '7. Search "UK car dealer group marketing 2026 trends" for market context',
+      '',
+      'After searching, return ONLY valid JSON (no markdown, no explanation):',
+      '{',
+      '  "scan_date": "today date",',
+      '  "competitors": [',
+      '    {',
+      '      "name": "Arnold Clark",',
+      '      "current_push": "what they are actively promoting right now",',
+      '      "headline_offers": ["specific offer 1", "specific offer 2"],',
+      '      "featured_models": ["model1", "model2"],',
+      '      "channels_active": ["Google Ads", "Meta", "AutoTrader", "TV"],',
+      '      "autotrader_presence": "description of their AutoTrader activity",',
+      '      "tone": "their marketing tone/style",',
+      '      "swansway_threat": "specific threat to Swansway in overlapping markets",',
+      '      "insight": "one specific action Swansway should take in response"',
+      '    }',
+      '  ],',
+      '  "market_themes": ["theme1", "theme2", "theme3"],',
+      '  "regional_intel": "what is happening in North West / Midlands / North Wales car market",',
+      '  "autotrader_landscape": "overall AutoTrader competitive picture",',
+      '  "swansway_opportunity": "biggest gap or opportunity identified from research",',
+      '  "recommended_actions": ["action 1 this week", "action 2 this month", "action 3 this quarter"]',
+      '}',
+    ].join('\n');
+
     var reqBody = JSON.stringify({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      messages: [{role: 'user', content: 'You are a UK automotive retail marketing analyst. Based on your knowledge of these dealer groups as of 2025-2026, analyse their marketing approach: Arnold Clark, Lookers, Evans Halshaw, Marshall Motors. Return ONLY valid JSON with no other text: {"competitors":[{"name":"Arnold Clark","current_push":"what they push","headline_offers":["offer1","offer2"],"featured_models":["model1"],"channels_active":["Google","Meta"],"tone":"their tone","swansway_threat":"threat to Swansway","insight":"action Swansway should take"}],"market_themes":["theme1","theme2"],"swansway_opportunity":"biggest gap","recommended_action":"one action this month"}'}]
+      max_tokens: 3000,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      messages: [{ role: 'user', content: prompt }]
     });
+
     var resp = await fetch(proxyUrl, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: { 'Content-Type': 'application/json' },
       body: reqBody
     });
+
     var rawText = await resp.text();
-    console.log('Proxy response status:', resp.status);
-    console.log('Proxy response:', rawText.substring(0, 200));
-    if (!rawText) throw new Error('Empty response from proxy (status ' + resp.status + ')');
+    if (!rawText) throw new Error('Empty response from proxy');
     var data;
-    try { data = JSON.parse(rawText); } catch(e) { throw new Error('Proxy returned non-JSON: ' + rawText.substring(0, 100)); }
-    if (data.error) throw new Error('Proxy error: ' + data.error);
-    var raw = data.content && data.content[0] ? data.content[0].text : '';
-    if (!raw) throw new Error('No content in API response');
+    try { data = JSON.parse(rawText); } catch(e) { throw new Error('Non-JSON response: ' + rawText.substring(0, 200)); }
+    if (data.error) throw new Error('API error: ' + data.error);
+
+    // Extract text from content blocks (may include tool_use blocks)
+    var raw = '';
+    if (data.content && Array.isArray(data.content)) {
+      data.content.forEach(function(block) {
+        if (block.type === 'text') raw += block.text;
+      });
+    }
+    if (!raw) throw new Error('No text content in response');
+
+    // Parse JSON from response
     var match = raw.match(/\{[\s\S]*\}/);
-    var scan = JSON.parse(match ? match[0] : raw);
+    if (!match) throw new Error('No JSON found in response');
+    var scan = JSON.parse(match[0]);
     scan._timestamp = new Date().toISOString();
+    scan._live = true; // Flag that this used real web search
+
     COMP_SCANS.unshift(scan);
     if (COMP_SCANS.length > 10) COMP_SCANS = COMP_SCANS.slice(0, 10);
-    if (SB && SB_USER) { SB.from('competitor_scans').insert({user_id:SB_USER.id,data:scan}).then(function(){}); }
+
+    if (SB && SB_USER) {
+      SB.from('competitor_scans').insert({ user_id: SB_USER.id, data: scan }).then(function(){});
+    }
+
     renderCompetitorResults(scan);
     updateCompetitorMetrics();
-  } catch(e) { resultsEl.innerHTML = '<div style="color:var(--accent);padding:16px">Error: ' + e.message + '</div>'; }
-  clearInterval(st); statusEl.style.display = 'none'; btn.disabled = false;
+
+  } catch(e) {
+    resultsEl.innerHTML = '<div style="color:var(--accent);padding:16px;font-size:13px"><strong>Scan error:</strong> ' + e.message + '</div>';
+    console.error('Competitor scan error:', e);
+  }
+
+  clearInterval(st);
+  statusEl.style.display = 'none';
+  btn.disabled = false;
 }
+
 
 function renderCompetitorResults(scan) {
   var el = document.getElementById('competitor-results');
-  if (!el || !scan) return;
-  var colors = {'Arnold Clark':'#1A2E4A','Lookers':'#2C4A73','Evans Halshaw':'#C8102E','Marshall Motors':'#1D4E1D'};
+  if (!el) return;
+
+  var liveTag = scan._live
+    ? '<span style="background:#059669;color:#fff;font-size:9px;font-family:var(--font-m);padding:2px 7px;border-radius:10px;letter-spacing:0.06em;margin-left:8px">LIVE</span>'
+    : '<span style="background:#6B7280;color:#fff;font-size:9px;font-family:var(--font-m);padding:2px 7px;border-radius:10px;letter-spacing:0.06em;margin-left:8px">CACHED</span>';
+
   var html = '';
-  if (scan.swansway_opportunity) {
-    html += '<div class="chart-wrap" style="margin-bottom:1rem;border-left:4px solid var(--accent)"><div class="chart-title">Strategic opportunity</div><div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px">' + scan.swansway_opportunity + '</div>';
-    if (scan.recommended_action) html += '<div style="padding:10px 14px;background:rgba(200,16,46,0.06);border-radius:3px;font-size:13px;font-weight:500;color:var(--accent)">&rarr; ' + scan.recommended_action + '</div>';
+
+  // Market themes bar
+  if (scan.market_themes && scan.market_themes.length) {
+    html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:4px;padding:14px 18px;margin-bottom:1rem">';
+    html += '<div style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Market themes ' + liveTag + '</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+    scan.market_themes.forEach(function(t) {
+      html += '<span style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:3px 10px;font-size:12px">' + t + '</span>';
+    });
+    html += '</div></div>';
+  }
+
+  // Regional intel
+  if (scan.regional_intel) {
+    html += '<div style="background:rgba(200,16,46,0.04);border:1px solid rgba(200,16,46,0.15);border-radius:4px;padding:14px 18px;margin-bottom:1rem">';
+    html += '<div style="font-family:var(--font-m);font-size:10px;color:var(--swansway);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Regional intelligence</div>';
+    html += '<div style="font-size:13px;color:var(--ink)">' + scan.regional_intel + '</div>';
     html += '</div>';
   }
+
+  // Competitor cards
   (scan.competitors || []).forEach(function(c) {
-    var color = colors[c.name] || '#374151';
-    html += '<div class="competitor-card"><div class="competitor-header"><div><div class="competitor-name" style="color:' + color + '">' + c.name + '</div><div style="font-size:11px;color:var(--ink-soft)">' + (c.tone||'') + '</div></div></div><div class="competitor-body">';
-    if (c.current_push) html += '<div style="font-size:13px;font-weight:600;margin-bottom:10px">' + c.current_push + '</div>';
-    (c.headline_offers||[]).forEach(function(o) { html += '<div class="competitor-offer"><div class="competitor-offer-text">' + o + '</div></div>'; });
-    if (c.swansway_threat) html += '<div class="competitor-insight"><strong>Implication:</strong> ' + c.swansway_threat + '</div>';
-    if (c.insight) html += '<div style="margin-top:8px;padding:10px 14px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:3px;font-size:12px;color:#14532D"><strong>Action:</strong> ' + c.insight + '</div>';
+    html += '<div class="competitor-card">';
+    html += '<div class="competitor-header" style="display:flex;justify-content:space-between;align-items:center">';
+    html += '<div style="font-weight:700;font-size:14px">' + c.name + '</div>';
+    html += '<div style="font-size:11px;color:var(--ink-soft)">' + (c.tone || '') + '</div>';
+    html += '</div>';
+    html += '<div style="padding:14px 18px">';
+
+    // Current push
+    if (c.current_push) {
+      html += '<div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--ink)">' + c.current_push + '</div>';
+    }
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">';
+
+    // Offers
+    if (c.headline_offers && c.headline_offers.length) {
+      html += '<div><div style="font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Current offers</div>';
+      c.headline_offers.forEach(function(o) {
+        html += '<div style="font-size:12px;padding:2px 0;border-bottom:1px solid var(--border)">' + o + '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Models
+    if (c.featured_models && c.featured_models.length) {
+      html += '<div><div style="font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Featured models</div>';
+      c.featured_models.forEach(function(m) {
+        html += '<div style="font-size:12px;padding:2px 0;border-bottom:1px solid var(--border)">' + m + '</div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+
+    // Channels
+    if (c.channels_active && c.channels_active.length) {
+      html += '<div style="margin-bottom:10px"><div style="font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Active channels</div>';
+      html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
+      c.channels_active.forEach(function(ch) {
+        html += '<span style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:2px 8px;font-size:11px">' + ch + '</span>';
+      });
+      html += '</div></div>';
+    }
+
+    // AutoTrader presence
+    if (c.autotrader_presence) {
+      html += '<div style="background:rgba(0,102,204,0.05);border-radius:3px;padding:8px 10px;font-size:12px;margin-bottom:10px">';
+      html += '<strong style="color:#0066CC">AutoTrader:</strong> ' + c.autotrader_presence;
+      html += '</div>';
+    }
+
+    // Threat + insight
+    if (c.swansway_threat) {
+      html += '<div style="background:rgba(220,38,38,0.05);border-radius:3px;padding:8px 10px;font-size:12px;margin-bottom:6px">';
+      html += '<strong style="color:#DC2626">\u26a0 Threat:</strong> ' + c.swansway_threat;
+      html += '</div>';
+    }
+    if (c.insight) {
+      html += '<div style="background:rgba(5,150,105,0.05);border-radius:3px;padding:8px 10px;font-size:12px">';
+      html += '<strong style="color:#059669">\u2192 Action:</strong> ' + c.insight;
+      html += '</div>';
+    }
+
     html += '</div></div>';
   });
-  html += '<div style="font-size:11px;color:var(--ink-faint);text-align:right;margin-top:8px;font-family:var(--font-m)">Scanned: ' + new Date(scan._timestamp).toLocaleString('en-GB') + '</div>';
+
+  // Recommended actions
+  if (scan.recommended_actions && scan.recommended_actions.length) {
+    html += '<div style="background:var(--white);border:1px solid var(--border);border-radius:4px;padding:14px 18px;margin-top:1rem">';
+    html += '<div style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Recommended actions</div>';
+    scan.recommended_actions.forEach(function(a, i) {
+      html += '<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">';
+      html += '<span style="font-family:var(--font-m);font-size:10px;font-weight:700;color:var(--swansway);padding-top:2px;min-width:16px">' + (i+1) + '</span>';
+      html += a + '</div>';
+    });
+    html += '</div>';
+  }
+
+  // Opportunity
+  if (scan.swansway_opportunity) {
+    html += '<div style="background:rgba(200,16,46,0.04);border:1.5px solid var(--swansway);border-radius:4px;padding:14px 18px;margin-top:1rem">';
+    html += '<div style="font-family:var(--font-m);font-size:10px;color:var(--swansway);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Biggest opportunity</div>';
+    html += '<div style="font-size:13px;font-weight:600">' + scan.swansway_opportunity + '</div>';
+    html += '</div>';
+  }
+
   el.innerHTML = html;
 }
+
 
 async function loadCompetitorScans() {
   if (!SB || !SB_USER) return;
