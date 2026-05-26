@@ -2289,10 +2289,10 @@ function renderBrand(b) {
     <div class="inner-section active" id="${b.id}-strategy">
       <div class="sh"><div><div class="sh-title">Strategic Pillars</div><div class="sh-sub">Core priorities that drive every campaign and channel decision</div></div></div>
       <div class="pillars" style="--brand-color:${b.color}">
-        ${b.pillars.map(p=>`<div class="pillar"><div class="pillar-num">PILLAR ${p.n}</div><div class="pillar-title">${p.t}</div><div class="pillar-desc">${p.d}</div></div>`).join('')}
+        ${(b.pillars||[]).map(p=>`<div class="pillar"><div class="pillar-num">PILLAR ${p.n}</div><div class="pillar-title">${p.t}</div><div class="pillar-desc">${p.d}</div></div>`).join('')}
       </div>
       <div class="sh"><div><div class="sh-title">Key Tags & Focus Areas</div></div></div>
-      <div style="margin-bottom:1.5rem">${b.tags.map((t,i)=>`<span class="tag ${['t-red','t-blue','t-green','t-amber','t-purple','t-teal','t-pink'][i%7]}">${t}</span>`).join('')}</div>
+      <div style="margin-bottom:1.5rem">${(b.tags||[]).map((t,i)=>`<span class="tag ${['t-red','t-blue','t-green','t-amber','t-purple','t-teal','t-pink'][i%7]}">${t}</span>`).join('')}</div>
     </div>
 
     <div class="inner-section" id="${b.id}-centres">
@@ -2309,14 +2309,14 @@ function renderBrand(b) {
     <div class="inner-section" id="${b.id}-audiences">
       <div class="sh"><div><div class="sh-title">Target Audiences & Messaging</div><div class="sh-sub">Segments with tailored message, channel and creative angle</div></div></div>
       <div class="audience-grid" style="--brand-color:${b.color}">
-        ${b.audiences.map(a=>`<div class="audience-card"><div class="audience-title">${a.t}</div><div class="audience-desc">${a.d}</div></div>`).join('')}
+        ${(b.audiences||[]).map(a=>`<div class="audience-card"><div class="audience-title">${a.t}</div><div class="audience-desc">${a.d}</div></div>`).join('')}
       </div>
     </div>
 
     <div class="inner-section" id="${b.id}-budget">
       <div class="sh"><div><div class="sh-title">Channel Mix & Budget</div><div class="sh-sub">Recommended annual allocation — ${b.budget} total</div></div></div>
       <div class="channel-list">
-        ${b.channels.map(c=>`
+        ${(b.channels||[]).map(c=>`
           <div class="channel-item">
             <div class="channel-name">${c.n}</div>
             <div class="channel-bar-wrap"><div class="channel-bar" style="width:${c.pct*3.2}%;background:${c.color}"></div></div>
