@@ -3782,7 +3782,7 @@ function renderBudgetTracker() {
       + '<td><div style="display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px">'
       + '<span style="width:8px;height:8px;border-radius:50%;background:' + b.color + ';display:inline-block;flex-shrink:0"></span>'
       + b.name + expandIcon + '</div>'
-      + (sites.length > 0 ? '<div style="font-size:10px;color:var(--ink-soft);margin-left:14px;margin-top:1px">' + sites.length + ' sites</div>' : '')
+      + (sites.length > 0 ? '<div style="font-size:10px;color:var(--ink-soft);margin-left:14px;margin-top:1px">' + sites.length + (sites.length === 1 ? ' site' : ' sites') + '</div>' : '')
       + '</td>'
       + brandCells
       + '<td style="text-align:right;font-size:11px;color:var(--ink-soft)">&pound;' + brandPlan.toLocaleString() + '</td>'
@@ -3818,7 +3818,7 @@ function renderBudgetTracker() {
           + siteCells
           + '<td style="text-align:right;font-size:11px;color:var(--ink-faint);padding:4px 8px">' + (sitePlan > 0 ? '&pound;' + sitePlan.toLocaleString() : '&mdash;') + '</td>'
           + '<td style="text-align:right;font-size:11px;padding:4px 8px">' + (siteActual > 0 ? '&pound;' + siteActual.toLocaleString() : '&mdash;') + '</td>'
-          + '<td style="text-align:right;font-size:11px;' + sVarStyle + ';padding:4px 8px">' + (siteActual > 0 ? (sVar >= 0 ? '+' : '') + '&pound;' + Math.abs(sVar).toLocaleString() : '&mdash;') + '</td>'
+          + '<td style="text-align:right;font-size:11px;' + sVarStyle + ';padding:4px 8px">' + (siteActual > 0 ? '&pound;' + Math.abs(sVar).toLocaleString() + (sVar > 0 ? ' over' : ' under') : '&mdash;') + '</td>'
           + '</tr>';
       });
 
