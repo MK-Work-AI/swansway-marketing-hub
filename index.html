@@ -2706,37 +2706,33 @@ function applyAdminConfig(cfg) {
     if (g.nps)       setEl('group-nps-target',   g.nps);
   }
 
-  // ── 3. UPDATE KPIs — sync all fields from admin into hub GROUP_KPIS ──
+  // ── 3. UPDATE KPIs — only sync target/actual/owner from admin (not narrative fields) ──
   if (cfg.kpis && cfg.kpis.length) {
     cfg.kpis.forEach(function(ak, i) {
       if (i >= GROUP_KPIS.length) return;
       var gk = GROUP_KPIS[i];
-      // Sync all rich fields from admin
-      if (ak.label)  gk.l    = ak.label;
-      if (ak.owner)  gk.o    = ak.owner;
-      if (ak.icon)   gk.icon = ak.icon;
-      if (ak.cat)    gk.cat  = ak.cat;
-      if (ak.def)    gk.def  = ak.def;
-      if (ak.why)    gk.why  = ak.why;
-      if (ak.how)    gk.how  = ak.how;
-      if (ak.bench)  gk.bench = ak.bench;
-      if (ak.split)  gk.split = ak.split;
-      // Format target string from numeric value
-      if (ak.target !== undefined) {
+      // Only sync operational fields — never overwrite def/why/how/bench/split from saved data
+      if (ak.owner && ak.owner !== '--') gk.o = ak.owner;
+      if (ak.icon)  gk.icon = ak.icon;
+      if (ak.cat)   gk.cat  = ak.cat;
+      // Only apply target if it's a real non-zero value
+      if (ak.target && ak.target > 0) {
         var u = ak.unit || '';
         var v = ak.target;
-        if (u === '%')        gk.t = v + '%';
-        else if (u === '£')   gk.t = '£' + v;
+        if (u === '%')         gk.t = v + '%';
+        else if (u === 'GBP' || u === '£') gk.t = '£' + v;
         else if (u === 'mins') gk.t = '< ' + v + ' min';
-        else if (v >= 1000)   gk.t = v.toLocaleString() + (u ? ' ' + u : '');
-        else                  gk.t = v + (u ? ' ' + u : '');
-      }
-      // Update progress from actual vs target
-      if (ak.target > 0) {
+        else if (v >= 1000)    gk.t = v.toLocaleString() + (u ? ' ' + u : '');
+        else                   gk.t = String(v) + (u ? ' ' + u : '');
+        // Progress from actual vs target
         var pct = ak.actual > 0 ? (ak.lowerBetter
           ? Math.max(0, Math.round((2 - ak.actual / ak.target) * 100))
-          : Math.min(100, Math.round(ak.actual / ak.target * 100))) : gk.p;
+          : Math.min(100, Math.round(ak.actual / ak.target * 100))) : 0;
         gk.p = pct;
+      } else {
+        // No real target set — keep as blank/amber
+        gk.t = '--';
+        gk.p = 0;
       }
     });
     if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
