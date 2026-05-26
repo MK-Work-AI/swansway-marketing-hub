@@ -3,6 +3,5 @@
 // After deploying, edit this file directly in GitHub (private repo only)
 // or paste keys here in your local copy.
 window.SWANSWAY_CONFIG = {
-  anthropicKey: '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',
   serviceKey:   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1bWl0enJsZWZseG5sbm9kcGRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTQzOTU1OSwiZXhwIjoyMDk1MDE1NTU5fQ.m8wV9tAaL9_5O5pZ0dtdNn_lsyFpLxFAnJGxbzX71IU'
 };

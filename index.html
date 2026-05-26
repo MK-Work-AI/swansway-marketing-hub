@@ -4631,7 +4631,7 @@ function renderBrandKPIs(brandId) {
 // ── ANTHROPIC API KEY ─────────────────────────────────────────
 // Set this to your Anthropic API key.
 // Keep this file private / use Vercel env vars for production.
-const ANTHROPIC_API_KEY = window.SWANSWAY_CONFIG?.anthropicKey || '';
+const ANTHROPIC_API_KEY = ''; // Key removed — all AI calls go via Vercel proxy
 
 // In-memory cache: brandId → latest plan data
 
