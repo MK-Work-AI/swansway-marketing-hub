@@ -4942,7 +4942,8 @@ function applyAdminKPITargets() {
 }
 
 function updateGroupKPIsFromSites() {
-  if (!Object.keys(SITE_KPIS).length) return;
+  console.log('updateGroupKPIsFromSites: SITE_KPIS has', Object.keys(SITE_KPIS).length, 'sites');
+  if (!Object.keys(SITE_KPIS).length) { console.log('SITE_KPIS empty — skipping'); return; }
   var sites = HUB_SITES;
   // Aggregate across all sites
   var totalUnits = 0, totalUsed = 0, totalLeads = 0;
@@ -5010,6 +5011,7 @@ function updateGroupKPIsFromSites() {
     // Always update actual from site data
     if (d[1]) { kpi.a = d[1]; kpi.p = d[2] || kpi.p; }
   });
+  console.log('updateGroupKPIsFromSites done. GROUP_KPIS[0].t:', GROUP_KPIS[0].t, 'GROUP_KPIS[0].a:', GROUP_KPIS[0].a);
 }
 
 
