@@ -2812,11 +2812,11 @@ function applyAdminConfig(cfg) {
     if (g.nps)       setEl('group-nps-target',   g.nps);
   }
 
-  // ── 3. UPDATE KPIs — only sync target/actual/owner from admin (not narrative fields) ──
+  // ── 3. UPDATE KPIs — match by label (admin has 4 group KPIs, hub has 12) ──
   if (cfg.kpis && cfg.kpis.length) {
-    cfg.kpis.forEach(function(ak, i) {
-      if (i >= GROUP_KPIS.length) return;
-      var gk = GROUP_KPIS[i];
+    cfg.kpis.forEach(function(ak) {
+      var gk = GROUP_KPIS.find(function(k) { return k.l === ak.label; });
+      if (!gk) return;
       var u = ak.unit || gk.unit || '';
       if (ak.owner && ak.owner !== '--' && ak.owner.trim() !== '') gk.o = ak.owner;
       var tVal = parseFloat(ak.target);
