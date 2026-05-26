@@ -2277,12 +2277,12 @@ function renderBrand(b) {
 
     <div class="inner-tabs" id="itabs-${b.id}">
       <button class="inner-tab active" onclick="switchInner('${b.id}','strategy',this)">Strategy</button>
-        <button class="inner-tab" onclick="switchInner('${b.id}','sites',this)">📍 Sites & Budget</button>
+        <button class="inner-tab" onclick="switchInner('${b.id}','sites',this)">Site Budget Breakdown</button>
       ${b.centres.length>0?`<button class="inner-tab" onclick="switchInner('${b.id}','centres',this)">Centres (${b.centres.length})</button>`:''}
       <button class="inner-tab" onclick="switchInner('${b.id}','campaigns',this)">Campaigns</button>
       <button class="inner-tab" onclick="switchInner('${b.id}','audiences',this)">Audiences</button>
-      <button class="inner-tab" onclick="switchInner('${b.id}','budget',this)">Budget</button>
-      <button class="inner-tab" onclick="switchInner('${b.id}','kpis',this)">KPIs</button>
+      <button class="inner-tab" onclick="switchInner('${b.id}','budget',this)">Channel Mix</button>
+      <button class="inner-tab" onclick="switchInner('${b.id}','kpis',this)">KPI Framework by Site</button>
       <button class="inner-tab" id="qplan-tab-${b.id}" onclick="switchInner('${b.id}','qplan',this)" style="border-color:var(--accent);color:var(--accent)">📋 Q-Plan</button>
     </div>
 
