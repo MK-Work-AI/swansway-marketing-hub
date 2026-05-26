@@ -2354,6 +2354,9 @@ function renderBrand(b) {
 }
 
 function switchInner(brandId, secId, el) {
+  console.log('switchInner:', brandId, secId);
+  var targetEl = document.getElementById(brandId+'-'+secId);
+  console.log('target element:', targetEl ? 'found' : 'NOT FOUND');
   document.querySelectorAll(`#itabs-${brandId} .inner-tab`).forEach(t=>t.classList.remove('active'));
   document.querySelectorAll(`#${brandId}-content .inner-section`).forEach(s=>s.classList.remove('active'));
   el.classList.add('active');
