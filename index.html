@@ -2760,6 +2760,9 @@ function loadAdminConfig() {
 function applyAdminConfig(cfg) {
   if (!cfg) return;
   console.log('Applying admin config to hub...');
+  console.log('cfg keys:', Object.keys(cfg).join(','));
+  var kpisInfo = cfg.kpis ? (cfg.kpis.length + ' items, first target=' + (cfg.kpis[0] && cfg.kpis[0].target)) : 'MISSING';
+  console.log('cfg.kpis:', kpisInfo);
 
   // ── 1. UPDATE BRANDS ARRAY (used everywhere in hub) ──────────
   if (cfg.brands && cfg.brands.length) {
