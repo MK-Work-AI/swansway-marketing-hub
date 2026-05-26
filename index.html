@@ -4100,7 +4100,10 @@ async function competitorScan() {
     if (!rawText) throw new Error('Empty response from proxy');
     var data;
     try { data = JSON.parse(rawText); } catch(e) { throw new Error('Non-JSON response: ' + rawText.substring(0, 200)); }
-    if (data.error) throw new Error('API error: ' + data.error);
+    if (data.error) {
+      var errMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+      throw new Error('API error: ' + errMsg);
+    }
 
     // Extract text from content blocks (may include tool_use blocks)
     var raw = '';
