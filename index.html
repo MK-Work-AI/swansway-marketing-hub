@@ -2364,7 +2364,10 @@ function switchInner(brandId, secId, el) {
   if(secId === 'centres')   { setTimeout(function(){ if(typeof renderBrandCentres==='function') renderBrandCentres(brandId); }, 50); }
   if(secId === 'sites') { setTimeout(function(){ if(typeof renderBrandSites==='function') renderBrandSites(brandId); }, 50); }
   if(secId === 'kpis') { setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(brandId);  }, 50); }
-  document.getElementById(brandId+'-'+secId).classList.add('active');
+  var sec = document.getElementById(brandId+'-'+secId);
+  sec.classList.add('active');
+  console.log('active classes on sections:', Array.from(document.querySelectorAll('#'+brandId+'-content .inner-section')).map(function(s){return s.id+':'+s.classList.contains('active');}));
+  console.log('sec display:', window.getComputedStyle(sec).display);
 }
 
 /* ── RENDER GROUP BRAND CARDS ── */
