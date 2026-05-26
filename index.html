@@ -4083,36 +4083,74 @@ async function competitorScan() {
       '}',
     ].join('\n');
 
-    var reqBody = JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 3000,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{ role: 'user', content: prompt }]
-    });
-
-    var resp = await fetch(proxyUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: reqBody
-    });
-
-    var rawText = await resp.text();
-    if (!rawText) throw new Error('Empty response from proxy');
-    var data;
-    try { data = JSON.parse(rawText); } catch(e) { throw new Error('Non-JSON response: ' + rawText.substring(0, 200)); }
-    if (data.error) {
-      var errMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
-      throw new Error('API error: ' + errMsg);
-    }
-
-    // Extract text from content blocks (may include tool_use blocks)
+    // Use multi-turn loop to handle web search tool calls
+    var messages = [{ role: 'user', content: prompt }];
     var raw = '';
-    if (data.content && Array.isArray(data.content)) {
-      data.content.forEach(function(block) {
-        if (block.type === 'text') raw += block.text;
+    var maxTurns = 8; // Max tool call rounds
+
+    for (var turn = 0; turn < maxTurns; turn++) {
+      var reqBody = JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: messages
       });
+
+      var resp = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: reqBody
+      });
+
+      var rawText = await resp.text();
+      if (!rawText) throw new Error('Empty response from proxy');
+      var data;
+      try { data = JSON.parse(rawText); } catch(e) { throw new Error('Non-JSON: ' + rawText.substring(0, 200)); }
+      if (data.error) {
+        var errMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+        throw new Error('API error: ' + errMsg);
+      }
+
+      // Add assistant response to messages
+      messages.push({ role: 'assistant', content: data.content });
+
+      // If stop reason is end_turn, we have the final response
+      if (data.stop_reason === 'end_turn') {
+        data.content.forEach(function(block) {
+          if (block.type === 'text') raw += block.text;
+        });
+        break;
+      }
+
+      // If tool_use, collect tool results and send back
+      if (data.stop_reason === 'tool_use') {
+        var toolResults = [];
+        data.content.forEach(function(block) {
+          if (block.type === 'tool_use') {
+            // web_search results come back in the block
+            toolResults.push({
+              type: 'tool_result',
+              tool_use_id: block.id,
+              content: block.input ? JSON.stringify(block.input) : 'Search completed'
+            });
+          }
+          if (block.type === 'text') raw += block.text;
+        });
+        if (toolResults.length > 0) {
+          messages.push({ role: 'user', content: toolResults });
+        } else {
+          break; // No tool results to send, exit loop
+        }
+      } else {
+        // Unknown stop reason, extract any text and exit
+        data.content.forEach(function(block) {
+          if (block.type === 'text') raw += block.text;
+        });
+        break;
+      }
     }
-    if (!raw) throw new Error('No text content in response');
+
+    if (!raw) throw new Error('No text content after ' + maxTurns + ' turns');
 
     // Parse JSON from response
     var match = raw.match(/\{[\s\S]*\}/);
