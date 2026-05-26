@@ -2755,6 +2755,7 @@ function loadAdminConfig() {
 
 function applyAdminConfig(cfg) {
   if (!cfg) return;
+  window._lastAdminCfg = cfg;  // Cache for re-application
   console.log('Applying admin config to hub...');
 
   // ── 1. UPDATE BRANDS ARRAY (used everywhere in hub) ──────────
@@ -4544,7 +4545,13 @@ var _origSVNew = switchView;
 switchView = function(id, el) {
   _origSVNew(id, el);
   if (id === 'crosscal')   { setTimeout(calInit, 100); }
-  if (id === 'kpis')       { setTimeout(function(){ renderGroupKPIs(); console.log('KPIs rendered, cards:', GROUP_KPIS.length); }, 200); }
+  if (id === 'kpis') {
+    setTimeout(function() {
+      if (typeof updateGroupKPIsFromSites === 'function') updateGroupKPIsFromSites();
+      if (typeof applyAdminKPITargets === 'function') applyAdminKPITargets();
+      renderGroupKPIs();
+    }, 200);
+  }
   if (id === 'budget')     { setTimeout(renderBudgetTracker, 100); }
   if (id === 'autopsy')    { renderAutopsyList(); }
   if (id === 'competitor') { updateCompetitorMetrics(); }
@@ -4913,6 +4920,25 @@ async function loadSiteKPIs() {
     if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
     console.log('Site KPIs loaded: ' + rows.length + ' sites');
   } catch(e) { console.warn('loadSiteKPIs exception:', e); }
+}
+
+function applyAdminKPITargets() {
+  // Re-apply saved admin KPI targets to GROUP_KPIS (targets only, not actuals)
+  if (!window._lastAdminCfg || !window._lastAdminCfg.kpis) return;
+  window._lastAdminCfg.kpis.forEach(function(ak, i) {
+    if (i >= GROUP_KPIS.length) return;
+    var gk = GROUP_KPIS[i];
+    var tVal = parseFloat(ak.target);
+    if (!isNaN(tVal) && tVal > 0) {
+      var u = ak.unit || gk.unit || '';
+      if (u === '%')         gk.t = tVal + '%';
+      else if (u === 'GBP')  gk.t = '£' + tVal.toLocaleString();
+      else if (u === 'mins') gk.t = '< ' + tVal + ' min';
+      else if (tVal >= 1000) gk.t = tVal.toLocaleString();
+      else                   gk.t = String(tVal);
+    }
+    if (ak.owner && ak.owner !== '--') gk.o = ak.owner;
+  });
 }
 
 function updateGroupKPIsFromSites() {
