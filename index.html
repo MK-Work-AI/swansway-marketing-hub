@@ -2812,9 +2812,42 @@ function applyAdminConfig(cfg) {
     if (g.nps)       setEl('group-nps-target',   g.nps);
   }
 
-  // ── 3. UPDATE KPIs — disabled, all KPIs now come from site_kpis aggregation ──
-  // The 4 group-only KPIs (AutoTrader, Fleet, Social, Co-op) are entered directly
-  // in the hub KPI cards via future inline editing — not from admin config
+  // ── 3. UPDATE KPIs — only 4 group-only KPIs from admin, rest from site data ──
+  var ADMIN_ONLY_KPI_LABELS = [
+    'AutoTrader response time',
+    'Fleet accounts active',
+    'Social media follower growth',
+    'Manufacturer co-op utilisation'
+  ];
+  if (cfg.kpis && cfg.kpis.length) {
+    cfg.kpis.forEach(function(ak) {
+      if (!ak.label) return;
+      if (ADMIN_ONLY_KPI_LABELS.indexOf(ak.label) === -1) return; // ignore everything else
+      var gk = GROUP_KPIS.find(function(k) { return k.l === ak.label; });
+      if (!gk) return;
+      var u = ak.unit || gk.unit || '';
+      if (ak.owner && ak.owner !== '--') gk.o = ak.owner;
+      var tVal = parseFloat(ak.target);
+      var aVal = parseFloat(ak.actual);
+      if (!isNaN(tVal) && tVal > 0) {
+        if (u === '%')         gk.t = tVal + '%';
+        else if (u === 'mins') gk.t = '< ' + tVal + ' min';
+        else if (tVal >= 1000) gk.t = tVal.toLocaleString();
+        else                   gk.t = String(tVal);
+      }
+      if (!isNaN(aVal) && aVal > 0) {
+        if (u === '%')         gk.a = aVal + '%';
+        else if (u === 'mins') gk.a = aVal + ' min';
+        else if (aVal >= 1000) gk.a = aVal.toLocaleString();
+        else                   gk.a = String(aVal);
+        gk.p = (!isNaN(tVal) && tVal > 0) ? (ak.lowerBetter
+          ? Math.max(0, Math.round((2 - aVal/tVal)*100))
+          : Math.min(100, Math.round(aVal/tVal*100))) : 0;
+        gk.lowerBetter = ak.lowerBetter || false;
+      }
+    });
+    if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
+  }
 
 // ── 4. UPDATE CHANNELS ────────────────────────────────────────
   if (cfg.channels && cfg.channels.length) {
@@ -4516,7 +4549,7 @@ switchView = function(id, el) {
   if (id === 'kpis') {
     setTimeout(function() {
       if (typeof updateGroupKPIsFromSites === 'function') updateGroupKPIsFromSites();
-      // applyAdminKPITargets disabled
+      if (typeof applyAdminKPITargets === 'function') applyAdminKPITargets();
       renderGroupKPIs();
     }, 1000);
   }
@@ -5059,7 +5092,7 @@ async function loadSiteKPIs() {
     // Re-render KPIs if that view is currently active
     var kpiView = document.getElementById('view-kpis');
     if (kpiView && kpiView.classList.contains('active')) {
-      // applyAdminKPITargets disabled
+      if (typeof applyAdminKPITargets === 'function') applyAdminKPITargets();
       if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
     }
     console.log('Site KPIs loaded: ' + rows.length + ' sites');
@@ -5067,11 +5100,12 @@ async function loadSiteKPIs() {
 }
 
 function applyAdminKPITargets() {
-  // Re-apply saved admin KPI targets to GROUP_KPIS (targets only, not actuals)
   if (!window._lastAdminCfg || !window._lastAdminCfg.kpis) return;
-  window._lastAdminCfg.kpis.forEach(function(ak, i) {
-    if (i >= GROUP_KPIS.length) return;
-    var gk = GROUP_KPIS[i];
+  var ADMIN_ONLY = ['AutoTrader response time','Fleet accounts active','Social media follower growth','Manufacturer co-op utilisation'];
+  window._lastAdminCfg.kpis.forEach(function(ak) {
+    if (!ak.label || ADMIN_ONLY.indexOf(ak.label) === -1) return;
+    var gk = GROUP_KPIS.find(function(k) { return k.l === ak.label; });
+    if (!gk) return;
     var tVal = parseFloat(ak.target);
     if (!isNaN(tVal) && tVal > 0) {
       var u = ak.unit || gk.unit || '';
