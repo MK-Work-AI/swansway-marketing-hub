@@ -2368,7 +2368,7 @@ function renderBrand(b) {
     if (typeof renderBrandCentres === 'function')     renderBrandCentres(b.id);
     if (typeof renderBrandCampaigns === 'function')   renderBrandCampaigns(b.id);
     if (typeof renderBrandKPIs === 'function')         renderBrandKPIs(b.id);
-    if (typeof renderBrandChannelMix === 'function')  renderBrandChannelMix(b.id);
+    // renderBrandChannelMix called on tab click or data load
   }, 150);
 }
 
@@ -2378,7 +2378,7 @@ function switchInner(brandId, secId, el) {
   el.classList.add('active');
   if(secId === 'campaigns') { setTimeout(function(){ if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(brandId); }, 50); }
   if(secId === 'centres')   { setTimeout(function(){ if(typeof renderBrandCentres==='function') renderBrandCentres(brandId); }, 50); }
-  if(secId === 'budget')    { setTimeout(function(){ if(typeof renderBrandChannelMix==='function') renderBrandChannelMix(brandId); }, 50); }
+  if(secId === 'budget')    { setTimeout(function(){ if(typeof renderBrandChannelMix==='function') renderBrandChannelMix(brandId); }, 300); }
   if(secId === 'sites') { setTimeout(function(){ if(typeof renderBrandSites==='function') renderBrandSites(brandId); }, 50); }
   if(secId === 'kpis') { setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(brandId);  }, 50); }
   var sec = document.getElementById(brandId+'-'+secId);
@@ -5362,12 +5362,11 @@ async function loadBrandChannels() {
       BRAND_CHANNELS_DATA[row.brand_id].push(row);
     });
     updateGroupChannelsFromBrands();
-    // Re-render any open brand channel mix tab
-    var activeBrand = document.querySelector('.bnav-btn.active');
-    if (activeBrand && activeBrand.dataset.view) {
-      var bid = activeBrand.dataset.view;
-      if (typeof renderBrandChannelMix === 'function') renderBrandChannelMix(bid);
-    }
+    // Re-render all brand channel mix divs that exist in DOM
+    Object.keys(BRAND_CHANNELS_DATA).forEach(function(bid) {
+      var el = document.getElementById(bid + '-budget');
+      if (el && typeof renderBrandChannelMix === 'function') renderBrandChannelMix(bid);
+    });
     // Re-render group channels if that view is open
     var chanView = document.getElementById('view-channels');
     if (chanView && chanView.classList.contains('active')) {
