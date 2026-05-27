@@ -1401,54 +1401,6 @@ function collectChannelForm() {
 /* ══════════════════════════════════════════
    KPI EDITOR
 ══════════════════════════════════════════ */
-function renderKPIEditor() {
-  const container = document.getElementById('group-kpi-tbody');
-  if (!container) return;
-  container.innerHTML = '';
-  STATE.kpis.forEach(function(k, i) {
-    const pct = k.target > 0 ? Math.round(k.actual / k.target * 100) : 0;
-    const status = k.lowerBetter
-      ? (k.actual === 0 ? 'Not set' : k.actual <= k.target ? 'On track' : k.actual <= k.target * 1.2 ? 'At risk' : 'Off track')
-      : (k.actual === 0 ? 'Not set' : pct >= 100 ? 'On track' : pct >= 80 ? 'At risk' : 'Off track');
-    const statusColor = status === 'On track' ? '#15803D' : status === 'At risk' ? '#D97706' : status === 'Off track' ? '#DC2626' : '#6B7280';
-
-    const tr = document.createElement('tr');
-    tr.style.cssText = 'cursor:pointer';
-    tr.innerHTML = '<td style="font-weight:600;font-size:12px">' + (k.icon || '📊') + ' ' + k.label + '</td>'
-      + '<td><input type="number" class="editable" value="' + (k.target||0) + '" oninput="STATE.kpis[' + i + '].target=parseFloat(this.value)||0;autoSave()" style="width:80px" id="kpi-t-' + i + '"></td>'
-      + '<td><input type="number" class="editable" value="' + (k.actual||0) + '" oninput="STATE.kpis[' + i + '].actual=parseFloat(this.value)||0;autoSave()" style="width:80px;border-color:var(--sw)" id="kpi-a-' + i + '"></td>'
-      + '<td><div class="prog-bar-wrap" style="width:80px;display:inline-block"><div class="prog-bar" style="width:' + Math.min(pct,100) + '%;background:var(--sw)" id="kpi-bar-' + i + '"></div></div> <span id="kpi-pct-' + i + '">' + pct + '%</span></td>'
-      + '<td><span style="font-size:11px;font-weight:600;color:' + statusColor + '">' + status + '</span></td>'
-      + '<td><button class="btn btn-sm" onclick="toggleKPIDetail(' + i + ')" style="font-size:10px">✏ Details</button></td>'
-      + '<td><button class="remove-btn" onclick="removeKPI(' + i + ')">×</button></td>';
-
-    // Detail expansion row
-    const detailTr = document.createElement('tr');
-    detailTr.id = 'kpi-detail-' + i;
-    detailTr.style.display = 'none';
-    detailTr.innerHTML = '<td colspan="7" style="padding:0 0 12px 0">'
-      + '<div style="background:var(--surface);border-radius:4px;padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px">'
-      + '<div class="form-group"><label class="form-label">Icon & Category</label>'
-      + '<div style="display:flex;gap:8px"><input class="form-input" value="' + (k.icon||'📊') + '" oninput="STATE.kpis[' + i + '].icon=this.value;autoSave()" style="width:60px" placeholder="icon">'
-      + '<input class="form-input" value="' + (k.cat||'') + '" oninput="STATE.kpis[' + i + '].cat=this.value;autoSave()" placeholder="Category e.g. Volume"></div></div>'
-      + '<div class="form-group"><label class="form-label">Owner</label>'
-      + '<input class="form-input" value="' + (k.owner||'') + '" oninput="STATE.kpis[' + i + '].owner=this.value;autoSave()"></div>'
-      + '<div class="form-group" style="grid-column:1/-1"><label class="form-label">Definition — what this KPI measures</label>'
-      + '<textarea class="form-textarea" rows="2" oninput="STATE.kpis[' + i + '].def=this.value;autoSave()">' + (k.def||'') + '</textarea></div>'
-      + '<div class="form-group"><label class="form-label">Why it matters</label>'
-      + '<textarea class="form-textarea" rows="3" oninput="STATE.kpis[' + i + '].why=this.value;autoSave()">' + (k.why||'') + '</textarea></div>'
-      + '<div class="form-group"><label class="form-label">How it is measured</label>'
-      + '<textarea class="form-textarea" rows="3" oninput="STATE.kpis[' + i + '].how=this.value;autoSave()">' + (k.how||'') + '</textarea></div>'
-      + '<div class="form-group"><label class="form-label">Benchmark / context</label>'
-      + '<textarea class="form-textarea" rows="2" oninput="STATE.kpis[' + i + '].bench=this.value;autoSave()">' + (k.bench||'') + '</textarea></div>'
-      + '<div class="form-group"><label class="form-label">Split / breakdown</label>'
-      + '<textarea class="form-textarea" rows="2" oninput="STATE.kpis[' + i + '].split=this.value;autoSave()">' + (k.split||'') + '</textarea></div>'
-      + '</div></td>';
-
-    container.appendChild(tr);
-    container.appendChild(detailTr);
-  });
-}
 
 function toggleKPIDetail(i) {
   const row = document.getElementById('kpi-detail-' + i);
