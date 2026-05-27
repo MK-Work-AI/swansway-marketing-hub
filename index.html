@@ -2812,13 +2812,8 @@ function applyAdminConfig(cfg) {
     if (g.nps)       setEl('group-nps-target',   g.nps);
   }
 
-  // ── 3. UPDATE KPIs — only 4 group-only KPIs from admin, rest from site data ──
-  var ADMIN_ONLY_KPI_LABELS = [
-    'AutoTrader response time',
-    'Fleet accounts active',
-    'Social media follower growth',
-    'Manufacturer co-op utilisation'
-  ];
+  // ── 3. UPDATE KPIs — admin config KPIs retired; all now from site_kpis + brand_kpis ──
+  var ADMIN_ONLY_KPI_LABELS = []; // All KPIs now from site_kpis and brand_kpis
   if (cfg.kpis && cfg.kpis.length) {
     cfg.kpis.forEach(function(ak) {
       if (!ak.label) return;
@@ -2922,6 +2917,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadSiteBudgets();
   loadSiteKPIs();
   loadSiteContacts();
+  loadBrandKPIs();
   syncBrandSitesFromHubSites();
   renderGroupBrandCards();
   renderGroupCalendar();
@@ -5285,6 +5281,66 @@ async function loadSiteContacts() {
       if (bid && typeof renderBrandCentres === 'function') renderBrandCentres(bid);
     }
   } catch(e) { console.warn('loadSiteContacts error:', e); }
+}
+
+
+/* ════ BRAND KPIs — HUB ════ */
+var BRAND_KPIS_DATA = {};  // brand_id -> row
+
+async function loadBrandKPIs() {
+  try {
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/brand_kpis?select=*', {
+      headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY}
+    });
+    if (!resp.ok) return;
+    var rows = await resp.json();
+    rows.forEach(function(row) { BRAND_KPIS_DATA[row.brand_id] = row; });
+    updateGroupKPIsFromBrands();
+    if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
+    console.log('Brand KPIs loaded: ' + rows.length + ' brands');
+  } catch(e) { console.warn('loadBrandKPIs error:', e); }
+}
+
+function updateGroupKPIsFromBrands() {
+  if (!Object.keys(BRAND_KPIS_DATA).length) return;
+  var brands = Object.values(BRAND_KPIS_DATA);
+
+  // Co-op utilisation — total claimed / total available across all brands
+  var coopAvail = 0, coopClaimed = 0;
+  var fleetTotal = 0, fleetTarget = 0;
+  var socialTotal = 0, socialTarget = 0;
+  var atResponses = [], atTargets = [];
+
+  brands.forEach(function(b) {
+    coopAvail   += b.coop_available || 0;
+    coopClaimed += b.coop_claimed   || 0;
+    fleetTotal  += b.fleet_actual   || 0;
+    fleetTarget += b.fleet_target   || 0;
+    socialTotal += b.social_followers || 0;
+    socialTarget += b.social_target  || 0;
+    if (b.autotrader_response_actual > 0) atResponses.push(b.autotrader_response_actual);
+    if (b.autotrader_response_target > 0) atTargets.push(b.autotrader_response_target);
+  });
+
+  var coopPct = coopAvail > 0 ? Math.round(coopClaimed / coopAvail * 100) : 0;
+  var coopTgt = coopAvail > 0 ? 90 : 0; // default 90% utilisation target
+  var atActual = atResponses.length ? Math.round(atResponses.reduce(function(a,b){return a+b;},0) / atResponses.length * 10) / 10 : 0;
+  var atTarget = atTargets.length ? Math.round(atTargets.reduce(function(a,b){return a+b;},0) / atTargets.length * 10) / 10 : 0;
+  var socialGrowthPct = socialTarget > 0 && socialTotal > 0 ? Math.round((socialTarget - socialTotal) / socialTotal * 100) : 0;
+
+  var LABEL_MAP = {
+    'AutoTrader response time':       {t: atTarget > 0 ? '< ' + atTarget + ' min' : null, a: atActual > 0 ? atActual + ' min' : null, p: atTarget > 0 && atActual > 0 ? Math.max(0, Math.round((2 - atActual/atTarget)*100)) : 0},
+    'Fleet accounts active':          {t: fleetTarget > 0 ? fleetTarget.toLocaleString() : null, a: fleetTotal > 0 ? fleetTotal.toLocaleString() : null, p: fleetTarget > 0 ? Math.min(100, Math.round(fleetTotal/fleetTarget*100)) : 0},
+    'Social media follower growth':   {t: socialGrowthPct > 0 ? '+' + socialGrowthPct + '%' : null, a: socialTotal > 0 ? socialTotal.toLocaleString() + ' followers' : null, p: 0},
+    'Manufacturer co-op utilisation': {t: coopTgt > 0 ? coopTgt + '%' : null, a: coopPct > 0 ? coopPct + '%' : null, p: Math.min(100, coopPct)},
+  };
+
+  GROUP_KPIS.forEach(function(kpi) {
+    var m = LABEL_MAP[kpi.l];
+    if (!m) return;
+    if (m.t) kpi.t = m.t;
+    if (m.a) { kpi.a = m.a; kpi.p = m.p; }
+  });
 }
 
 const QPLAN_CACHE = {};

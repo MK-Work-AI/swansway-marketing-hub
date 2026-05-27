@@ -247,6 +247,7 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
     <button class="snav" onclick="showPage('sitebudgets',this)">💷 Site Budgets</button>
     <button class="snav" onclick="showPage('sitekpis',this)">📊 Site KPIs</button>
     <button class="snav" onclick="showPage('sitecontacts',this)">📋 Site Directory</button>
+    <button class="snav" onclick="showPage('brandkpis',this)">📈 Brand KPIs</button>
     <button class="snav" onclick="showPage('history',this)">🕐 History</button>
     <button class="snav" onclick="showPage('security',this)">🔒 Security</button>
     <button class="snav" onclick="showPage('data',this)">💾 Data & Export</button>
@@ -490,6 +491,25 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
       </div>
       <div class="card-body" style="padding:0">
         <div id="sc-content"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ BRAND KPIs ══ -->
+  <div class="page" id="page-brandkpis">
+    <div class="page-title">Brand KPIs</div>
+    <div class="page-sub">Co-op utilisation, fleet accounts, social media and AutoTrader response per brand</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:1.5rem" id="bk-brand-tabs">
+      <button class="cal-q-tab" id="bk-tab-audi" onclick="bkSelectBrand('audi')">Audi</button><button class="cal-q-tab" id="bk-tab-vw" onclick="bkSelectBrand('vw')">Volkswagen</button><button class="cal-q-tab" id="bk-tab-vwcv" onclick="bkSelectBrand('vwcv')">VW Commercial</button><button class="cal-q-tab" id="bk-tab-seat" onclick="bkSelectBrand('seat')">SEAT</button><button class="cal-q-tab" id="bk-tab-cupra" onclick="bkSelectBrand('cupra')">CUPRA</button><button class="cal-q-tab" id="bk-tab-landrover" onclick="bkSelectBrand('landrover')">Land Rover</button><button class="cal-q-tab" id="bk-tab-jaguar" onclick="bkSelectBrand('jaguar')">Jaguar</button><button class="cal-q-tab" id="bk-tab-honda" onclick="bkSelectBrand('honda')">Honda</button><button class="cal-q-tab" id="bk-tab-peugeot" onclick="bkSelectBrand('peugeot')">Peugeot</button><button class="cal-q-tab" id="bk-tab-byd" onclick="bkSelectBrand('byd')">BYD</button><button class="cal-q-tab" id="bk-tab-omoda" onclick="bkSelectBrand('omoda')">OMODA/JAECOO</button><button class="cal-q-tab" id="bk-tab-motormatch" onclick="bkSelectBrand('motormatch')">Motor Match</button>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" id="bk-brand-title">Select a brand above</div>
+        <button class="btn btn-primary" onclick="bkSave()">&#10003; Save</button>
+      </div>
+      <div class="card-body">
+        <div id="bk-content"></div>
       </div>
     </div>
   </div>
@@ -1003,6 +1023,7 @@ function showPage(id, el) {
   if(id === 'sitebudgets') { sbLoad(); sbSelectBrand(SB_CURRENT_BRAND); }
   if(id === 'sitekpis')      { skLoad(); skSelectBrand(SK_CURRENT_BRAND); }
   if(id === 'sitecontacts')  { scLoad(); scSelectBrand(SC_CURRENT_BRAND); }
+  if(id === 'brandkpis')     { bkLoad(); bkSelectBrand(BK_CURRENT_BRAND); }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.snav').forEach(s=>s.classList.remove('active'));
   const page = document.getElementById('page-'+id);
@@ -2538,6 +2559,141 @@ async function scSave() {
     });
     if (!resp.ok) throw new Error(await resp.text());
     showToast('\u2713 Site directory saved', 'success');
+  } catch(e) { showToast('Save error: ' + e.message, 'error'); }
+}
+
+
+
+/* ════ BRAND KPIs ════ */
+var BK_DATA = {};
+var BK_CURRENT_BRAND = 'audi';
+var BK_BRAND_NAMES = {"audi": "Audi", "vw": "Volkswagen", "vwcv": "VW Commercial", "seat": "SEAT", "cupra": "CUPRA", "landrover": "Land Rover", "jaguar": "Jaguar", "honda": "Honda", "peugeot": "Peugeot", "byd": "BYD", "omoda": "OMODA/JAECOO", "motormatch": "Motor Match"};
+var BK_API_URL = SB_ADMIN_URL + '/rest/v1/brand_kpis';
+
+var BK_FIELDS = [
+  {section:'Manufacturer Co-op', fields:[
+    {key:'coop_available', label:'Co-op available (£)', type:'number', hint:'Total £ allocated by manufacturer for 2026'},
+    {key:'coop_claimed',   label:'Co-op claimed (£)',  type:'number', hint:'£ actually claimed and deployed YTD'},
+  ]},
+  {section:'Fleet & B2B', fields:[
+    {key:'fleet_target', label:'Fleet accounts target', type:'number', hint:'Active fleet accounts target for 2026'},
+    {key:'fleet_actual', label:'Fleet accounts actual', type:'number', hint:'Active fleet accounts YTD'},
+  ]},
+  {section:'Social Media', fields:[
+    {key:'social_followers', label:'Current followers',  type:'number', hint:'Combined followers across all social channels'},
+    {key:'social_target',    label:'Year-end target',    type:'number', hint:'Follower count target by Dec 2026'},
+  ]},
+  {section:'AutoTrader Response Time', fields:[
+    {key:'autotrader_response_target', label:'Target (mins)', type:'number', hint:'Target response time in minutes'},
+    {key:'autotrader_response_actual', label:'Actual (mins)', type:'number', hint:'Current average response time in minutes'},
+  ]},
+];
+
+function bkSelectBrand(brandId) {
+  BK_CURRENT_BRAND = brandId;
+  document.querySelectorAll('[id^="bk-tab-"]').forEach(function(t) {
+    t.className = 'cal-q-tab' + (t.id === 'bk-tab-' + brandId ? ' active' : '');
+  });
+  var el = document.getElementById('bk-brand-title');
+  if (el) el.textContent = BK_BRAND_NAMES[brandId] + ' — Brand KPIs';
+  bkRenderContent(brandId);
+}
+
+function bkRenderContent(brandId) {
+  var el = document.getElementById('bk-content');
+  if (!el) return;
+  var d = BK_DATA[brandId] || {};
+  el.innerHTML = '';
+
+  BK_FIELDS.forEach(function(section) {
+    var secDiv = document.createElement('div');
+    secDiv.style.cssText = 'margin-bottom:1.5rem';
+    var secLbl = document.createElement('div');
+    secLbl.style.cssText = 'font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)';
+    secLbl.textContent = section.section;
+    secDiv.appendChild(secLbl);
+    var grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:12px';
+    section.fields.forEach(function(f) {
+      var wrap = document.createElement('div');
+      var lbl = document.createElement('label');
+      lbl.style.cssText = 'font-size:11px;color:var(--ink-soft);display:block;margin-bottom:4px;font-weight:600';
+      lbl.textContent = f.label;
+      var hint = document.createElement('div');
+      hint.style.cssText = 'font-size:10px;color:var(--ink-faint);margin-bottom:4px';
+      hint.textContent = f.hint;
+      var inp = document.createElement('input');
+      inp.type = f.type || 'text';
+      inp.min = '0';
+      inp.value = d[f.key] || '';
+      inp.placeholder = '0';
+      inp.style.cssText = 'width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:3px;font-size:13px;font-family:var(--font-m);box-sizing:border-box';
+      inp.dataset.brandId = brandId;
+      inp.dataset.field = f.key;
+      inp.addEventListener('input', function() {
+        if (!BK_DATA[this.dataset.brandId]) BK_DATA[this.dataset.brandId] = {};
+        BK_DATA[this.dataset.brandId][this.dataset.field] = parseFloat(this.value) || 0;
+      });
+      wrap.appendChild(lbl); wrap.appendChild(hint); wrap.appendChild(inp);
+      grid.appendChild(wrap);
+    });
+    secDiv.appendChild(grid);
+    el.appendChild(secDiv);
+  });
+
+  // Co-op utilisation summary
+  var avail = parseFloat(d.coop_available) || 0;
+  var claimed = parseFloat(d.coop_claimed) || 0;
+  if (avail > 0) {
+    var pct = Math.round(claimed / avail * 100);
+    var summary = document.createElement('div');
+    summary.style.cssText = 'background:var(--surface);border-radius:4px;padding:12px 16px;font-size:13px;margin-top:1rem';
+    summary.innerHTML = '<strong>Co-op utilisation:</strong> ' + pct + '% (£' + claimed.toLocaleString() + ' of £' + avail.toLocaleString() + ')';
+    el.appendChild(summary);
+  }
+}
+
+async function bkLoad() {
+  var svcKey = window.SWANSWAY_CONFIG && window.SWANSWAY_CONFIG.serviceKey;
+  if (!svcKey) return;
+  try {
+    var resp = await fetch(BK_API_URL + '?select=*', {
+      headers: {'apikey': svcKey, 'Authorization': 'Bearer ' + svcKey}
+    });
+    if (!resp.ok) return;
+    var rows = await resp.json();
+    rows.forEach(function(row) { BK_DATA[row.brand_id] = row; });
+    console.log('Brand KPIs loaded: ' + rows.length);
+    bkRenderContent(BK_CURRENT_BRAND);
+  } catch(e) { console.warn('bkLoad error:', e); }
+}
+
+async function bkSave() {
+  var svcKey = window.SWANSWAY_CONFIG && window.SWANSWAY_CONFIG.serviceKey;
+  if (!svcKey) { showToast('No service key', 'error'); return; }
+  var brandId = BK_CURRENT_BRAND;
+  var d = BK_DATA[brandId] || {};
+  var row = {
+    brand_id: brandId,
+    brand_name: BK_BRAND_NAMES[brandId],
+    coop_available: d.coop_available || 0,
+    coop_claimed:   d.coop_claimed   || 0,
+    fleet_target:   d.fleet_target   || 0,
+    fleet_actual:   d.fleet_actual   || 0,
+    social_followers: d.social_followers || 0,
+    social_target:    d.social_target    || 0,
+    autotrader_response_target: d.autotrader_response_target || 0,
+    autotrader_response_actual: d.autotrader_response_actual || 0,
+    updated_at: new Date().toISOString()
+  };
+  try {
+    var resp = await fetch(BK_API_URL + '?on_conflict=brand_id', {
+      method: 'POST',
+      headers: {'apikey': svcKey, 'Authorization': 'Bearer ' + svcKey, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates'},
+      body: JSON.stringify([row])
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    showToast('\u2713 Brand KPIs saved', 'success');
   } catch(e) { showToast('Save error: ' + e.message, 'error'); }
 }
 
