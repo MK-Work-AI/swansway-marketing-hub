@@ -2422,6 +2422,7 @@ function renderGroupChannels() {
   if (!g) return;
   // Always re-aggregate from brand data before rendering
   if (typeof updateGroupChannelsFromBrands === 'function') updateGroupChannelsFromBrands();
+  console.log('renderGroupChannels: GROUP_CHANNELS=', GROUP_CHANNELS.length, 'BRAND_CHANNELS_DATA brands=', Object.keys(BRAND_CHANNELS_DATA).length);
   // If still no data, show empty state
   if (!GROUP_CHANNELS || !GROUP_CHANNELS.length) {
     g.innerHTML = '<div style="padding:24px;text-align:center;color:var(--ink-faint);font-size:13px">No channel data yet. Set brand channel mixes in Admin → Brand Channels.</div>';
@@ -5381,7 +5382,8 @@ async function loadBrandChannels() {
 
 function updateGroupChannelsFromBrands() {
   // Aggregate all brand channel spend into group channel totals
-  if (!Object.keys(BRAND_CHANNELS_DATA).length) return;
+  console.log('updateGroupChannelsFromBrands: brands=', Object.keys(BRAND_CHANNELS_DATA).length, 'sites=', Object.keys(SITE_BUDGETS).length);
+  if (!Object.keys(BRAND_CHANNELS_DATA).length) { console.log('No brand channel data yet'); return; }
   var channelTotals = {};  // channel name -> {total_gbp, color}
 
   HUB_SITES && HUB_SITES.forEach ? null : null; // ensure HUB_SITES exists
@@ -8900,6 +8902,7 @@ function renderGroupChannels() {
   if (!g) return;
   // Always re-aggregate from brand data before rendering
   if (typeof updateGroupChannelsFromBrands === 'function') updateGroupChannelsFromBrands();
+  console.log('renderGroupChannels: GROUP_CHANNELS=', GROUP_CHANNELS.length, 'BRAND_CHANNELS_DATA brands=', Object.keys(BRAND_CHANNELS_DATA).length);
   // If still no data, show empty state
   if (!GROUP_CHANNELS || !GROUP_CHANNELS.length) {
     g.innerHTML = '<div style="padding:24px;text-align:center;color:var(--ink-faint);font-size:13px">No channel data yet. Set brand channel mixes in Admin → Brand Channels.</div>';
@@ -11859,7 +11862,8 @@ async function loadBrandChannels() {
 
 function updateGroupChannelsFromBrands() {
   // Aggregate all brand channel spend into group channel totals
-  if (!Object.keys(BRAND_CHANNELS_DATA).length) return;
+  console.log('updateGroupChannelsFromBrands: brands=', Object.keys(BRAND_CHANNELS_DATA).length, 'sites=', Object.keys(SITE_BUDGETS).length);
+  if (!Object.keys(BRAND_CHANNELS_DATA).length) { console.log('No brand channel data yet'); return; }
   var channelTotals = {};  // channel name -> {total_gbp, color}
 
   HUB_SITES && HUB_SITES.forEach ? null : null; // ensure HUB_SITES exists
