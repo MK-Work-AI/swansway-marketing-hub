@@ -723,7 +723,7 @@ td strong{font-weight:600}
 ============================================================ -->
 <div class="view" id="view-channels">
   <div class="page-strip">
-    <div><div class="page-title">Group Channel Mix & Budget</div><div class="page-subtitle">Group budget allocation across all marketing channels</div></div>
+    <div><div class="page-title">Group Channel Mix & Budget</div><div class="page-subtitle" id="channels-subtitle">Group budget allocation across all marketing channels</div></div>
     <button class="btn btn-accent" onclick="openAIModal('channels')">⚡ AI Prompts</button>
   </div>
   <div class="metrics-row" id="channel-summary-cards"></div>
@@ -2461,16 +2461,35 @@ function renderGroupChannels() {
   if (groupTotal === 0) {
     groupTotal = BUDGET_BRANDS.reduce(function(s, b) { return s + (b.annual || 0); }, 0);
   }
+  // Update subtitle with contributing brands count
+  var subEl = document.getElementById('channels-subtitle');
+  var brandCount = Object.keys(BRAND_CHANNELS_DATA).length;
+  var totalBrands = 12;
+  if (subEl) subEl.textContent = brandCount > 0
+    ? brandCount + ' of ' + totalBrands + ' brands contributing · add more in Admin → Brand Channels'
+    : 'Set brand channel mixes in Admin → Brand Channels';
+
   g.innerHTML = GROUP_CHANNELS.map(function(c) {
     var budgetVal = groupTotal > 0
       ? '£' + Math.round(groupTotal * c.pct / 100 / 1000) + 'K'
       : c.budget !== 'auto' ? c.budget : '—';
+    var brandTags = '';
+    if (c.brands && c.brands.length) {
+      brandTags = '<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 6px 0">' +
+        c.brands.map(function(b) {
+          return '<span style="font-size:10px;background:' + c.color + '22;border:1px solid ' + c.color + '44;color:var(--ink-soft);padding:1px 7px;border-radius:10px">' +
+            b.name + ' £' + b.gbp.toLocaleString() + '</span>';
+        }).join('') + '</div>';
+    } else {
+      brandTags = '<div style="font-size:10px;color:var(--ink-faint);margin:2px 0 6px">No brand data yet</div>';
+    }
     return '<div class="channel-item">'
       + '<div class="channel-name">' + c.n + '</div>'
       + '<div class="channel-bar-wrap"><div class="channel-bar" style="width:' + (c.pct * 3.2) + '%;background:' + c.color + '"></div></div>'
       + '<div class="channel-pct">' + c.pct + '%</div>'
       + '<div class="channel-budget">' + budgetVal + '</div>'
       + '</div>'
+      + brandTags
       + '<div class="channel-note">' + c.note + '</div>';
   }).join('');
 }
@@ -5382,7 +5401,7 @@ function updateGroupChannelsFromBrands() {
   // Aggregate all brand channel spend into group channel totals
   console.log('updateGroupChannelsFromBrands: brands=', Object.keys(BRAND_CHANNELS_DATA).length, 'sites=', Object.keys(SITE_BUDGETS).length);
   if (!Object.keys(BRAND_CHANNELS_DATA).length) { console.log('No brand channel data yet'); return; }
-  var channelTotals = {};  // channel name -> {total_gbp, color}
+  var channelTotals = {};  // channel name -> {total_gbp, color, brands:[{name, gbp, pct}]}
 
   HUB_SITES && HUB_SITES.forEach ? null : null; // ensure HUB_SITES exists
 
@@ -5401,21 +5420,30 @@ function updateGroupChannelsFromBrands() {
         channelTotals[ch.channel] = {total: 0, color: ch.color || '#333'};
       }
       channelTotals[ch.channel].total += gbp;
+        if (!channelTotals[ch.channel].brands) channelTotals[ch.channel].brands = [];
+        if (gbp > 0) {
+          var bName = (window.BRAND_NAMES && window.BRAND_NAMES[brandId]) || brandId;
+          channelTotals[ch.channel].brands.push({name: bName, gbp: Math.round(gbp), pct: parseFloat(ch.pct)||0});
+        }
     });
   });
 
   // Update GROUP_CHANNELS with aggregated data
   var totalGbp = Object.values(channelTotals).reduce(function(s, c) { return s + c.total; }, 0);
-  GROUP_CHANNELS = Object.keys(channelTotals).map(function(name, i) {
+  GROUP_CHANNELS = Object.keys(channelTotals).map(function(name) {
     var c = channelTotals[name];
     return {
       n: name,
       pct: totalGbp > 0 ? Math.round(c.total / totalGbp * 100) : 0,
       gbp: Math.round(c.total),
       color: c.color,
-      note: ''
+      note: '',
+      brands: c.brands || []
     };
   }).sort(function(a, b) { return b.gbp - a.gbp; });
+  
+  // Also store which brands have contributed
+  GROUP_CHANNELS._contributing_brands = Object.keys(BRAND_CHANNELS_DATA).length;
 
 }
 
