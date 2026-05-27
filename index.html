@@ -2474,10 +2474,12 @@ function renderGroupChannels() {
     ? brandCount + ' of ' + totalBrands + ' brands contributing · add more in Admin → Brand Channels'
     : 'Set brand channel mixes in Admin → Brand Channels';
 
+  var maxPct = Math.max.apply(null, GROUP_CHANNELS.map(function(c){return c.pct||0;})) || 1;
   g.innerHTML = GROUP_CHANNELS.map(function(c) {
     var budgetVal = groupTotal > 0
       ? '£' + Math.round(groupTotal * c.pct / 100 / 1000) + 'K'
       : c.budget !== 'auto' ? c.budget : '—';
+    var barWidth = Math.round(c.pct / maxPct * 100);
     var brandTags = '';
     if (c.brands && c.brands.length) {
       brandTags = '<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 6px 0">' +
