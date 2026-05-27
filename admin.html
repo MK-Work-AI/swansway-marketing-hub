@@ -2690,10 +2690,10 @@ function bcSelectBrand(brandId) {
   });
   var el = document.getElementById('bc-brand-title');
   if (el) el.textContent = BC_BRAND_NAMES[brandId] + ' — Channel Mix';
-  // If no data yet, seed with defaults
+  // Only seed defaults if no Supabase data AND not already seeded
   if (!BC_DATA[brandId] || !BC_DATA[brandId].length) {
     BC_DATA[brandId] = BC_DEFAULT_CHANNELS.map(function(c, i) {
-      return {channel: c.channel, pct: 0, color: c.color, note: '', sort_order: i};
+      return {channel: c.channel, pct: 0, color: c.color, note: '', sort_order: i, _default: true};
     });
   }
   bcRenderContent(brandId);
@@ -2822,9 +2822,15 @@ async function bcLoad() {
     if (!resp.ok) return;
     var rows = await resp.json();
     // Group by brand_id
+    // Group by brand_id - replace any existing data
+    var grouped = {};
     rows.forEach(function(row) {
-      if (!BC_DATA[row.brand_id]) BC_DATA[row.brand_id] = [];
-      BC_DATA[row.brand_id].push(row);
+      if (!grouped[row.brand_id]) grouped[row.brand_id] = [];
+      grouped[row.brand_id].push(row);
+    });
+    // Replace BC_DATA with fresh data from Supabase
+    Object.keys(grouped).forEach(function(bid) {
+      BC_DATA[bid] = grouped[bid];
     });
     console.log('Brand channels loaded: ' + rows.length + ' rows');
     if (BC_CURRENT_BRAND && BC_DATA[BC_CURRENT_BRAND]) bcRenderContent(BC_CURRENT_BRAND);
