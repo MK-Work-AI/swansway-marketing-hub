@@ -2420,8 +2420,6 @@ function renderGroupCalendar() {
 function renderGroupChannels() {
   const g = document.getElementById('group-channel-list');
   if (!g) return;
-  // Always re-aggregate from brand data before rendering
-  if (typeof updateGroupChannelsFromBrands === 'function') updateGroupChannelsFromBrands();
   console.log('renderGroupChannels: GROUP_CHANNELS=', GROUP_CHANNELS.length, 'BRAND_CHANNELS_DATA brands=', Object.keys(BRAND_CHANNELS_DATA).length);
   // If still no data, show empty state
   if (!GROUP_CHANNELS || !GROUP_CHANNELS.length) {
@@ -5419,8 +5417,8 @@ function updateGroupChannelsFromBrands() {
     };
   }).sort(function(a, b) { return b.gbp - a.gbp; });
 
-  if (typeof renderGroupChannels === 'function') renderGroupChannels();
 }
+
 
 function renderBrandChannelMix(brandId) {
   var el = document.getElementById(brandId + '-budget');
