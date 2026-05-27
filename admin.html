@@ -249,6 +249,7 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
     <button class="snav" onclick="showPage('sitecontacts',this)">📋 Site Directory</button>
     <button class="snav" onclick="showPage('brandkpis',this)">📈 Brand KPIs</button>
     <button class="snav" onclick="showPage('brandchannels',this)">📊 Brand Channels</button>
+    <button class="snav" onclick="showPage('campaignteam',this)">👥 Campaign Team</button>
     <button class="snav" onclick="showPage('history',this)">🕐 History</button>
     <button class="snav" onclick="showPage('security',this)">🔒 Security</button>
     <button class="snav" onclick="showPage('data',this)">💾 Data & Export</button>
@@ -534,6 +535,31 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
       <div class="card-body" style="padding:0">
         <div id="bc-content"></div>
         <div id="bc-summary" style="padding:16px 20px;border-top:2px solid var(--border);background:var(--surface)"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ CAMPAIGN TEAM ══ -->
+  <div class="page" id="page-campaignteam">
+    <div class="page-title">Campaign Team</div>
+    <div class="page-sub">Manage team members and their permissions for the Campaign Builder</div>
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="card-header">
+        <div class="card-title">Team Members</div>
+        <button class="btn btn-primary" onclick="ctAddMember()">+ Add member</button>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div id="ct-team-list"></div>
+      </div>
+    </div>
+    <div class="card" id="ct-permissions-card" style="display:none">
+      <div class="card-header">
+        <div class="card-title" id="ct-permissions-title">Permissions</div>
+        <button class="btn btn-primary" onclick="ctSavePermissions()">&#10003; Save</button>
+      </div>
+      <div class="card-body">
+        <div id="ct-permissions-content"></div>
       </div>
     </div>
   </div>
@@ -1049,6 +1075,7 @@ function showPage(id, el) {
   if(id === 'sitecontacts')  { scLoad(); scSelectBrand(SC_CURRENT_BRAND); }
   if(id === 'brandkpis')       { bkLoad(); bkSelectBrand(BK_CURRENT_BRAND); }
   if(id === 'brandchannels')  { bcLoad(); bcSelectBrand(BC_CURRENT_BRAND); }
+  if(id === 'campaignteam')   { ctLoad(); }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.snav').forEach(s=>s.classList.remove('active'));
   const page = document.getElementById('page-'+id);
@@ -2862,6 +2889,200 @@ async function bcSave() {
     if (!resp.ok) throw new Error(await resp.text());
     showToast('\u2713 ' + BC_BRAND_NAMES[brandId] + ' channels saved', 'success');
   } catch(e) { showToast('Save error: ' + e.message, 'error'); }
+}
+
+
+
+/* ════ CAMPAIGN TEAM ════ */
+var CT_MEMBERS = {};
+var CT_PERMISSIONS = {};
+var CT_SELECTED = null;
+var CT_API_TEAM = SB_ADMIN_URL + '/rest/v1/campaign_team';
+var CT_API_PERMS = SB_ADMIN_URL + '/rest/v1/campaign_permissions';
+
+var CT_PERM_LABELS = [
+  {key:'can_approve_all',      label:'Approve any task',          desc:'Can approve all tasks across all stages'},
+  {key:'can_approve_digital',  label:'Approve digital/CRM tasks', desc:'Can approve digital and CRM-specific tasks'},
+  {key:'can_advance_stage',    label:'Advance or reopen stages',  desc:'Can move campaign forward or back a stage'},
+  {key:'can_manage_campaigns', label:'Manage campaigns',          desc:'Can create, edit, pause and cancel campaigns'},
+  {key:'can_complete_tasks',   label:'Complete own tasks',        desc:'Can mark assigned tasks as complete'},
+  {key:'can_reject_tasks',     label:'Reject tasks',              desc:'Can reject tasks and send back with a reason'},
+  {key:'can_add_notes',        label:'Add notes',                 desc:'Can add notes to any task'},
+];
+
+async function ctLoad() {
+  var svcKey = window.SWANSWAY_CONFIG && window.SWANSWAY_CONFIG.serviceKey;
+  if (!svcKey) return;
+  try {
+    var tr = await fetch(CT_API_TEAM + '?select=*&order=name', {headers:{'apikey':svcKey,'Authorization':'Bearer '+svcKey}}).then(function(r){return r.json();});
+    var pr = await fetch(CT_API_PERMS + '?select=*', {headers:{'apikey':svcKey,'Authorization':'Bearer '+svcKey}}).then(function(r){return r.json();});
+    CT_MEMBERS = {};
+    tr.forEach(function(m) { CT_MEMBERS[m.id] = m; });
+    CT_PERMISSIONS = {};
+    pr.forEach(function(p) { CT_PERMISSIONS[p.team_member_id] = p; });
+    ctRenderList();
+  } catch(e) { console.warn('ctLoad error:', e); }
+}
+
+function ctRenderList() {
+  var el = document.getElementById('ct-team-list');
+  if (!el) return;
+  var members = Object.values(CT_MEMBERS);
+  if (!members.length) {
+    el.innerHTML = '<div style="padding:20px;color:var(--ink-faint);font-size:13px">No team members yet.</div>';
+    return;
+  }
+  el.innerHTML = '';
+  // Header
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr 100px 120px;gap:8px;padding:8px 20px;background:var(--surface);font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em';
+  hdr.innerHTML = '<div>Name</div><div>Role</div><div>Email</div><div>Status</div><div></div>';
+  el.appendChild(hdr);
+
+  members.forEach(function(m, idx) {
+    var perms = CT_PERMISSIONS[m.id] || {};
+    var badge = perms.can_approve_all
+      ? '<span style="font-size:9px;background:#059669;color:#fff;padding:1px 6px;border-radius:8px;margin-left:6px">Full approver</span>'
+      : perms.can_approve_digital
+      ? '<span style="font-size:9px;background:#2563EB;color:#fff;padding:1px 6px;border-radius:8px;margin-left:6px">Digital approver</span>' : '';
+
+    var row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr 100px 120px;gap:8px;padding:12px 20px;align-items:center;border-bottom:1px solid var(--border);background:' + (idx%2===0?'var(--white)':'var(--surface)');
+    row.innerHTML = '<div style="font-weight:700;font-size:13px">' + m.name + badge + '</div>'
+      + '<div style="font-size:12px;color:var(--ink-soft)">' + m.role + '</div>'
+      + '<div style="font-size:12px;color:var(--ink-soft)">' + (m.email||'\u2014') + '</div>'
+      + '<div><span style="font-size:11px;padding:2px 8px;border-radius:10px;background:' + (m.active?'#D1FAE5':'#FEE2E2') + ';color:' + (m.active?'#059669':'#DC2626') + '">' + (m.active?'Active':'Inactive') + '</span></div>'
+      + '<div><button class="btn" data-member-id="' + m.id + '" onclick="ctEditPermissions(this.dataset.memberId)">Edit permissions</button></div>';
+    el.appendChild(row);
+  });
+}
+
+function ctEditPermissions(memberId) {
+  CT_SELECTED = memberId;
+  var m = CT_MEMBERS[memberId];
+  if (!m) return;
+  var perms = CT_PERMISSIONS[memberId] || {};
+  var card = document.getElementById('ct-permissions-card');
+  var title = document.getElementById('ct-permissions-title');
+  var content = document.getElementById('ct-permissions-content');
+  if (!card) return;
+
+  title.textContent = m.name + ' — Permissions';
+  card.style.display = 'block';
+
+  var wrap = document.createElement('div');
+
+  // Member details
+  var detailGrid = document.createElement('div');
+  detailGrid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr 100px;gap:12px;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)';
+  [{key:'name',label:'Name',type:'text'},{key:'role',label:'Role',type:'text'},{key:'email',label:'Email',type:'email'}].forEach(function(f) {
+    var d = document.createElement('div');
+    d.innerHTML = '<label style="font-size:10px;color:var(--ink-soft);display:block;margin-bottom:4px;font-weight:600">' + f.label + '</label>';
+    var inp = document.createElement('input');
+    inp.type = f.type; inp.value = m[f.key]||'';
+    inp.style.cssText = 'width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:3px;font-size:13px;font-family:var(--font-m);box-sizing:border-box';
+    inp.dataset.id = memberId; inp.dataset.field = f.key;
+    inp.addEventListener('change', function() { if(CT_MEMBERS[this.dataset.id]) CT_MEMBERS[this.dataset.id][this.dataset.field] = this.value; });
+    d.appendChild(inp); detailGrid.appendChild(d);
+  });
+  // Active toggle
+  var ad = document.createElement('div');
+  ad.innerHTML = '<label style="font-size:10px;color:var(--ink-soft);display:block;margin-bottom:4px;font-weight:600">Status</label>';
+  var sel = document.createElement('select');
+  sel.style.cssText = 'width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:3px;font-size:13px;font-family:var(--font-m)';
+  sel.innerHTML = '<option value="true"' + (m.active?' selected':'') + '>Active</option><option value="false"' + (!m.active?' selected':'') + '>Inactive</option>';
+  sel.dataset.id = memberId;
+  sel.addEventListener('change', function() { if(CT_MEMBERS[this.dataset.id]) CT_MEMBERS[this.dataset.id].active = this.value === 'true'; });
+  ad.appendChild(sel); detailGrid.appendChild(ad);
+  wrap.appendChild(detailGrid);
+
+  // Permissions grid
+  var permTitle = document.createElement('div');
+  permTitle.style.cssText = 'font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px';
+  permTitle.textContent = 'Access permissions';
+  wrap.appendChild(permTitle);
+
+  var permGrid = document.createElement('div');
+  permGrid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:10px';
+  CT_PERM_LABELS.forEach(function(p) {
+    var checked = !!perms[p.key];
+    var lbl = document.createElement('label');
+    lbl.style.cssText = 'display:flex;align-items:flex-start;gap:10px;padding:12px;border:2px solid ' + (checked?'var(--swansway)':'var(--border)') + ';border-radius:4px;cursor:pointer;background:' + (checked?'rgba(200,16,46,0.04)':'var(--white)');
+    var chk = document.createElement('input');
+    chk.type = 'checkbox'; chk.checked = checked;
+    chk.style.cssText = 'margin-top:2px;width:16px;height:16px;cursor:pointer;flex-shrink:0';
+    chk.dataset.id = memberId; chk.dataset.perm = p.key;
+    chk.addEventListener('change', function() {
+      if (!CT_PERMISSIONS[this.dataset.id]) CT_PERMISSIONS[this.dataset.id] = {team_member_id: this.dataset.id};
+      CT_PERMISSIONS[this.dataset.id][this.dataset.perm] = this.checked;
+      this.closest('label').style.border = '2px solid ' + (this.checked ? 'var(--swansway)' : 'var(--border)');
+      this.closest('label').style.background = this.checked ? 'rgba(200,16,46,0.04)' : 'var(--white)';
+    });
+    var txt = document.createElement('div');
+    txt.innerHTML = '<div style="font-size:12px;font-weight:700;color:var(--ink)">' + p.label + '</div>'
+      + '<div style="font-size:11px;color:var(--ink-soft);margin-top:2px">' + p.desc + '</div>';
+    lbl.appendChild(chk); lbl.appendChild(txt);
+    permGrid.appendChild(lbl);
+  });
+  wrap.appendChild(permGrid);
+  content.innerHTML = '';
+  content.appendChild(wrap);
+  setTimeout(function() { card.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 100);
+}
+
+async function ctSavePermissions() {
+  var svcKey = window.SWANSWAY_CONFIG && window.SWANSWAY_CONFIG.serviceKey;
+  if (!svcKey || !CT_SELECTED) return;
+  var id = CT_SELECTED;
+  var m = CT_MEMBERS[id];
+  var perms = CT_PERMISSIONS[id] || {};
+  try {
+    var mr = await fetch(CT_API_TEAM + '?id=eq.' + id, {
+      method:'PATCH',
+      headers:{'apikey':svcKey,'Authorization':'Bearer '+svcKey,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify({name:m.name,role:m.role,email:m.email||'',active:m.active,updated_at:new Date().toISOString()})
+    });
+    if (!mr.ok) throw new Error(await mr.text());
+    var pr = await fetch(CT_API_PERMS + '?on_conflict=team_member_id', {
+      method:'POST',
+      headers:{'apikey':svcKey,'Authorization':'Bearer '+svcKey,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+      body: JSON.stringify([{
+        team_member_id:id,
+        can_approve_all:!!perms.can_approve_all,
+        can_approve_digital:!!perms.can_approve_digital,
+        can_advance_stage:!!perms.can_advance_stage,
+        can_manage_campaigns:!!perms.can_manage_campaigns,
+        can_complete_tasks: perms.can_complete_tasks !== false,
+        can_reject_tasks:!!perms.can_reject_tasks,
+        can_add_notes: perms.can_add_notes !== false,
+        updated_at:new Date().toISOString()
+      }])
+    });
+    if (!pr.ok) throw new Error(await pr.text());
+    showToast('\u2713 ' + m.name + ' saved', 'success');
+    ctRenderList();
+  } catch(e) { showToast('Save error: ' + e.message, 'error'); }
+}
+
+async function ctAddMember() {
+  var name = prompt('New team member full name:');
+  if (!name || !name.trim()) return;
+  var role = prompt('Their role:');
+  if (!role) return;
+  var email = prompt('Email address (optional):') || '';
+  var id = name.trim().toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  var svcKey = window.SWANSWAY_CONFIG && window.SWANSWAY_CONFIG.serviceKey;
+  if (!svcKey) return;
+  try {
+    var resp = await fetch(CT_API_TEAM, {
+      method:'POST',
+      headers:{'apikey':svcKey,'Authorization':'Bearer '+svcKey,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify([{id:id,name:name.trim(),role:role.trim(),email:email.trim(),active:true}])
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    showToast('\u2713 ' + name.trim() + ' added', 'success');
+    await ctLoad();
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
 }
 
 
