@@ -5159,24 +5159,32 @@ function updateGroupKPIsFromSites() {
   // Index: 0=units, 1=ev%, 2=leads, 3=conversion, 4=autotrader(skip),
   //        5=retention, 6=used, 7=nps, 8=fleet(skip), 9=social(skip),
   //        10=coop(skip), 11=cpl
+  // Helper to calc progress %
+  function calcP(actual, target, lowerBetter) {
+    if (!actual || !target || target === 0) return 0;
+    return lowerBetter
+      ? Math.max(0, Math.round((2 - actual/target)*100))
+      : Math.min(100, Math.round(actual/target*100));
+  }
   var idxData = [
-    // [target_val, actual_val, progress]
+    // [target_str, actual_str, progress]
     [totalUnitsTarget > 0 ? totalUnitsTarget.toLocaleString() : null,
      totalUnits > 0 ? totalUnits.toLocaleString() : null,
-     totalUnitsTarget > 0 ? Math.min(100, Math.round(totalUnits/totalUnitsTarget*100)) : 0],
+     calcP(totalUnits, totalUnitsTarget, false)],
     [null, evAvg > 0 ? evAvg + '%' : null, 0],
     [totalLeadsTarget > 0 ? Math.round(totalLeadsTarget/12).toLocaleString() + '/mo' : null,
-     totalLeads > 0 ? Math.round(totalLeads/5).toLocaleString() + '/mo avg' : null, 0],
+     totalLeads > 0 ? Math.round(totalLeads/5).toLocaleString() + '/mo avg' : null,
+     calcP(Math.round(totalLeads/5), Math.round(totalLeadsTarget/12), false)],
     [null, convAvg > 0 ? convAvg + '%' : null, 0],
-    [null, null, 0], // AutoTrader — no site data
+    [null, null, 0], // AutoTrader — from admin
     [null, retAvg > 0 ? retAvg + '%' : null, 0],
     [totalUsedTarget > 0 ? totalUsedTarget.toLocaleString() : null,
      totalUsed > 0 ? totalUsed.toLocaleString() : null,
-     totalUsedTarget > 0 ? Math.min(100, Math.round(totalUsed/totalUsedTarget*100)) : 0],
+     calcP(totalUsed, totalUsedTarget, false)],
     [null, npsAvg > 0 ? String(npsAvg) : null, 0],
-    [null, null, 0], // Fleet accounts — no site data
-    [null, null, 0], // Social — no site data
-    [null, null, 0], // Co-op — no site data
+    [null, null, 0], // Fleet — from admin
+    [null, null, 0], // Social — from admin
+    [null, null, 0], // Co-op — from admin
     [null, cplAvg > 0 ? '£' + cplAvg : null, 0],
   ];
 
