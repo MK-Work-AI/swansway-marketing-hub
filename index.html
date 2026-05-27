@@ -5509,6 +5509,475 @@ function renderBrandChannelMix(brandId) {
   el.innerHTML = html;
 }
 
+
+/* ════ CAMPAIGN BUILDER ════ */
+var CB_CAMPAIGNS = [];
+var CB_TASKS = {};
+var CB_TEAM = {};
+var CB_PERMS = {};
+var CB_CURRENT = null;
+var CB_FILTER = 'all';
+var CB_CURRENT_USER = null;
+var CB_API = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+var CB_STAGE_NAMES = ['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'];
+var CB_STAGE_ICONS = ['\uD83D\uDCCB','\u2699\uFE0F','\u2705','\uD83D\uDE80','\uD83D\uDCCA','\uD83C\uDFC1'];
+
+async function cbLoad() {
+  try {
+    var anon = SUPABASE_ANON_KEY;
+    var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+    var camps = await fetch(CB_API+'/campaigns?select=*&order=created_at.desc',{headers:hdrs}).then(function(r){return r.json();});
+    var team  = await fetch(CB_API+'/campaign_team?select=*&active=eq.true',{headers:hdrs}).then(function(r){return r.json();});
+    var perms = await fetch(CB_API+'/campaign_permissions?select=*',{headers:hdrs}).then(function(r){return r.json();});
+    CB_CAMPAIGNS = Array.isArray(camps)?camps:[];
+    CB_TEAM = {}; (Array.isArray(team)?team:[]).forEach(function(m){CB_TEAM[m.id]=m;});
+    CB_PERMS = {}; (Array.isArray(perms)?perms:[]).forEach(function(p){CB_PERMS[p.team_member_id]=p;});
+    console.log('Campaign Builder loaded:',CB_CAMPAIGNS.length,'campaigns');
+    cbRenderDashboard();
+    cbRenderUserPicker();
+  } catch(e){console.warn('cbLoad error:',e);}
+}
+
+function cbRenderUserPicker() {
+  var el = document.getElementById('cb-subtitle');
+  if (!el) return;
+  var members = Object.values(CB_TEAM);
+  if (!members.length) return;
+  var sel = '<select onchange="cbSetUser(this.value)" style="margin-left:12px;padding:4px 8px;border:1px solid var(--border);border-radius:3px;font-size:12px;font-family:var(--font-m)">'
+    + '<option value="">-- Select your name --</option>'
+    + members.map(function(m){return '<option value="'+m.id+'"'+(CB_CURRENT_USER===m.id?' selected':'')+'>'+m.name+'</option>';}).join('')
+    + '</select>';
+  el.innerHTML = 'All active campaigns &nbsp;|&nbsp; You are: '+sel;
+}
+
+function cbSetUser(id) { CB_CURRENT_USER=id||null; cbRenderDashboard(); }
+
+function cbFilter(status,el) {
+  CB_FILTER=status;
+  document.querySelectorAll('#cb-filters .cal-q-tab').forEach(function(t){t.classList.remove('active');});
+  if(el) el.classList.add('active');
+  cbRenderDashboard();
+}
+
+function cbRenderDashboard() {
+  var el=document.getElementById('cb-campaign-list');
+  var detail=document.getElementById('cb-detail');
+  if(!el) return;
+  if(detail) detail.style.display='none';
+  el.style.display='block';
+  var camps=CB_CAMPAIGNS.filter(function(c){return CB_FILTER==='all'||c.status===CB_FILTER;});
+  if(!camps.length){
+    el.innerHTML='<div style="padding:40px;text-align:center;color:var(--ink-faint)">'
+      +'<div style="font-size:48px;margin-bottom:16px">\uD83C\uDFAF</div>'
+      +'<div style="font-size:16px;font-weight:700;margin-bottom:8px">No campaigns yet</div>'
+      +'<div style="font-size:13px;margin-bottom:20px">Create a campaign from a completed brief or start one directly.</div>'
+      +'<button class="btn btn-primary" onclick="cbNewCampaign()">+ Create first campaign</button></div>';
+    return;
+  }
+  el.innerHTML='';
+  camps.forEach(function(c){el.appendChild(cbMakeCampaignCard(c));});
+}
+
+function cbMakeCampaignCard(c) {
+  var stage=c.current_stage||1;
+  var stageName=CB_STAGE_NAMES[stage-1]||'Stage '+stage;
+  var stageIcon=CB_STAGE_ICONS[stage-1]||'\uD83D\uDCCC';
+  var statusColors={active:'#059669',paused:'#D97706',complete:'#2563EB',cancelled:'#DC2626'};
+  var statusColor=statusColors[c.status]||'#6B7280';
+  var scopeVal=c.site_id||(c.brand_id?(window.BRAND_NAMES&&BRAND_NAMES[c.brand_id]||c.brand_id):'Group');
+  var scopeLabel=c.site_id?'Site':c.brand_id?'Brand':'Group';
+
+  var dots=CB_STAGE_NAMES.map(function(sn,i){
+    var done=i<stage-1,active=i===stage-1;
+    var bg=done?'#059669':active?'var(--swansway)':'var(--surface-2)';
+    var tc=(done||active)?'#fff':'var(--ink-faint)';
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1">'
+      +'<div style="width:24px;height:24px;border-radius:50%;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:10px;color:'+tc+';font-weight:700">'+(done?'\u2713':(i+1))+'</div>'
+      +'<div style="font-size:9px;color:var(--ink-faint);text-align:center;font-family:var(--font-m)">'+sn.split(' ')[0]+'</div></div>';
+  }).join('');
+
+  var card=document.createElement('div');
+  card.style.cssText='background:var(--white);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:12px;cursor:pointer;transition:box-shadow .2s;border-left:4px solid '+statusColor;
+  card.onmouseenter=function(){this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)';};
+  card.onmouseleave=function(){this.style.boxShadow='none';};
+  card.dataset.campaignId=c.id;
+  card.onclick=function(){cbOpenCampaign(this.dataset.campaignId);};
+  card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">'
+    +'<div><div style="font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px">'+c.title+'</div>'
+    +'<div style="display:flex;gap:8px;align-items:center">'
+    +'<span style="font-size:11px;background:var(--surface);padding:2px 8px;border-radius:10px;color:var(--ink-soft);font-family:var(--font-m)">'+scopeLabel+': '+scopeVal+'</span>'
+    +'<span style="font-size:11px;color:var(--ink-faint)">'+new Date(c.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+'</span>'
+    +'</div></div>'
+    +'<div style="text-align:right">'
+    +'<span style="font-size:11px;padding:3px 10px;border-radius:10px;background:'+statusColor+'20;color:'+statusColor+';font-family:var(--font-m);font-weight:600">'+c.status.charAt(0).toUpperCase()+c.status.slice(1)+'</span>'
+    +'<div style="font-size:12px;color:var(--ink-soft);margin-top:6px">'+stageIcon+' '+stageName+'</div>'
+    +'</div></div>'
+    +'<div style="display:flex;gap:4px">'+dots+'</div>';
+  return card;
+}
+
+async function cbOpenCampaign(campaignId) {
+  CB_CURRENT=campaignId;
+  var c=CB_CAMPAIGNS.find(function(x){return x.id===campaignId;});
+  if(!c) return;
+  try {
+    var anon=SUPABASE_ANON_KEY;
+    var tasks=await fetch(CB_API+'/campaign_tasks?campaign_id=eq.'+campaignId+'&order=stage,task_order',{
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon}
+    }).then(function(r){return r.json();});
+    CB_TASKS[campaignId]=Array.isArray(tasks)?tasks:[];
+  } catch(e){CB_TASKS[campaignId]=[];}
+  cbRenderCampaignDetail(c);
+}
+
+function cbRenderCampaignDetail(c) {
+  var listEl=document.getElementById('cb-campaign-list');
+  var detailEl=document.getElementById('cb-detail');
+  if(!listEl||!detailEl) return;
+  listEl.style.display='none';
+  detailEl.style.display='block';
+  detailEl.innerHTML='';
+
+  var tasks=CB_TASKS[c.id]||[];
+  var stage=c.current_stage||1;
+  var perms=CB_PERMS[CB_CURRENT_USER]||{};
+  var canApprove=!!perms.can_approve_all;
+  var canApproveDigital=!!perms.can_approve_digital;
+  var canReject=!!(perms.can_reject_tasks||perms.can_approve_all);
+  var canAdvance=!!perms.can_advance_stage;
+
+  var byStage={};
+  for(var s=1;s<=6;s++) byStage[s]=[];
+  tasks.forEach(function(t){if(byStage[t.stage]) byStage[t.stage].push(t);});
+
+  var statusColors={active:'#059669',paused:'#D97706',complete:'#2563EB',cancelled:'#DC2626'};
+  var statusColor=statusColors[c.status]||'#6B7280';
+  var scopeVal=c.site_id||(c.brand_id?(window.BRAND_NAMES&&BRAND_NAMES[c.brand_id]||c.brand_id):'Group');
+
+  // Back + header
+  var header=document.createElement('div');
+  header.style.cssText='margin-bottom:1.5rem';
+  var backBtn=document.createElement('button');
+  backBtn.style.cssText='background:none;border:none;cursor:pointer;font-size:13px;color:var(--ink-soft);padding:0;margin-bottom:16px;display:flex;align-items:center;gap:6px';
+  backBtn.innerHTML='\u2190 All campaigns';
+  backBtn.onclick=cbBackToDashboard;
+  header.appendChild(backBtn);
+
+  // Campaign info card
+  var infoCard=document.createElement('div');
+  infoCard.style.cssText='background:var(--white);border:1px solid var(--border);border-radius:6px;padding:24px;margin-bottom:20px;border-left:4px solid '+statusColor;
+  var advBtn=canAdvance&&stage<6&&c.status==='active'?'<button class="btn btn-primary" data-cid="'+c.id+'" onclick="cbAdvanceStage(this.dataset.cid)">Advance to Stage '+(stage+1)+' \u2192</button>':'';
+  var reopenBtn=canAdvance&&stage>1?'<button class="btn" data-cid="'+c.id+'" onclick="cbReopenStage(this.dataset.cid)">Reopen Stage '+(stage-1)+'</button>':'';
+  infoCard.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">'
+    +'<div><div style="font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px">'+c.title+'</div>'
+    +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+    +'<span style="font-size:12px;background:var(--surface);padding:3px 10px;border-radius:10px;color:var(--ink-soft)">'+(c.site_id?'Site':'Brand')+': '+scopeVal+'</span>'
+    +'<span style="font-size:12px;padding:3px 10px;border-radius:10px;background:'+statusColor+'20;color:'+statusColor+';font-weight:600">'+c.status.charAt(0).toUpperCase()+c.status.slice(1)+'</span>'
+    +'</div></div>'
+    +'<div style="display:flex;gap:8px">'+advBtn+reopenBtn+'</div></div>'
+    // Stage timeline
+    +'<div style="display:flex;overflow-x:auto;border-radius:4px;overflow:hidden">'
+    +CB_STAGE_NAMES.map(function(sn,i){
+      var s2=i+1,done=s2<stage,active=s2===stage;
+      var bg=done?'#059669':active?'var(--swansway)':'var(--surface-2)';
+      var tc=(done||active)?'#fff':'var(--ink-faint)';
+      var stageTasksLocal=byStage[s2]||[];
+      var comp=stageTasksLocal.filter(function(t){return t.approved;}).length;
+      var tot=stageTasksLocal.filter(function(t){return t.is_blocker;}).length;
+      return '<div style="flex:1;min-width:90px;text-align:center;padding:10px 6px;background:'+bg+';color:'+tc+'">'
+        +'<div style="font-size:14px;margin-bottom:2px">'+CB_STAGE_ICONS[i]+'</div>'
+        +'<div style="font-size:10px;font-weight:700;font-family:var(--font-m)">'+sn+'</div>'
+        +(tot>0?'<div style="font-size:9px;opacity:0.8;margin-top:2px">'+comp+'/'+tot+' done</div>':'')
+        +'</div>';
+    }).join('')+'</div>';
+  header.appendChild(infoCard);
+  detailEl.appendChild(header);
+
+  // Stage sections
+  for(var si=1;si<=6;si++){
+    var stageTasks=byStage[si];
+    var isActive=si===stage,isDone=si<stage;
+    var stageComplete=stageTasks.filter(function(t){return t.approved;}).length;
+    var stageBlockers=stageTasks.filter(function(t){return t.is_blocker;}).length;
+
+    var sec=document.createElement('div');
+    sec.style.cssText='margin-bottom:16px;opacity:'+(isActive||isDone?'1':'0.4');
+
+    var secHead=document.createElement('div');
+    secHead.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:10px';
+    secHead.innerHTML='<div style="width:28px;height:28px;border-radius:50%;background:'+(isDone?'#059669':isActive?'var(--swansway)':'var(--surface-2)')+';display:flex;align-items:center;justify-content:center;font-size:13px;color:'+(isDone||isActive?'#fff':'var(--ink-faint)')+';font-weight:700">'+(isDone?'\u2713':si)+'</div>'
+      +'<div style="font-family:var(--font-d);font-size:15px;font-weight:700">'+CB_STAGE_ICONS[si-1]+' Stage '+si+': '+CB_STAGE_NAMES[si-1]+'</div>'
+      +'<div style="font-size:11px;color:var(--ink-faint);margin-left:auto">'+stageComplete+' of '+stageBlockers+' blockers approved</div>';
+    sec.appendChild(secHead);
+
+    if(!stageTasks.length){
+      var empty=document.createElement('div');
+      empty.style.cssText='padding:12px 16px;font-size:12px;color:var(--ink-faint);background:var(--surface);border-radius:4px';
+      empty.textContent='No tasks for this stage.';
+      sec.appendChild(empty);
+    } else {
+      var taskList=document.createElement('div');
+      taskList.style.cssText='background:var(--white);border:1px solid var(--border);border-radius:6px;overflow:hidden';
+
+      stageTasks.forEach(function(task,tidx){
+        var assignee=CB_TEAM[task.assigned_to]||{name:task.assigned_to||'Unassigned'};
+        var approvedByName=task.approved_by?(CB_TEAM[task.approved_by]||{name:task.approved_by}).name:null;
+        var rejectedByName=task.rejected_by?(CB_TEAM[task.rejected_by]||{name:task.rejected_by}).name:null;
+        var isDigital=task.approver_scope==='digital';
+        var canUserApprove=(canApprove||(canApproveDigital&&isDigital))&&task.completed&&!task.approved&&!task.rejected;
+        var canUserComplete=isActive&&!task.completed&&CB_CURRENT_USER===task.assigned_to;
+        var canUserReject=(canReject||canApprove)&&task.completed&&!task.approved;
+
+        var leftBorder=task.approved?'#059669':task.rejected?'#DC2626':task.completed?'#D97706':'var(--border)';
+        var dot=task.approved?'#059669':task.rejected?'#DC2626':task.completed?'#D97706':isActive?'var(--border)':'var(--surface-2)';
+
+        var row=document.createElement('div');
+        row.style.cssText='padding:14px 16px;border-bottom:1px solid var(--border);background:'+(tidx%2===0?'var(--white)':'var(--surface)')+';border-left:3px solid '+leftBorder+';display:flex;align-items:flex-start;gap:12px';
+
+        var dotEl=document.createElement('div');
+        dotEl.style.cssText='width:12px;height:12px;border-radius:50%;background:'+dot+';margin-top:3px;flex-shrink:0';
+        row.appendChild(dotEl);
+
+        var info=document.createElement('div');
+        info.style.cssText='flex:1';
+        var nameRow=document.createElement('div');
+        nameRow.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px';
+        nameRow.innerHTML='<span style="font-size:13px;font-weight:'+(task.is_blocker?'700':'500')+';color:var(--ink)">'+task.task_name+'</span>'
+          +(task.is_blocker?'<span style="font-size:9px;background:#FEF3C7;color:#92400E;padding:1px 6px;border-radius:8px;font-family:var(--font-m)">BLOCKER</span>':'')
+          +'<span style="font-size:9px;background:var(--surface);color:var(--ink-soft);padding:1px 6px;border-radius:8px;font-family:var(--font-m)">'+(task.department||'')+'</span>';
+        info.appendChild(nameRow);
+
+        var metaRow=document.createElement('div');
+        metaRow.style.cssText='font-size:11px;color:var(--ink-soft)';
+        metaRow.innerHTML='\uD83D\uDC64 '+assignee.name
+          +(approvedByName?' &nbsp;\u2713 Approved by '+approvedByName:'')
+          +(rejectedByName?' &nbsp;\u2715 Rejected by '+rejectedByName+(task.rejection_reason?' \u2014 '+task.rejection_reason:''):'');
+        info.appendChild(metaRow);
+
+        if(task.notes){
+          var noteRow=document.createElement('div');
+          noteRow.style.cssText='font-size:11px;color:var(--ink-faint);margin-top:4px;font-style:italic';
+          noteRow.textContent='\uD83D\uDCDD '+task.notes;
+          info.appendChild(noteRow);
+        }
+        row.appendChild(info);
+
+        // Action buttons
+        var actions=document.createElement('div');
+        actions.style.cssText='display:flex;gap:6px;flex-shrink:0';
+
+        if(canUserComplete){
+          var btn=document.createElement('button');
+          btn.textContent='Mark done';
+          btn.style.cssText='font-size:11px;padding:4px 12px;background:var(--swansway);color:#fff;border:none;border-radius:3px;cursor:pointer';
+          btn.dataset.taskId=task.id;
+          btn.onclick=function(){cbCompleteTask(this.dataset.taskId);};
+          actions.appendChild(btn);
+        }
+        if(canUserApprove){
+          var btn2=document.createElement('button');
+          btn2.innerHTML='\u2713 Approve';
+          btn2.style.cssText='font-size:11px;padding:4px 12px;background:#059669;color:#fff;border:none;border-radius:3px;cursor:pointer';
+          btn2.dataset.taskId=task.id;
+          btn2.onclick=function(){cbApproveTask(this.dataset.taskId);};
+          actions.appendChild(btn2);
+        }
+        if(canUserReject){
+          var btn3=document.createElement('button');
+          btn3.innerHTML='\u2715 Reject';
+          btn3.style.cssText='font-size:11px;padding:4px 12px;background:#DC2626;color:#fff;border:none;border-radius:3px;cursor:pointer';
+          btn3.dataset.taskId=task.id;
+          btn3.onclick=function(){cbRejectTask(this.dataset.taskId);};
+          actions.appendChild(btn3);
+        }
+        if(isActive&&CB_CURRENT_USER){
+          var btn4=document.createElement('button');
+          btn4.textContent='\uD83D\uDCDD';
+          btn4.title='Add note';
+          btn4.style.cssText='font-size:11px;padding:4px 8px;background:none;border:1px solid var(--border);border-radius:3px;cursor:pointer;color:var(--ink-soft)';
+          btn4.dataset.taskId=task.id;
+          btn4.onclick=function(){cbAddNote(this.dataset.taskId);};
+          actions.appendChild(btn4);
+        }
+
+        row.appendChild(actions);
+        taskList.appendChild(row);
+      });
+      sec.appendChild(taskList);
+    }
+    detailEl.appendChild(sec);
+  }
+  detailEl.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function cbBackToDashboard(){
+  CB_CURRENT=null;
+  var d=document.getElementById('cb-detail');
+  var l=document.getElementById('cb-campaign-list');
+  if(d) d.style.display='none';
+  if(l) l.style.display='block';
+}
+
+async function cbCompleteTask(taskId){
+  if(!CB_CURRENT_USER){alert('Please select your name first');return;}
+  if(!confirm('Mark this task as complete?')) return;
+  await cbUpdateTask(taskId,{completed:true,completed_by:CB_CURRENT_USER,completed_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+}
+
+async function cbApproveTask(taskId){
+  if(!CB_CURRENT_USER){alert('Please select your name first');return;}
+  await cbUpdateTask(taskId,{approved:true,approved_by:CB_CURRENT_USER,approved_at:new Date().toISOString(),rejected:false,rejection_reason:'',updated_at:new Date().toISOString()});
+  await cbCheckStageAdvance(CB_CURRENT);
+}
+
+async function cbRejectTask(taskId){
+  if(!CB_CURRENT_USER){alert('Please select your name first');return;}
+  var reason=prompt('Reason for rejection (required):');
+  if(!reason||!reason.trim()) return;
+  await cbUpdateTask(taskId,{rejected:true,rejected_by:CB_CURRENT_USER,rejected_at:new Date().toISOString(),rejection_reason:reason.trim(),completed:false,approved:false,updated_at:new Date().toISOString()});
+}
+
+async function cbAddNote(taskId){
+  var note=prompt('Add a note:');
+  if(!note||!note.trim()) return;
+  var task=null;
+  Object.values(CB_TASKS).forEach(function(arr){arr.forEach(function(t){if(t.id===taskId) task=t;});});
+  var existing=task?(task.notes||''):'';
+  var combined=existing?existing+' | '+note.trim():note.trim();
+  await cbUpdateTask(taskId,{notes:combined,updated_at:new Date().toISOString()});
+}
+
+async function cbUpdateTask(taskId,updates){
+  var anon=SUPABASE_ANON_KEY;
+  try{
+    var resp=await fetch(CB_API+'/campaign_tasks?id=eq.'+taskId,{
+      method:'PATCH',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(updates)
+    });
+    if(!resp.ok) throw new Error(await resp.text());
+    Object.keys(CB_TASKS).forEach(function(cid){
+      CB_TASKS[cid]=CB_TASKS[cid].map(function(t){return t.id===taskId?Object.assign({},t,updates):t;});
+    });
+    var c=CB_CAMPAIGNS.find(function(x){return x.id===CB_CURRENT;});
+    if(c) cbRenderCampaignDetail(c);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function cbCheckStageAdvance(campaignId){
+  var tasks=CB_TASKS[campaignId]||[];
+  var c=CB_CAMPAIGNS.find(function(x){return x.id===campaignId;});
+  if(!c||c.current_stage>=6) return;
+  var stage=c.current_stage;
+  var blockers=tasks.filter(function(t){return t.stage===stage&&t.is_blocker;});
+  if(!blockers.length||!blockers.every(function(t){return t.approved;})) return;
+  var anon=SUPABASE_ANON_KEY;
+  var newStage=stage+1;
+  try{
+    await fetch(CB_API+'/campaigns?id=eq.'+campaignId,{
+      method:'PATCH',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({current_stage:newStage,updated_at:new Date().toISOString()})
+    });
+    CB_CAMPAIGNS=CB_CAMPAIGNS.map(function(x){return x.id===campaignId?Object.assign({},x,{current_stage:newStage}):x;});
+    var banner=document.createElement('div');
+    banner.style.cssText='position:fixed;top:80px;right:24px;background:#059669;color:#fff;padding:12px 20px;border-radius:6px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15)';
+    banner.textContent='\uD83C\uDF89 Stage '+newStage+': '+CB_STAGE_NAMES[newStage-1]+' is now active!';
+    document.body.appendChild(banner);
+    setTimeout(function(){banner.remove();},4000);
+    var updated=CB_CAMPAIGNS.find(function(x){return x.id===campaignId;});
+    if(updated) cbRenderCampaignDetail(updated);
+  }catch(e){console.warn('Stage advance error:',e);}
+}
+
+async function cbAdvanceStage(campaignId){
+  var c=CB_CAMPAIGNS.find(function(x){return x.id===campaignId;});
+  if(!c||c.current_stage>=6) return;
+  var anon=SUPABASE_ANON_KEY;
+  var newStage=c.current_stage+1;
+  try{
+    await fetch(CB_API+'/campaigns?id=eq.'+campaignId,{method:'PATCH',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({current_stage:newStage,updated_at:new Date().toISOString()})});
+    CB_CAMPAIGNS=CB_CAMPAIGNS.map(function(x){return x.id===campaignId?Object.assign({},x,{current_stage:newStage}):x;});
+    var updated=CB_CAMPAIGNS.find(function(x){return x.id===campaignId;});
+    if(updated) cbRenderCampaignDetail(updated);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function cbReopenStage(campaignId){
+  var c=CB_CAMPAIGNS.find(function(x){return x.id===campaignId;});
+  if(!c||c.current_stage<=1) return;
+  var anon=SUPABASE_ANON_KEY;
+  var newStage=c.current_stage-1;
+  try{
+    await fetch(CB_API+'/campaigns?id=eq.'+campaignId,{method:'PATCH',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({current_stage:newStage,updated_at:new Date().toISOString()})});
+    CB_CAMPAIGNS=CB_CAMPAIGNS.map(function(x){return x.id===campaignId?Object.assign({},x,{current_stage:newStage}):x;});
+    var updated=CB_CAMPAIGNS.find(function(x){return x.id===campaignId;});
+    if(updated) cbRenderCampaignDetail(updated);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function cbNewCampaign(){
+  var title=prompt('Campaign title:');
+  if(!title||!title.trim()) return;
+  var anon=SUPABASE_ANON_KEY;
+  try{
+    var cr=await fetch(CB_API+'/campaigns',{
+      method:'POST',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify([{title:title.trim(),scope:'brand',status:'active',current_stage:1,created_by:CB_CURRENT_USER||'unknown',confirmed_channels:[]}])
+    });
+    if(!cr.ok) throw new Error(await cr.text());
+    var newCamps=await cr.json();
+    var newCamp=newCamps[0];
+    var templates=await fetch(CB_API+'/campaign_task_templates?select=*&order=stage,task_order',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
+    if(Array.isArray(templates)&&templates.length){
+      var taskRows=templates.map(function(t){
+        return {campaign_id:newCamp.id,stage:t.stage,task_order:t.task_order,task_name:t.task_name,department:t.department,assigned_to:t.default_assignee,approver_scope:t.approver_scope,is_blocker:t.is_blocker,channel:t.channel,completed:false,approved:false,rejected:false,notes:''};
+      });
+      await fetch(CB_API+'/campaign_tasks',{method:'POST',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(taskRows)});
+    }
+    CB_CAMPAIGNS.unshift(newCamp);
+    await cbOpenCampaign(newCamp.id);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+function cbAddBriefButton(){
+  var saveBar=document.getElementById('bb-save-bar');
+  if(!saveBar||document.getElementById('cb-from-brief-btn')) return;
+  var btn=document.createElement('button');
+  btn.id='cb-from-brief-btn';
+  btn.className='btn btn-primary';
+  btn.style.cssText='margin-left:12px';
+  btn.textContent='\uD83C\uDFAF Create Campaign';
+  btn.onclick=cbCreateFromBrief;
+  saveBar.appendChild(btn);
+}
+
+async function cbCreateFromBrief(){
+  var titleEl=document.querySelector('#bb-left .bb-live-campaign')||document.querySelector('.bb-live-title');
+  var title=titleEl?titleEl.textContent.trim():'';
+  if(!title) title=prompt('Campaign title:')||'New Campaign';
+  switchView('campaigns',document.querySelector('[data-view="campaigns"]'));
+  setTimeout(async function(){
+    var anon=SUPABASE_ANON_KEY;
+    try{
+      var cr=await fetch(CB_API+'/campaigns',{method:'POST',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify([{title:title.trim(),scope:'brand',status:'active',current_stage:1,created_by:CB_CURRENT_USER||'brief',confirmed_channels:[]}])});
+      if(!cr.ok) throw new Error(await cr.text());
+      var newCamps=await cr.json();
+      var newCamp=newCamps[0];
+      var templates=await fetch(CB_API+'/campaign_task_templates?select=*&order=stage,task_order',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
+      if(Array.isArray(templates)&&templates.length){
+        var taskRows=templates.map(function(t){return {campaign_id:newCamp.id,stage:t.stage,task_order:t.task_order,task_name:t.task_name,department:t.department,assigned_to:t.default_assignee,approver_scope:t.approver_scope,is_blocker:t.is_blocker,channel:t.channel,completed:false,approved:false,rejected:false,notes:''};});
+        await fetch(CB_API+'/campaign_tasks',{method:'POST',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(taskRows)});
+      }
+      CB_CAMPAIGNS.unshift(newCamp);
+      await cbLoad();
+      await cbOpenCampaign(newCamp.id);
+    }catch(e){alert('Error: '+e.message);}
+  },300);
+}
+
+
 const QPLAN_CACHE = {};
 
 /* ── TRIGGER UPLOAD ── */
@@ -6126,6 +6595,7 @@ function sbHandleSession(session) {
   // If save bar is hidden (user signed in after generating brief), show it
   const step6 = document.getElementById('bb-step-6');
   if(step6 && step6.classList.contains('bb-active') && saveBar) {
+    if(typeof cbAddBriefButton === 'function') cbAddBriefButton();
     saveBar.style.display = 'flex';
     if(saveBtn) saveBtn.textContent = 'Save brief';
   }
