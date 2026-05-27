@@ -248,6 +248,7 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
     <button class="snav" onclick="showPage('sitekpis',this)">📊 Site KPIs</button>
     <button class="snav" onclick="showPage('sitecontacts',this)">📋 Site Directory</button>
     <button class="snav" onclick="showPage('brandkpis',this)">📈 Brand KPIs</button>
+    <button class="snav" onclick="showPage('brandchannels',this)">📊 Brand Channels</button>
     <button class="snav" onclick="showPage('history',this)">🕐 History</button>
     <button class="snav" onclick="showPage('security',this)">🔒 Security</button>
     <button class="snav" onclick="showPage('data',this)">💾 Data & Export</button>
@@ -510,6 +511,29 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
       </div>
       <div class="card-body">
         <div id="bk-content"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ BRAND CHANNELS ══ -->
+  <div class="page" id="page-brandchannels">
+    <div class="page-title">Brand Channel Mix</div>
+    <div class="page-sub">Set the channel split for each brand — group totals are calculated automatically</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:1.5rem" id="bc-brand-tabs">
+      <button class="cal-q-tab" id="bc-tab-audi" onclick="bcSelectBrand('audi')">Audi</button><button class="cal-q-tab" id="bc-tab-vw" onclick="bcSelectBrand('vw')">Volkswagen</button><button class="cal-q-tab" id="bc-tab-vwcv" onclick="bcSelectBrand('vwcv')">VW Commercial</button><button class="cal-q-tab" id="bc-tab-seat" onclick="bcSelectBrand('seat')">SEAT</button><button class="cal-q-tab" id="bc-tab-cupra" onclick="bcSelectBrand('cupra')">CUPRA</button><button class="cal-q-tab" id="bc-tab-landrover" onclick="bcSelectBrand('landrover')">Land Rover</button><button class="cal-q-tab" id="bc-tab-jaguar" onclick="bcSelectBrand('jaguar')">Jaguar</button><button class="cal-q-tab" id="bc-tab-honda" onclick="bcSelectBrand('honda')">Honda</button><button class="cal-q-tab" id="bc-tab-peugeot" onclick="bcSelectBrand('peugeot')">Peugeot</button><button class="cal-q-tab" id="bc-tab-byd" onclick="bcSelectBrand('byd')">BYD</button><button class="cal-q-tab" id="bc-tab-omoda" onclick="bcSelectBrand('omoda')">OMODA/JAECOO</button><button class="cal-q-tab" id="bc-tab-motormatch" onclick="bcSelectBrand('motormatch')">Motor Match</button>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" id="bc-brand-title">Select a brand above</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="bcAddChannel()">+ Add channel</button>
+          <button class="btn btn-primary" onclick="bcSave()">&#10003; Save</button>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div id="bc-content"></div>
+        <div id="bc-summary" style="padding:16px 20px;border-top:2px solid var(--border);background:var(--surface)"></div>
       </div>
     </div>
   </div>
@@ -1023,7 +1047,8 @@ function showPage(id, el) {
   if(id === 'sitebudgets') { sbLoad(); sbSelectBrand(SB_CURRENT_BRAND); }
   if(id === 'sitekpis')      { skLoad(); skSelectBrand(SK_CURRENT_BRAND); }
   if(id === 'sitecontacts')  { scLoad(); scSelectBrand(SC_CURRENT_BRAND); }
-  if(id === 'brandkpis')     { bkLoad(); bkSelectBrand(BK_CURRENT_BRAND); }
+  if(id === 'brandkpis')       { bkLoad(); bkSelectBrand(BK_CURRENT_BRAND); }
+  if(id === 'brandchannels')  { bcLoad(); bcSelectBrand(BC_CURRENT_BRAND); }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.snav').forEach(s=>s.classList.remove('active'));
   const page = document.getElementById('page-'+id);
@@ -2646,6 +2671,190 @@ async function bkSave() {
     });
     if (!resp.ok) throw new Error(await resp.text());
     showToast('\u2713 Brand KPIs saved', 'success');
+  } catch(e) { showToast('Save error: ' + e.message, 'error'); }
+}
+
+
+
+/* ════ BRAND CHANNELS ════ */
+var BC_DATA = {};  // brand_id -> [{channel, pct, color, note, sort_order}]
+var BC_CURRENT_BRAND = 'audi';
+var BC_BRAND_NAMES = {"audi": "Audi", "vw": "Volkswagen", "vwcv": "VW Commercial", "seat": "SEAT", "cupra": "CUPRA", "landrover": "Land Rover", "jaguar": "Jaguar", "honda": "Honda", "peugeot": "Peugeot", "byd": "BYD", "omoda": "OMODA/JAECOO", "motormatch": "Motor Match"};
+var BC_API_URL = SB_ADMIN_URL + '/rest/v1/brand_channels';
+var BC_DEFAULT_CHANNELS = [{"channel": "Paid Search (Google/Bing)", "color": "#4285F4"}, {"channel": "AutoTrader", "color": "#F15A22"}, {"channel": "Meta (Facebook/Instagram)", "color": "#1877F2"}, {"channel": "Display & Programmatic", "color": "#34A853"}, {"channel": "Email Marketing", "color": "#EA4335"}, {"channel": "Social Organic", "color": "#9C27B0"}, {"channel": "Manufacturer Co-op", "color": "#FF9800"}, {"channel": "Events & Showroom", "color": "#607D8B"}, {"channel": "Other / Local", "color": "#795548"}];
+
+function bcSelectBrand(brandId) {
+  BC_CURRENT_BRAND = brandId;
+  document.querySelectorAll('[id^="bc-tab-"]').forEach(function(t) {
+    t.className = 'cal-q-tab' + (t.id === 'bc-tab-' + brandId ? ' active' : '');
+  });
+  var el = document.getElementById('bc-brand-title');
+  if (el) el.textContent = BC_BRAND_NAMES[brandId] + ' — Channel Mix';
+  // If no data yet, seed with defaults
+  if (!BC_DATA[brandId] || !BC_DATA[brandId].length) {
+    BC_DATA[brandId] = BC_DEFAULT_CHANNELS.map(function(c, i) {
+      return {channel: c.channel, pct: 0, color: c.color, note: '', sort_order: i};
+    });
+  }
+  bcRenderContent(brandId);
+}
+
+function bcRenderContent(brandId) {
+  var el = document.getElementById('bc-content');
+  var sumEl = document.getElementById('bc-summary');
+  if (!el) return;
+  var channels = BC_DATA[brandId] || [];
+  el.innerHTML = '';
+
+  // Header row
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'display:grid;grid-template-columns:32px 1fr 100px 120px 1fr 40px;gap:8px;padding:8px 20px;background:var(--surface);font-family:var(--font-m);font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em';
+  ['Colour','Channel','%','£ Value','Notes',''].forEach(function(h) {
+    var d = document.createElement('div'); d.textContent = h; hdr.appendChild(d);
+  });
+  el.appendChild(hdr);
+
+  var totalBudget = 0;
+  if (SB_SITES) {
+    var brandSites = SB_SITES.filter(function(s){return s.brand_id===brandId;});
+    // Will be calculated when site budgets are available
+  }
+
+  var totalPct = 0;
+  channels.forEach(function(ch, idx) {
+    totalPct += parseFloat(ch.pct) || 0;
+    var row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:32px 1fr 100px 120px 1fr 40px;gap:8px;padding:8px 20px;align-items:center;border-bottom:1px solid var(--border);background:' + (idx%2===0?'var(--white)':'var(--surface)');
+
+    // Colour swatch
+    var swatch = document.createElement('input');
+    swatch.type = 'color';
+    swatch.value = ch.color || '#333333';
+    swatch.style.cssText = 'width:28px;height:28px;border:none;border-radius:3px;cursor:pointer;padding:0';
+    swatch.dataset.idx = idx; swatch.dataset.brand = brandId; swatch.dataset.field = 'color';
+    swatch.addEventListener('input', function() { bcSetVal(this.dataset.brand, parseInt(this.dataset.idx), this.dataset.field, this.value); });
+    row.appendChild(swatch);
+
+    // Channel name
+    var nameInp = document.createElement('input');
+    nameInp.type = 'text'; nameInp.value = ch.channel || '';
+    nameInp.style.cssText = 'width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:var(--font-m);box-sizing:border-box';
+    nameInp.dataset.idx = idx; nameInp.dataset.brand = brandId; nameInp.dataset.field = 'channel';
+    nameInp.addEventListener('input', function() { bcSetVal(this.dataset.brand, parseInt(this.dataset.idx), this.dataset.field, this.value); });
+    row.appendChild(nameInp);
+
+    // Pct
+    var pctInp = document.createElement('input');
+    pctInp.type = 'number'; pctInp.min = '0'; pctInp.max = '100'; pctInp.step = '0.1';
+    pctInp.value = ch.pct || 0;
+    pctInp.style.cssText = 'width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:var(--font-m);box-sizing:border-box;text-align:right';
+    pctInp.dataset.idx = idx; pctInp.dataset.brand = brandId; pctInp.dataset.field = 'pct';
+    pctInp.addEventListener('input', function() {
+      bcSetVal(this.dataset.brand, parseInt(this.dataset.idx), this.dataset.field, parseFloat(this.value)||0);
+      bcUpdateSummary(this.dataset.brand);
+    });
+    row.appendChild(pctInp);
+
+    // £ value placeholder
+    var gbpDiv = document.createElement('div');
+    gbpDiv.style.cssText = 'font-size:12px;color:var(--ink-soft);text-align:right';
+    gbpDiv.id = 'bc-gbp-' + brandId + '-' + idx;
+    gbpDiv.textContent = '—';
+    row.appendChild(gbpDiv);
+
+    // Notes
+    var noteInp = document.createElement('input');
+    noteInp.type = 'text'; noteInp.value = ch.note || '';
+    noteInp.placeholder = 'Optional note';
+    noteInp.style.cssText = 'width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:var(--font-m);box-sizing:border-box';
+    noteInp.dataset.idx = idx; noteInp.dataset.brand = brandId; noteInp.dataset.field = 'note';
+    noteInp.addEventListener('input', function() { bcSetVal(this.dataset.brand, parseInt(this.dataset.idx), this.dataset.field, this.value); });
+    row.appendChild(noteInp);
+
+    // Delete
+    var delBtn = document.createElement('button');
+    delBtn.textContent = '×';
+    delBtn.style.cssText = 'background:none;border:1px solid var(--border);border-radius:2px;cursor:pointer;font-size:14px;color:var(--ink-soft);width:28px;height:28px';
+    delBtn.dataset.idx = idx; delBtn.dataset.brand = brandId;
+    delBtn.addEventListener('click', function() {
+      BC_DATA[this.dataset.brand].splice(parseInt(this.dataset.idx), 1);
+      bcRenderContent(this.dataset.brand);
+    });
+    row.appendChild(delBtn);
+    el.appendChild(row);
+  });
+
+  // Summary
+  var pctColor = Math.abs(totalPct - 100) < 0.5 ? '#059669' : totalPct > 100 ? '#DC2626' : '#D97706';
+  if (sumEl) {
+    sumEl.innerHTML = '<span style="font-family:var(--font-m);font-size:12px">Total allocation: </span><strong style="font-size:14px;color:' + pctColor + '">' + totalPct.toFixed(1) + '%</strong>' +
+      (Math.abs(totalPct - 100) < 0.5 ? ' <span style="color:#059669;font-size:12px">✓ Balanced</span>' : ' <span style="color:#D97706;font-size:12px">(should total 100%)</span>');
+  }
+}
+
+function bcSetVal(brandId, idx, field, value) {
+  if (!BC_DATA[brandId]) BC_DATA[brandId] = [];
+  if (!BC_DATA[brandId][idx]) BC_DATA[brandId][idx] = {};
+  BC_DATA[brandId][idx][field] = value;
+}
+
+function bcUpdateSummary(brandId) {
+  var channels = BC_DATA[brandId] || [];
+  var total = channels.reduce(function(s,c){return s+(parseFloat(c.pct)||0);}, 0);
+  var pctColor = Math.abs(total-100)<0.5?'#059669':total>100?'#DC2626':'#D97706';
+  var sumEl = document.getElementById('bc-summary');
+  if (sumEl) sumEl.innerHTML = '<span style="font-family:var(--font-m);font-size:12px">Total: </span><strong style="color:'+pctColor+'">' + total.toFixed(1) + '%</strong>';
+}
+
+function bcAddChannel() {
+  if (!BC_DATA[BC_CURRENT_BRAND]) BC_DATA[BC_CURRENT_BRAND] = [];
+  BC_DATA[BC_CURRENT_BRAND].push({channel:'New channel', pct:0, color:'#607D8B', note:'', sort_order: BC_DATA[BC_CURRENT_BRAND].length});
+  bcRenderContent(BC_CURRENT_BRAND);
+}
+
+async function bcLoad() {
+  var svcKey = window.SWANSWAY_CONFIG && window.SWANSWAY_CONFIG.serviceKey;
+  if (!svcKey) return;
+  try {
+    var resp = await fetch(BC_API_URL + '?select=*&order=brand_id,sort_order', {
+      headers: {'apikey': svcKey, 'Authorization': 'Bearer ' + svcKey}
+    });
+    if (!resp.ok) return;
+    var rows = await resp.json();
+    // Group by brand_id
+    rows.forEach(function(row) {
+      if (!BC_DATA[row.brand_id]) BC_DATA[row.brand_id] = [];
+      BC_DATA[row.brand_id].push(row);
+    });
+    console.log('Brand channels loaded: ' + rows.length + ' rows');
+    if (BC_CURRENT_BRAND && BC_DATA[BC_CURRENT_BRAND]) bcRenderContent(BC_CURRENT_BRAND);
+  } catch(e) { console.warn('bcLoad error:', e); }
+}
+
+async function bcSave() {
+  var svcKey = window.SWANSWAY_CONFIG && window.SWANSWAY_CONFIG.serviceKey;
+  if (!svcKey) { showToast('No service key', 'error'); return; }
+  var brandId = BC_CURRENT_BRAND;
+  var channels = BC_DATA[brandId] || [];
+  if (!channels.length) { showToast('No channels to save', 'error'); return; }
+
+  // Delete existing rows for this brand then re-insert
+  try {
+    await fetch(BC_API_URL + '?brand_id=eq.' + brandId, {
+      method: 'DELETE',
+      headers: {'apikey': svcKey, 'Authorization': 'Bearer ' + svcKey}
+    });
+    var rows = channels.map(function(ch, i) {
+      return {brand_id: brandId, channel: ch.channel||'', pct: parseFloat(ch.pct)||0,
+              color: ch.color||'#333333', note: ch.note||'', sort_order: i};
+    });
+    var resp = await fetch(BC_API_URL, {
+      method: 'POST',
+      headers: {'apikey': svcKey, 'Authorization': 'Bearer ' + svcKey, 'Content-Type': 'application/json', 'Prefer': 'return=minimal'},
+      body: JSON.stringify(rows)
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    showToast('\u2713 ' + BC_BRAND_NAMES[brandId] + ' channels saved', 'success');
   } catch(e) { showToast('Save error: ' + e.message, 'error'); }
 }
 

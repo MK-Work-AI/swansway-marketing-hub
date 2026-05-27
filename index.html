@@ -2364,10 +2364,11 @@ function renderBrand(b) {
   `;
   // After HTML is set, render all tab content so it's ready when tabs are clicked
   setTimeout(function() {
-    if (typeof renderBrandSites === 'function')     renderBrandSites(b.id);
-    if (typeof renderBrandCentres === 'function')   renderBrandCentres(b.id);
-    if (typeof renderBrandCampaigns === 'function') renderBrandCampaigns(b.id);
-    if (typeof renderBrandKPIs === 'function')      renderBrandKPIs(b.id);
+    if (typeof renderBrandSites === 'function')       renderBrandSites(b.id);
+    if (typeof renderBrandCentres === 'function')     renderBrandCentres(b.id);
+    if (typeof renderBrandCampaigns === 'function')   renderBrandCampaigns(b.id);
+    if (typeof renderBrandKPIs === 'function')         renderBrandKPIs(b.id);
+    if (typeof renderBrandChannelMix === 'function')  renderBrandChannelMix(b.id);
   }, 150);
 }
 
@@ -2918,6 +2919,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadSiteKPIs();
   loadSiteContacts();
   loadBrandKPIs();
+  loadBrandChannels();
   syncBrandSitesFromHubSites();
   renderGroupBrandCards();
   renderGroupCalendar();
@@ -5341,6 +5343,111 @@ function updateGroupKPIsFromBrands() {
     if (m.t) kpi.t = m.t;
     if (m.a) { kpi.a = m.a; kpi.p = m.p; }
   });
+}
+
+
+/* ════ BRAND CHANNELS — HUB ════ */
+var BRAND_CHANNELS_DATA = {};  // brand_id -> [{channel, pct, color, note}]
+
+async function loadBrandChannels() {
+  try {
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/brand_channels?select=*&order=brand_id,sort_order', {
+      headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY}
+    });
+    if (!resp.ok) return;
+    var rows = await resp.json();
+    rows.forEach(function(row) {
+      if (!BRAND_CHANNELS_DATA[row.brand_id]) BRAND_CHANNELS_DATA[row.brand_id] = [];
+      BRAND_CHANNELS_DATA[row.brand_id].push(row);
+    });
+    updateGroupChannelsFromBrands();
+    console.log('Brand channels loaded: ' + rows.length + ' rows');
+  } catch(e) { console.warn('loadBrandChannels error:', e); }
+}
+
+function updateGroupChannelsFromBrands() {
+  // Aggregate all brand channel spend into group channel totals
+  if (!Object.keys(BRAND_CHANNELS_DATA).length) return;
+  var channelTotals = {};  // channel name -> {total_gbp, color}
+
+  HUB_SITES && HUB_SITES.forEach ? null : null; // ensure HUB_SITES exists
+
+  // For each brand, calculate £ spend per channel
+  Object.keys(BRAND_CHANNELS_DATA).forEach(function(brandId) {
+    var brandSites = HUB_SITES ? HUB_SITES.filter(function(s) { return s.brand_id === brandId; }) : [];
+    var brandBudget = brandSites.reduce(function(sum, site) {
+      var d = SITE_BUDGETS[site.site_id] || {};
+      return sum + (d.annual_planned || 0);
+    }, 0);
+
+    var channels = BRAND_CHANNELS_DATA[brandId] || [];
+    channels.forEach(function(ch) {
+      var gbp = brandBudget * (parseFloat(ch.pct) || 0) / 100;
+      if (!channelTotals[ch.channel]) {
+        channelTotals[ch.channel] = {total: 0, color: ch.color || '#333'};
+      }
+      channelTotals[ch.channel].total += gbp;
+    });
+  });
+
+  // Update GROUP_CHANNELS with aggregated data
+  var totalGbp = Object.values(channelTotals).reduce(function(s, c) { return s + c.total; }, 0);
+  GROUP_CHANNELS = Object.keys(channelTotals).map(function(name, i) {
+    var c = channelTotals[name];
+    return {
+      n: name,
+      pct: totalGbp > 0 ? Math.round(c.total / totalGbp * 100) : 0,
+      gbp: Math.round(c.total),
+      color: c.color,
+      note: ''
+    };
+  }).sort(function(a, b) { return b.gbp - a.gbp; });
+
+  if (typeof renderGroupChannels === 'function') renderGroupChannels();
+}
+
+function renderBrandChannelMix(brandId) {
+  var el = document.getElementById(brandId + '-budget');
+  if (!el) return;
+  var channels = BRAND_CHANNELS_DATA[brandId] || [];
+
+  // Calculate brand budget
+  var brandSites = HUB_SITES ? HUB_SITES.filter(function(s) { return s.brand_id === brandId; }) : [];
+  var brandBudget = brandSites.reduce(function(sum, site) {
+    var d = SITE_BUDGETS[site.site_id] || {};
+    return sum + (d.annual_planned || 0);
+  }, 0);
+
+  if (!channels.length) {
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--ink-faint);font-size:13px">No channel mix set. Configure in Admin → Brand Channels.</div>';
+    return;
+  }
+
+  var html = '<div class="sh"><div><div class="sh-title">Channel Mix</div><div class="sh-sub">Based on £' + brandBudget.toLocaleString() + ' annual budget</div></div></div>';
+
+  // Bar chart
+  html += '<div style="padding:0 20px 20px">';
+  channels.forEach(function(ch) {
+    var gbp = Math.round(brandBudget * (parseFloat(ch.pct) || 0) / 100);
+    var pct = parseFloat(ch.pct) || 0;
+    html += '<div style="margin-bottom:12px">';
+    html += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">';
+    html += '<span style="font-weight:600">' + ch.channel + '</span>';
+    html += '<span style="color:var(--ink-soft)">' + pct + '% &nbsp; <strong>£' + gbp.toLocaleString() + '</strong></span>';
+    html += '</div>';
+    html += '<div style="height:8px;background:var(--surface-2);border-radius:4px">';
+    html += '<div style="height:8px;border-radius:4px;background:' + (ch.color||'#333') + ';width:' + Math.min(pct,100) + '%"></div>';
+    html += '</div>';
+    if (ch.note) html += '<div style="font-size:10px;color:var(--ink-faint);margin-top:2px">' + ch.note + '</div>';
+    html += '</div>';
+  });
+
+  // Total check
+  var totalPct = channels.reduce(function(s,c){return s+(parseFloat(c.pct)||0);},0);
+  html += '<div style="padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--ink-soft)">Total: <strong>' + totalPct.toFixed(1) + '%</strong> of £' + brandBudget.toLocaleString() + ' = £' + Math.round(brandBudget*totalPct/100).toLocaleString() + ' allocated</div>';
+  html += '</div>';
+
+  el.innerHTML = html;
 }
 
 const QPLAN_CACHE = {};
