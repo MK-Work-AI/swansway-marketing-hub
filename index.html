@@ -2420,6 +2420,11 @@ function renderGroupCalendar() {
 function renderGroupChannels() {
   const g = document.getElementById('group-channel-list');
   if (!g) return;
+  // If no channels yet but brand data exists, aggregate first
+  if ((!GROUP_CHANNELS || !GROUP_CHANNELS.length) && Object.keys(BRAND_CHANNELS_DATA).length && !_updatingGroupChannels) {
+    updateGroupChannelsFromBrands();
+    return; // updateGroupChannelsFromBrands will call renderGroupChannels when done
+  }
   console.log('renderGroupChannels: GROUP_CHANNELS=', GROUP_CHANNELS.length, 'BRAND_CHANNELS_DATA brands=', Object.keys(BRAND_CHANNELS_DATA).length);
   // If still no data, show empty state
   if (!GROUP_CHANNELS || !GROUP_CHANNELS.length) {
@@ -5397,10 +5402,13 @@ async function loadBrandChannels() {
   } catch(e) { console.warn('loadBrandChannels error:', e); }
 }
 
+var _updatingGroupChannels = false;
 function updateGroupChannelsFromBrands() {
+  if (_updatingGroupChannels) return;
+  _updatingGroupChannels = true;
   // Aggregate all brand channel spend into group channel totals
   console.log('updateGroupChannelsFromBrands: brands=', Object.keys(BRAND_CHANNELS_DATA).length, 'sites=', Object.keys(SITE_BUDGETS).length);
-  if (!Object.keys(BRAND_CHANNELS_DATA).length) { console.log('No brand channel data yet'); return; }
+  if (!Object.keys(BRAND_CHANNELS_DATA).length) { console.log('No brand channel data yet'); _updatingGroupChannels = false; return; }
   var channelTotals = {};  // channel name -> {total_gbp, color, brands:[{name, gbp, pct}]}
 
   HUB_SITES && HUB_SITES.forEach ? null : null; // ensure HUB_SITES exists
@@ -5444,6 +5452,12 @@ function updateGroupChannelsFromBrands() {
   
   // Also store which brands have contributed
   GROUP_CHANNELS._contributing_brands = Object.keys(BRAND_CHANNELS_DATA).length;
+  _updatingGroupChannels = false;
+  // Render group channels if that view is active
+  var chanView = document.getElementById('view-channels');
+  if (chanView && chanView.classList.contains('active')) {
+    if (typeof renderGroupChannels === 'function') renderGroupChannels();
+  }
 
 }
 
