@@ -2476,9 +2476,8 @@ function renderGroupChannels() {
 
   var maxPct = Math.max.apply(null, GROUP_CHANNELS.map(function(c){return c.pct||0;})) || 1;
   g.innerHTML = GROUP_CHANNELS.map(function(c) {
-    var budgetVal = groupTotal > 0
-      ? '£' + Math.round(groupTotal * c.pct / 100 / 1000) + 'K'
-      : c.budget !== 'auto' ? c.budget : '—';
+    var gbpK = groupTotal > 0 ? Math.round(groupTotal * c.pct / 100 / 1000) : 0;
+    var budgetVal = gbpK > 0 ? '£' + gbpK + 'K' : '—';
     var barWidth = Math.round(c.pct / maxPct * 100);
     var brandTags = '';
     if (c.brands && c.brands.length) {
