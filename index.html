@@ -2420,6 +2420,15 @@ function renderGroupCalendar() {
 function renderGroupChannels() {
   const g = document.getElementById('group-channel-list');
   if (!g) return;
+  // Always re-aggregate from brand data before rendering
+  if (typeof updateGroupChannelsFromBrands === 'function') updateGroupChannelsFromBrands();
+  // If still no data, show empty state
+  if (!GROUP_CHANNELS || !GROUP_CHANNELS.length) {
+    g.innerHTML = '<div style="padding:24px;text-align:center;color:var(--ink-faint);font-size:13px">No channel data yet. Set brand channel mixes in Admin → Brand Channels.</div>';
+    var cardsEl = document.getElementById('channel-summary-cards');
+    if (cardsEl) cardsEl.innerHTML = '';
+    return;
+  }
   // Get group total from site budgets
   var groupTotal = Object.values(SITE_BUDGETS).reduce(function(s, d) {
     return s + (d.annual_planned || 0);
@@ -8889,6 +8898,15 @@ function renderGroupCalendar() {
 function renderGroupChannels() {
   const g = document.getElementById('group-channel-list');
   if (!g) return;
+  // Always re-aggregate from brand data before rendering
+  if (typeof updateGroupChannelsFromBrands === 'function') updateGroupChannelsFromBrands();
+  // If still no data, show empty state
+  if (!GROUP_CHANNELS || !GROUP_CHANNELS.length) {
+    g.innerHTML = '<div style="padding:24px;text-align:center;color:var(--ink-faint);font-size:13px">No channel data yet. Set brand channel mixes in Admin → Brand Channels.</div>';
+    var cardsEl = document.getElementById('channel-summary-cards');
+    if (cardsEl) cardsEl.innerHTML = '';
+    return;
+  }
   // Get group total from site budgets
   var groupTotal = Object.values(SITE_BUDGETS).reduce(function(s, d) {
     return s + (d.annual_planned || 0);
