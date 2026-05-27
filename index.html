@@ -2846,21 +2846,10 @@ function applyAdminConfig(cfg) {
     if (typeof renderGroupKPIs === 'function') renderGroupKPIs();
   }
 
-// ── 4. UPDATE CHANNELS ────────────────────────────────────────
-  if (cfg.channels && cfg.channels.length) {
-    // Update GROUP_CHANNELS pct and notes from admin config
-    cfg.channels.forEach(function(ch, i) {
-      if (i < GROUP_CHANNELS.length) {
-        if (ch.pct)  GROUP_CHANNELS[i].pct  = ch.pct;
-        if (ch.note) GROUP_CHANNELS[i].note = ch.note;
-        if (ch.name || ch.n) GROUP_CHANNELS[i].n = ch.name || ch.n;
-      }
-    });
-    // Re-render with updated percentages (£ auto-computed from site budgets)
-    if (typeof renderGroupChannels === 'function') renderGroupChannels();
-  }
+// ── 4. UPDATE CHANNELS — disabled, now driven by brand_channels table ──
+  // GROUP_CHANNELS is now built by updateGroupChannelsFromBrands() from brand_channels Supabase data
 
-  // ── 5. UPDATE CAMPAIGN CALENDAR ──────────────────────────────
+// ── 5. UPDATE CAMPAIGN CALENDAR ──────────────────────────────
   if (cfg.calendar && cfg.calendar.length) {
     // Convert admin quarterly calendar format to hub month-bar format
     var brandColorMap = {
