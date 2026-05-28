@@ -1432,6 +1432,32 @@ td strong{font-weight:600}
 </div><!-- end bb-layout -->
 </div><!-- end view-brief -->
 
+<!-- CAMPAIGN BUILDER -->
+<div class="view" id="view-campaigns">
+  <div class="page-strip">
+    <div>
+      <div class="page-title">Campaign Builder</div>
+      <div class="page-subtitle" id="cb-subtitle">Campaigns created from approved briefs</div>
+    </div>
+    <div class="action-row">
+      <select id="cb-user-sel" onchange="cbSetUser(this.value)" style="padding:6px 12px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:var(--font-m)">
+        <option value="">— Select your name —</option>
+      </select>
+      <button class="btn" id="cb-my-tasks-btn" onclick="cbToggleMyTasks()">My tasks</button>
+      <button class="btn btn-primary" onclick="switchView('brief',document.querySelector('[data-view=\'brief\']'))">+ New brief</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap">
+    <button class="cal-q-tab active" onclick="cbFilter('all',this)">All</button>
+    <button class="cal-q-tab" onclick="cbFilter('active',this)">Active</button>
+    <button class="cal-q-tab" onclick="cbFilter('complete',this)">Complete</button>
+    <button class="cal-q-tab" onclick="cbFilter('paused',this)">Paused</button>
+  </div>
+  <div id="cb-campaign-list"></div>
+  <div id="cb-detail" style="display:none"></div>
+</div>
+
+
 
 <!-- ── AI MODAL ── -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnBg(event)">
@@ -5611,6 +5637,20 @@ async function cbLoad() {
     console.log('Campaign Builder loaded:',CB_CAMPAIGNS.length,'campaigns');
     cbRenderDashboard();
     cbRenderUserPicker();
+    // Populate in-view dropdown
+    var cbusel = document.getElementById('cb-user-sel');
+    if (cbusel) {
+      cbusel.innerHTML = '<option value="">— Select your name —</option>';
+      Object.values(CB_TEAM).forEach(function(m){
+        var o=document.createElement('option');o.value=m.id;
+        o.textContent=m.name+' — '+m.role;cbusel.appendChild(o);
+      });
+      if(CB_CURRENT_USER) cbusel.value=CB_CURRENT_USER;
+      else if(window.SB_USER&&SB_USER.email){
+        var au=Object.values(CB_TEAM).find(function(m){return m.email&&m.email.toLowerCase()===SB_USER.email.toLowerCase();});
+        if(au){cbusel.value=au.id;CB_CURRENT_USER=au.id;}
+      }
+    }
     // Also populate the in-view dropdown
     var sel = document.getElementById('cb-user-sel');
     if (sel && Object.keys(CB_TEAM).length) {
