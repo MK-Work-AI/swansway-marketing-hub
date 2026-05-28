@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+
+      window._lastSavedBriefId = data && data[0] ? data[0].id : null;
+      window._lastSavedBriefTitle = title;
+      <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -5635,184 +5638,262 @@ async function cbOpenCampaign(campaignId) {
 }
 
 function cbRenderCampaignDetail(c) {
-  var listEl=document.getElementById('cb-campaign-list');
-  var detailEl=document.getElementById('cb-detail');
-  if(!listEl||!detailEl) return;
-  listEl.style.display='none';
-  detailEl.style.display='block';
-  detailEl.innerHTML='';
+  var listEl = document.getElementById('cb-campaign-list');
+  var detailEl = document.getElementById('cb-detail');
+  if (!listEl || !detailEl) return;
+  listEl.style.display = 'none';
+  detailEl.style.display = 'block';
+  detailEl.innerHTML = '';
 
-  var tasks=CB_TASKS[c.id]||[];
-  var stage=c.current_stage||1;
-  var perms=CB_PERMS[CB_CURRENT_USER]||{};
-  var canApprove=!!perms.can_approve_all;
-  var canApproveDigital=!!perms.can_approve_digital;
-  var canReject=!!(perms.can_reject_tasks||perms.can_approve_all);
-  var canAdvance=!!perms.can_advance_stage;
+  var tasks = CB_TASKS[c.id] || [];
+  var stage = c.current_stage || 1;
+  var perms = CB_PERMS[CB_CURRENT_USER] || {};
+  var canApprove = !!perms.can_approve_all;
+  var canApproveDigital = !!perms.can_approve_digital;
+  var canReject = !!(perms.can_reject_tasks || perms.can_approve_all);
+  var canAdvance = !!perms.can_advance_stage;
+  var canComplete = !!perms.can_complete_tasks;
 
-  var byStage={};
-  for(var s=1;s<=6;s++) byStage[s]=[];
-  tasks.forEach(function(t){if(byStage[t.stage]) byStage[t.stage].push(t);});
+  // Group tasks by stage
+  var byStage = {};
+  for (var s = 1; s <= 6; s++) byStage[s] = [];
+  tasks.forEach(function(t) { if (byStage[t.stage]) byStage[t.stage].push(t); });
 
-  var statusColors={active:'#059669',paused:'#D97706',complete:'#2563EB',cancelled:'#DC2626'};
-  var statusColor=statusColors[c.status]||'#6B7280';
-  var scopeVal=c.site_id||(c.brand_id?(window.BRAND_NAMES&&BRAND_NAMES[c.brand_id]||c.brand_id):'Group');
+  var statusColors = {active:'#059669',paused:'#D97706',complete:'#2563EB',cancelled:'#DC2626'};
+  var statusColor = statusColors[c.status] || '#6B7280';
+  var scopeVal = c.site_id || (c.brand_id ? (window.BRAND_NAMES && BRAND_NAMES[c.brand_id] || c.brand_id) : 'Group');
 
-  // Back + header
-  var header=document.createElement('div');
-  header.style.cssText='margin-bottom:1.5rem';
-  var backBtn=document.createElement('button');
-  backBtn.style.cssText='background:none;border:none;cursor:pointer;font-size:13px;color:var(--ink-soft);padding:0;margin-bottom:16px;display:flex;align-items:center;gap:6px';
-  backBtn.innerHTML='\u2190 All campaigns';
-  backBtn.onclick=cbBackToDashboard;
-  header.appendChild(backBtn);
+  // ── BACK BUTTON ──
+  var backBtn = document.createElement('button');
+  backBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:13px;color:var(--ink-soft);padding:0;margin-bottom:16px;display:inline-flex;align-items:center;gap:6px;font-family:var(--font-m)';
+  backBtn.innerHTML = '\u2190 All campaigns';
+  backBtn.onclick = cbBackToDashboard;
+  detailEl.appendChild(backBtn);
 
-  // Campaign info card
-  var infoCard=document.createElement('div');
-  infoCard.style.cssText='background:var(--white);border:1px solid var(--border);border-radius:6px;padding:24px;margin-bottom:20px;border-left:4px solid '+statusColor;
-  var advBtn=canAdvance&&stage<6&&c.status==='active'?'<button class="btn btn-primary" data-cid="'+c.id+'" onclick="cbAdvanceStage(this.dataset.cid)">Advance to Stage '+(stage+1)+' \u2192</button>':'';
-  var reopenBtn=canAdvance&&stage>1?'<button class="btn" data-cid="'+c.id+'" onclick="cbReopenStage(this.dataset.cid)">Reopen Stage '+(stage-1)+'</button>':'';
-  infoCard.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">'
-    +'<div><div style="font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px">'+c.title+'</div>'
-    +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
-    +'<span style="font-size:12px;background:var(--surface);padding:3px 10px;border-radius:10px;color:var(--ink-soft)">'+(c.site_id?'Site':'Brand')+': '+scopeVal+'</span>'
-    +'<span style="font-size:12px;padding:3px 10px;border-radius:10px;background:'+statusColor+'20;color:'+statusColor+';font-weight:600">'+c.status.charAt(0).toUpperCase()+c.status.slice(1)+'</span>'
-    +'</div></div>'
-    +'<div style="display:flex;gap:8px">'+advBtn+reopenBtn+'</div></div>'
-    // Stage timeline
-    +'<div style="display:flex;overflow-x:auto;border-radius:4px;overflow:hidden">'
-    +CB_STAGE_NAMES.map(function(sn,i){
-      var s2=i+1,done=s2<stage,active=s2===stage;
-      var bg=done?'#059669':active?'var(--swansway)':'var(--surface-2)';
-      var tc=(done||active)?'#fff':'var(--ink-faint)';
-      var stageTasksLocal=byStage[s2]||[];
-      var comp=stageTasksLocal.filter(function(t){return t.approved;}).length;
-      var tot=stageTasksLocal.filter(function(t){return t.is_blocker;}).length;
-      return '<div style="flex:1;min-width:90px;text-align:center;padding:10px 6px;background:'+bg+';color:'+tc+'">'
-        +'<div style="font-size:14px;margin-bottom:2px">'+CB_STAGE_ICONS[i]+'</div>'
-        +'<div style="font-size:10px;font-weight:700;font-family:var(--font-m)">'+sn+'</div>'
-        +(tot>0?'<div style="font-size:9px;opacity:0.8;margin-top:2px">'+comp+'/'+tot+' done</div>':'')
-        +'</div>';
-    }).join('')+'</div>';
-  header.appendChild(infoCard);
-  detailEl.appendChild(header);
+  // ── CAMPAIGN HEADER CARD ──
+  var headerCard = document.createElement('div');
+  headerCard.style.cssText = 'background:var(--white);border:1px solid var(--border);border-radius:8px;margin-bottom:24px;overflow:hidden';
 
-  // Stage sections
-  for(var si=1;si<=6;si++){
-    var stageTasks=byStage[si];
-    var isActive=si===stage,isDone=si<stage;
-    var stageComplete=stageTasks.filter(function(t){return t.approved;}).length;
-    var stageBlockers=stageTasks.filter(function(t){return t.is_blocker;}).length;
+  // Title strip
+  var titleStrip = document.createElement('div');
+  titleStrip.style.cssText = 'background:var(--swansway);padding:20px 24px;display:flex;justify-content:space-between;align-items:center';
+  titleStrip.innerHTML = '<div>'
+    + '<div style="font-family:var(--font-d);font-size:22px;font-weight:700;color:#fff;margin-bottom:4px">' + c.title + '</div>'
+    + '<div style="display:flex;gap:10px;align-items:center">'
+    + '<span style="font-size:12px;background:rgba(255,255,255,0.2);color:#fff;padding:2px 10px;border-radius:10px">' + (c.site_id ? 'Site' : c.brand_id ? 'Brand' : 'Group') + ': ' + scopeVal + '</span>'
+    + '<span style="font-size:12px;background:rgba(255,255,255,0.2);color:#fff;padding:2px 10px;border-radius:10px">' + c.status.charAt(0).toUpperCase() + c.status.slice(1) + '</span>'
+    + '</div></div>'
+    + '<div style="display:flex;gap:8px">'
+    + (canAdvance && stage < 6 && c.status === 'active' ? '<button class="btn" data-cid="' + c.id + '" onclick="cbAdvanceStage(this.dataset.cid)" style="background:#fff;color:var(--swansway);font-weight:700">Advance to Stage ' + (stage+1) + ' \u2192</button>' : '')
+    + (canAdvance && stage > 1 ? '<button class="btn" data-cid="' + c.id + '" onclick="cbReopenStage(this.dataset.cid)" style="background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.3)">\u21a9 Reopen Stage ' + (stage-1) + '</button>' : '')
+    + '</div>';
+  headerCard.appendChild(titleStrip);
 
-    var sec=document.createElement('div');
-    sec.style.cssText='margin-bottom:16px;opacity:'+(isActive||isDone?'1':'0.4');
+  // Stage pipeline
+  var pipeline = document.createElement('div');
+  pipeline.style.cssText = 'display:flex;border-top:1px solid var(--border)';
+  CB_STAGE_NAMES.forEach(function(sn, i) {
+    var s2 = i + 1;
+    var done = s2 < stage, active = s2 === stage;
+    var stageTasks2 = byStage[s2] || [];
+    var comp = stageTasks2.filter(function(t){return t.approved;}).length;
+    var tot = stageTasks2.filter(function(t){return t.is_blocker;}).length;
+    var col = done ? '#059669' : active ? 'var(--swansway)' : 'var(--surface-2)';
+    var tc = (done||active) ? '#fff' : 'var(--ink-faint)';
+    var div = document.createElement('div');
+    div.style.cssText = 'flex:1;text-align:center;padding:12px 6px;background:' + col + ';color:' + tc + ';border-right:1px solid rgba(255,255,255,0.1);cursor:default';
+    div.innerHTML = '<div style="font-size:16px;margin-bottom:2px">' + CB_STAGE_ICONS[i] + '</div>'
+      + '<div style="font-size:10px;font-weight:700;font-family:var(--font-m);margin-bottom:2px">' + sn + '</div>'
+      + (tot > 0 ? '<div style="font-size:10px;opacity:0.85">' + comp + '/' + tot + ' approved</div>' : '<div style="font-size:10px;opacity:0.6">No blockers</div>');
+    pipeline.appendChild(div);
+  });
+  headerCard.appendChild(pipeline);
+  detailEl.appendChild(headerCard);
 
-    var secHead=document.createElement('div');
-    secHead.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:10px';
-    secHead.innerHTML='<div style="width:28px;height:28px;border-radius:50%;background:'+(isDone?'#059669':isActive?'var(--swansway)':'var(--surface-2)')+';display:flex;align-items:center;justify-content:center;font-size:13px;color:'+(isDone||isActive?'#fff':'var(--ink-faint)')+';font-weight:700">'+(isDone?'\u2713':si)+'</div>'
-      +'<div style="font-family:var(--font-d);font-size:15px;font-weight:700">'+CB_STAGE_ICONS[si-1]+' Stage '+si+': '+CB_STAGE_NAMES[si-1]+'</div>'
-      +'<div style="font-size:11px;color:var(--ink-faint);margin-left:auto">'+stageComplete+' of '+stageBlockers+' blockers approved</div>';
-    sec.appendChild(secHead);
+  // ── USER CONTEXT BAR ──
+  if (!CB_CURRENT_USER) {
+    var userBar = document.createElement('div');
+    userBar.style.cssText = 'background:#FEF3C7;border:1px solid #FCD34D;border-radius:6px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#92400E;display:flex;align-items:center;gap:10px';
+    userBar.innerHTML = '<span style="font-size:18px">\u26a0\uFE0F</span><strong>Select your name</strong> from the dropdown at the top to see your actions and approve tasks.';
+    detailEl.appendChild(userBar);
+  }
 
-    if(!stageTasks.length){
-      var empty=document.createElement('div');
-      empty.style.cssText='padding:12px 16px;font-size:12px;color:var(--ink-faint);background:var(--surface);border-radius:4px';
-      empty.textContent='No tasks for this stage.';
-      sec.appendChild(empty);
+  // ── STAGE SECTIONS ──
+  for (var si = 1; si <= 6; si++) {
+    var stageTasks = byStage[si];
+    var isActive = si === stage;
+    var isDone = si < stage;
+    var isFuture = si > stage;
+    var stageApproved = stageTasks.filter(function(t){return t.approved;}).length;
+    var stageBlockers = stageTasks.filter(function(t){return t.is_blocker;}).length;
+    var stageComplete = stageBlockers > 0 && stageTasks.filter(function(t){return t.is_blocker && t.approved;}).length === stageBlockers;
+
+    var section = document.createElement('div');
+    section.style.cssText = 'margin-bottom:20px' + (isFuture ? ';opacity:0.45;pointer-events:none' : '');
+
+    // Stage header
+    var stageHead = document.createElement('div');
+    stageHead.style.cssText = 'display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:12px 16px;background:' + (isDone?'#F0FDF4':isActive?'rgba(200,16,46,0.04)':'var(--surface)') + ';border-radius:6px;border:1px solid ' + (isDone?'#BBF7D0':isActive?'rgba(200,16,46,0.15)':'var(--border)');
+    stageHead.innerHTML = '<div style="width:32px;height:32px;border-radius:50%;background:' + (isDone?'#059669':isActive?'var(--swansway)':'var(--surface-2)') + ';display:flex;align-items:center;justify-content:center;font-size:14px;color:' + (isDone||isActive?'#fff':'var(--ink-faint)') + ';font-weight:700;flex-shrink:0">' + (isDone?'\u2713':si) + '</div>'
+      + '<div style="flex:1">'
+      + '<div style="font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink)">' + CB_STAGE_ICONS[si-1] + ' Stage ' + si + ': ' + CB_STAGE_NAMES[si-1] + '</div>'
+      + '<div style="font-size:11px;color:var(--ink-soft);margin-top:2px">' + stageApproved + ' of ' + stageBlockers + ' blocker tasks approved' + (stageComplete?' \u2014 \u2705 Stage complete':'') + '</div>'
+      + '</div>'
+      + (isDone ? '<span style="font-size:11px;background:#D1FAE5;color:#059669;padding:3px 10px;border-radius:10px;font-weight:600">\u2713 Complete</span>' : '')
+      + (isActive ? '<span style="font-size:11px;background:rgba(200,16,46,0.1);color:var(--swansway);padding:3px 10px;border-radius:10px;font-weight:600">Active</span>' : '');
+    section.appendChild(stageHead);
+
+    if (!stageTasks.length) {
+      var empty = document.createElement('div');
+      empty.style.cssText = 'padding:16px;font-size:13px;color:var(--ink-faint);background:var(--surface);border-radius:6px;text-align:center';
+      empty.textContent = 'No tasks configured for this stage.';
+      section.appendChild(empty);
     } else {
-      var taskList=document.createElement('div');
-      taskList.style.cssText='background:var(--white);border:1px solid var(--border);border-radius:6px;overflow:hidden';
+      var taskWrap = document.createElement('div');
+      taskWrap.style.cssText = 'border:1px solid var(--border);border-radius:6px;overflow:hidden';
 
-      stageTasks.forEach(function(task,tidx){
-        var assignee=CB_TEAM[task.assigned_to]||{name:task.assigned_to||'Unassigned'};
-        var approvedByName=task.approved_by?(CB_TEAM[task.approved_by]||{name:task.approved_by}).name:null;
-        var rejectedByName=task.rejected_by?(CB_TEAM[task.rejected_by]||{name:task.rejected_by}).name:null;
-        var isDigital=task.approver_scope==='digital';
-        var canUserApprove=(canApprove||(canApproveDigital&&isDigital))&&task.completed&&!task.approved&&!task.rejected;
-        var canUserComplete=isActive&&!task.completed&&CB_CURRENT_USER===task.assigned_to;
-        var canUserReject=(canReject||canApprove)&&task.completed&&!task.approved;
+      stageTasks.forEach(function(task, tidx) {
+        var assignee = CB_TEAM[task.assigned_to] || {name: task.assigned_to || 'Unassigned'};
+        var approvedByMember = task.approved_by ? CB_TEAM[task.approved_by] : null;
+        var rejectedByMember = task.rejected_by ? CB_TEAM[task.rejected_by] : null;
+        var isDigital = task.approver_scope === 'digital';
 
-        var leftBorder=task.approved?'#059669':task.rejected?'#DC2626':task.completed?'#D97706':'var(--border)';
-        var dot=task.approved?'#059669':task.rejected?'#DC2626':task.completed?'#D97706':isActive?'var(--border)':'var(--surface-2)';
+        // Can this user take action?
+        var isMyTask = CB_CURRENT_USER && CB_CURRENT_USER === task.assigned_to;
+        var canUserComplete = isActive && canComplete && isMyTask && !task.completed && !task.rejected;
+        var canUserApprove = isActive && (canApprove || (canApproveDigital && isDigital)) && task.completed && !task.approved && !task.rejected;
+        var canUserReject = isActive && (canReject || canApprove) && task.completed && !task.approved;
+        var canUserNote = isActive && CB_CURRENT_USER;
 
-        var row=document.createElement('div');
-        row.style.cssText='padding:14px 16px;border-bottom:1px solid var(--border);background:'+(tidx%2===0?'var(--white)':'var(--surface)')+';border-left:3px solid '+leftBorder+';display:flex;align-items:flex-start;gap:12px';
+        // Task status
+        var taskStatus = task.approved ? 'approved' : task.rejected ? 'rejected' : task.completed ? 'pending' : 'todo';
+        var leftColors = {approved:'#059669', rejected:'#DC2626', pending:'#D97706', todo:'var(--border)'};
+        var bgColors = {approved:'#F0FDF4', rejected:'#FEF2F2', pending:'#FFFBEB', todo: tidx%2===0?'var(--white)':'var(--surface)'};
 
-        var dotEl=document.createElement('div');
-        dotEl.style.cssText='width:12px;height:12px;border-radius:50%;background:'+dot+';margin-top:3px;flex-shrink:0';
-        row.appendChild(dotEl);
+        var row = document.createElement('div');
+        row.style.cssText = 'border-bottom:1px solid var(--border);border-left:4px solid ' + leftColors[taskStatus] + ';background:' + bgColors[taskStatus] + ';padding:14px 16px 14px 12px';
 
-        var info=document.createElement('div');
-        info.style.cssText='flex:1';
-        var nameRow=document.createElement('div');
-        nameRow.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px';
-        nameRow.innerHTML='<span style="font-size:13px;font-weight:'+(task.is_blocker?'700':'500')+';color:var(--ink)">'+task.task_name+'</span>'
-          +(task.is_blocker?'<span style="font-size:9px;background:#FEF3C7;color:#92400E;padding:1px 6px;border-radius:8px;font-family:var(--font-m)">BLOCKER</span>':'')
-          +'<span style="font-size:9px;background:var(--surface);color:var(--ink-soft);padding:1px 6px;border-radius:8px;font-family:var(--font-m)">'+(task.department||'')+'</span>';
-        info.appendChild(nameRow);
+        // Task name row
+        var nameRow = document.createElement('div');
+        nameRow.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px';
 
-        var metaRow=document.createElement('div');
-        metaRow.style.cssText='font-size:11px;color:var(--ink-soft)';
-        metaRow.innerHTML='\uD83D\uDC64 '+assignee.name
-          +(approvedByName?' &nbsp;\u2713 Approved by '+approvedByName:'')
-          +(rejectedByName?' &nbsp;\u2715 Rejected by '+rejectedByName+(task.rejection_reason?' \u2014 '+task.rejection_reason:''):'');
-        info.appendChild(metaRow);
+        var nameLeft = document.createElement('div');
+        nameLeft.style.cssText = 'flex:1';
+        nameLeft.innerHTML = '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">'
+          + '<span style="font-size:14px;font-weight:' + (task.is_blocker?'700':'500') + ';color:var(--ink)">' + task.task_name + '</span>'
+          + (task.is_blocker ? '<span style="font-size:10px;background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:10px;font-family:var(--font-m);font-weight:600">BLOCKER</span>' : '<span style="font-size:10px;background:var(--surface);color:var(--ink-soft);padding:2px 8px;border-radius:10px;font-family:var(--font-m)">OPTIONAL</span>')
+          + '<span style="font-size:10px;background:var(--surface);color:var(--ink-soft);padding:2px 8px;border-radius:10px;font-family:var(--font-m)">' + (task.department||'General') + '</span>'
+          + '</div>';
 
-        if(task.notes){
-          var noteRow=document.createElement('div');
-          noteRow.style.cssText='font-size:11px;color:var(--ink-faint);margin-top:4px;font-style:italic';
-          noteRow.textContent='\uD83D\uDCDD '+task.notes;
-          info.appendChild(noteRow);
+        // Assignee + approver info
+        var metaDiv = document.createElement('div');
+        metaDiv.style.cssText = 'display:flex;align-items:center;gap:16px;flex-wrap:wrap';
+
+        // Assignee chip
+        var assigneeChip = document.createElement('div');
+        assigneeChip.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft)';
+        assigneeChip.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:var(--swansway);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">'
+          + assignee.name.split(' ').map(function(n){return n[0];}).join('').substring(0,2).toUpperCase()
+          + '</div><span><strong>' + assignee.name + '</strong> &nbsp;<span style="color:var(--ink-faint)">Owner</span></span>';
+        metaDiv.appendChild(assigneeChip);
+
+        // Approver info
+        if (task.approved && approvedByMember) {
+          var appChip = document.createElement('div');
+          appChip.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:#059669';
+          appChip.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:#059669;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">'
+            + approvedByMember.name.split(' ').map(function(n){return n[0];}).join('').substring(0,2)
+            + '</div><span>\u2713 Approved by <strong>' + approvedByMember.name + '</strong></span>'
+            + '<span style="font-size:10px;color:var(--ink-faint)">' + (task.approved_at ? new Date(task.approved_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '') + '</span>';
+          metaDiv.appendChild(appChip);
+        } else if (task.rejected && rejectedByMember) {
+          var rejChip = document.createElement('div');
+          rejChip.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:#DC2626';
+          rejChip.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:#DC2626;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">'
+            + rejectedByMember.name.split(' ').map(function(n){return n[0];}).join('').substring(0,2)
+            + '</div><span>\u2715 Rejected by <strong>' + rejectedByMember.name + '</strong>'
+            + (task.rejection_reason ? ' \u2014 <em>' + task.rejection_reason + '</em>' : '') + '</span>';
+          metaDiv.appendChild(rejChip);
+        } else if (task.completed && !task.approved) {
+          var pendChip = document.createElement('div');
+          pendChip.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:#D97706';
+          pendChip.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:#D97706;display:inline-block"></span><span>Awaiting approval from <strong>' + (isDigital ? 'Anna, Marcus or Beth Almond' : 'Anna or Marcus') + '</strong></span>';
+          metaDiv.appendChild(pendChip);
         }
-        row.appendChild(info);
+
+        nameLeft.appendChild(metaDiv);
+
+        // Notes
+        if (task.notes) {
+          var noteDiv = document.createElement('div');
+          noteDiv.style.cssText = 'margin-top:8px;font-size:11px;color:var(--ink-soft);background:rgba(0,0,0,0.03);padding:6px 10px;border-radius:4px;font-style:italic';
+          noteDiv.textContent = '\uD83D\uDCDD ' + task.notes;
+          nameLeft.appendChild(noteDiv);
+        }
+
+        nameRow.appendChild(nameLeft);
 
         // Action buttons
-        var actions=document.createElement('div');
-        actions.style.cssText='display:flex;gap:6px;flex-shrink:0';
+        var actions = document.createElement('div');
+        actions.style.cssText = 'display:flex;flex-direction:column;gap:6px;flex-shrink:0;min-width:120px;align-items:flex-end';
 
-        if(canUserComplete){
-          var btn=document.createElement('button');
-          btn.textContent='Mark done';
-          btn.style.cssText='font-size:11px;padding:4px 12px;background:var(--swansway);color:#fff;border:none;border-radius:3px;cursor:pointer';
-          btn.dataset.taskId=task.id;
-          btn.onclick=function(){cbCompleteTask(this.dataset.taskId);};
+        if (canUserComplete) {
+          var btn = document.createElement('button');
+          btn.innerHTML = '\u2713 Mark as done';
+          btn.style.cssText = 'font-size:12px;padding:6px 14px;background:var(--swansway);color:#fff;border:none;border-radius:4px;cursor:pointer;font-family:var(--font-m);font-weight:600;white-space:nowrap';
+          btn.dataset.taskId = task.id;
+          btn.onclick = function(){cbCompleteTask(this.dataset.taskId);};
           actions.appendChild(btn);
         }
-        if(canUserApprove){
-          var btn2=document.createElement('button');
-          btn2.innerHTML='\u2713 Approve';
-          btn2.style.cssText='font-size:11px;padding:4px 12px;background:#059669;color:#fff;border:none;border-radius:3px;cursor:pointer';
-          btn2.dataset.taskId=task.id;
-          btn2.onclick=function(){cbApproveTask(this.dataset.taskId);};
+        if (canUserApprove) {
+          var btn2 = document.createElement('button');
+          btn2.innerHTML = '\u2713 Approve';
+          btn2.style.cssText = 'font-size:12px;padding:6px 14px;background:#059669;color:#fff;border:none;border-radius:4px;cursor:pointer;font-family:var(--font-m);font-weight:600';
+          btn2.dataset.taskId = task.id;
+          btn2.onclick = function(){cbApproveTask(this.dataset.taskId);};
           actions.appendChild(btn2);
         }
-        if(canUserReject){
-          var btn3=document.createElement('button');
-          btn3.innerHTML='\u2715 Reject';
-          btn3.style.cssText='font-size:11px;padding:4px 12px;background:#DC2626;color:#fff;border:none;border-radius:3px;cursor:pointer';
-          btn3.dataset.taskId=task.id;
-          btn3.onclick=function(){cbRejectTask(this.dataset.taskId);};
+        if (canUserReject) {
+          var btn3 = document.createElement('button');
+          btn3.innerHTML = '\u2715 Reject';
+          btn3.style.cssText = 'font-size:12px;padding:6px 14px;background:none;color:#DC2626;border:1px solid #DC2626;border-radius:4px;cursor:pointer;font-family:var(--font-m);font-weight:600';
+          btn3.dataset.taskId = task.id;
+          btn3.onclick = function(){cbRejectTask(this.dataset.taskId);};
           actions.appendChild(btn3);
         }
-        if(isActive&&CB_CURRENT_USER){
-          var btn4=document.createElement('button');
-          btn4.textContent='\uD83D\uDCDD';
-          btn4.title='Add note';
-          btn4.style.cssText='font-size:11px;padding:4px 8px;background:none;border:1px solid var(--border);border-radius:3px;cursor:pointer;color:var(--ink-soft)';
-          btn4.dataset.taskId=task.id;
-          btn4.onclick=function(){cbAddNote(this.dataset.taskId);};
+        if (canUserNote) {
+          var btn4 = document.createElement('button');
+          btn4.innerHTML = '\uD83D\uDCDD Note';
+          btn4.style.cssText = 'font-size:11px;padding:4px 10px;background:none;border:1px solid var(--border);border-radius:4px;cursor:pointer;color:var(--ink-soft);font-family:var(--font-m)';
+          btn4.dataset.taskId = task.id;
+          btn4.onclick = function(){cbAddNote(this.dataset.taskId);};
           actions.appendChild(btn4);
         }
 
-        row.appendChild(actions);
-        taskList.appendChild(row);
+        // Status badge
+        var statusBadges = {
+          approved: '<span style="font-size:11px;background:#D1FAE5;color:#059669;padding:3px 10px;border-radius:10px;font-weight:600">\u2713 Approved</span>',
+          rejected: '<span style="font-size:11px;background:#FEE2E2;color:#DC2626;padding:3px 10px;border-radius:10px;font-weight:600">\u2715 Rejected</span>',
+          pending:  '<span style="font-size:11px;background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:10px;font-weight:600">\u23f3 Pending approval</span>',
+          todo:     isActive ? '<span style="font-size:11px;background:var(--surface);color:var(--ink-soft);padding:3px 10px;border-radius:10px">To do</span>' : ''
+        };
+        if (statusBadges[taskStatus]) {
+          var badge = document.createElement('div');
+          badge.innerHTML = statusBadges[taskStatus];
+          actions.appendChild(badge);
+        }
+
+        nameRow.appendChild(actions);
+        row.appendChild(nameRow);
+        taskWrap.appendChild(row);
       });
-      sec.appendChild(taskList);
+
+      section.appendChild(taskWrap);
     }
-    detailEl.appendChild(sec);
+    detailEl.appendChild(section);
   }
-  detailEl.scrollIntoView({behavior:'smooth',block:'start'});
 }
+
 
 function cbBackToDashboard(){
   CB_CURRENT=null;
@@ -5981,6 +6062,73 @@ async function cbCreateFromBrief(){
   },300);
 }
 
+
+
+/* ════ LAUNCH CAMPAIGN FROM BRIEF ════ */
+async function cbLaunchFromBrief(briefId, briefTitle) {
+  var title = briefTitle || 'Campaign from brief';
+  var anon = SUPABASE_ANON_KEY;
+
+  // Switch to campaigns view
+  switchView('campaigns', document.querySelector('[data-view="campaigns"]'));
+
+  try {
+    // Create campaign linked to brief
+    var cr = await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaigns', {
+      method: 'POST',
+      headers: {'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
+      body: JSON.stringify([{
+        title: title,
+        brief_id: briefId || null,
+        scope: 'brand',
+        status: 'active',
+        current_stage: 1,
+        created_by: CB_CURRENT_USER || 'brief',
+        confirmed_channels: []
+      }])
+    });
+    if (!cr.ok) throw new Error(await cr.text());
+    var newCamps = await cr.json();
+    var newCamp = newCamps[0];
+
+    // Load and copy task templates
+    var templates = await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaign_task_templates?select=*&order=stage,task_order', {
+      headers: {'apikey':anon,'Authorization':'Bearer '+anon}
+    }).then(function(r){return r.json();});
+
+    if (Array.isArray(templates) && templates.length) {
+      var taskRows = templates.map(function(t) {
+        return {
+          campaign_id: newCamp.id,
+          stage: t.stage,
+          task_order: t.task_order,
+          task_name: t.task_name,
+          department: t.department,
+          assigned_to: t.default_assignee,
+          approver_scope: t.approver_scope,
+          is_blocker: t.is_blocker,
+          channel: t.channel,
+          completed: false,
+          approved: false,
+          rejected: false,
+          notes: ''
+        };
+      });
+      await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaign_tasks', {
+        method: 'POST',
+        headers: {'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body: JSON.stringify(taskRows)
+      });
+    }
+
+    // Load all campaigns and open the new one
+    await cbLoad();
+    await cbOpenCampaign(newCamp.id);
+
+  } catch(e) {
+    alert('Error creating campaign: ' + e.message);
+  }
+}
 
 const QPLAN_CACHE = {};
 
