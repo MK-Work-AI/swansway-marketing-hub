@@ -5611,8 +5611,26 @@ async function cbLoad() {
     console.log('Campaign Builder loaded:',CB_CAMPAIGNS.length,'campaigns');
     cbRenderDashboard();
     cbRenderUserPicker();
+    // Also populate the in-view dropdown
+    var sel = document.getElementById('cb-user-sel');
+    if (sel && Object.keys(CB_TEAM).length) {
+      sel.innerHTML = '<option value="">— Select your name —</option>';
+      Object.values(CB_TEAM).forEach(function(m){
+        var o = document.createElement('option');
+        o.value = m.id; o.textContent = m.name + ' — ' + m.role;
+        sel.appendChild(o);
+      });
+      // Auto-detect from auth
+      if (window.SWANSWAY_USER_ID) { sel.value = window.SWANSWAY_USER_ID; CB_CURRENT_USER = window.SWANSWAY_USER_ID; }
+      else if (window.SB_USER && window.SB_USER.email) {
+        var match = Object.values(CB_TEAM).find(function(m){ return m.email && m.email.toLowerCase() === SB_USER.email.toLowerCase(); });
+        if (match) { sel.value = match.id; CB_CURRENT_USER = match.id; window.SWANSWAY_USER_ID = match.id; }
+      }
+    }
   } catch(e){console.warn('cbLoad error:',e);}
 }
+
+function cbSetUser(id) { CB_CURRENT_USER = id || null; cbRenderDashboard(); }
 
 function cbRenderUserPicker() {
   var el = document.getElementById('cb-subtitle');
@@ -7087,7 +7105,11 @@ async function bbSaveBrief() {
   } else {
     feedback.style.display='block';
     feedback.style.color='#15803D';
-    feedback.innerHTML = '✓ Brief saved! &nbsp;<button onclick="cbLaunchFromBrief(window._lastSavedBriefId,window._lastSavedBriefTitle)" style="background:var(--swansway);color:#fff;border:none;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:700">?? Go to Campaign Builder →</button>';
+    window._lastSavedBriefId = data ? data.id : null;
+    window._lastSavedBriefTitle = title;
+    feedback.innerHTML = '✓ Brief saved!'
+      + ' &nbsp;<button onclick="bbSubmitBrief()" style="background:none;border:1px solid #15803D;color:#15803D;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:12px;font-family:var(--font-m);font-weight:600">Submit for approval</button>'
+      + ' &nbsp;<button onclick="bbLaunchCampaign()" style="background:var(--swansway);color:#fff;border:none;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:700">?? Campaign Builder →</button>';
     window._lastSavedBriefId = data ? data.id : null;
     window._lastSavedBriefTitle = title;
     btn.textContent = '✓ Saved';
