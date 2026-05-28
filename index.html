@@ -6933,9 +6933,11 @@ async function bbSaveBrief() {
   } else {
     feedback.style.display='block';
     feedback.style.color='#15803D';
-    feedback.textContent = '✓ Brief saved! Find it in "My Briefs" anytime.';
+    feedback.innerHTML = '✓ Brief saved! &nbsp;<button onclick="cbLaunchFromBrief(window._lastSavedBriefId,window._lastSavedBriefTitle)" style="background:var(--swansway);color:#fff;border:none;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:700">?? Go to Campaign Builder →</button>';
+    window._lastSavedBriefId = data ? data.id : null;
+    window._lastSavedBriefTitle = title;
     btn.textContent = '✓ Saved';
-    loadBriefs(); // refresh panel cache
+    loadBriefs();
   }
 }
 
