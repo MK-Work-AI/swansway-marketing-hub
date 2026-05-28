@@ -2244,6 +2244,9 @@ function switchView(id, el) {
     setTimeout(function(){ if(typeof renderBrandSites==='function') renderBrandSites(id); }, 200);
   }
   window.scrollTo({top:0,behavior:'smooth'});
+  // View-specific load hooks
+  if (id === 'campaigns') { if(typeof cbLoad==='function') cbLoad(); }
+  if (id === 'channels')  { updateGroupChannelsFromBrands(); setTimeout(renderGroupChannels, 200); }
 }
 
 function renderBrand(b) {
