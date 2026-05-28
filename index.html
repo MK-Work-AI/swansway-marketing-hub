@@ -855,6 +855,13 @@ td strong{font-weight:600}
 
 <style>
 /* ── BRIEF BUILDER SCOPED STYLES ──────────────────────────────── */
+.bb-scope-btn{padding:6px 14px;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;font-size:12px;font-family:var(--font-m);background:var(--white);color:var(--ink);transition:all .15s;}
+.bb-scope-btn:hover{border-color:var(--accent);}
+.bb-scope-btn.bb-selected{border-color:var(--accent);background:rgba(200,16,46,0.06);color:var(--accent);font-weight:600;}
+.bb-site-tile{padding:8px 12px;border:1.5px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;background:var(--white);transition:all .15s;}
+.bb-site-tile:hover,.bb-site-tile.bb-selected{border-color:var(--accent);}
+.bb-site-tile.bb-selected{background:rgba(200,16,46,0.05);font-weight:600;}
+
 /* All selectors prefixed with #view-brief to avoid hub conflicts  */
 
 #view-brief { font-family:var(--font-b); }
@@ -2947,6 +2954,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadSiteBudgets();
   loadSiteKPIs();
   loadSiteContacts();
+  // Auto-detect current user from auth email
+  window.SWANSWAY_USER_ID = null;
+  if (SB_USER && SB_USER.email && window.CB_TEAM) {
+    var match = Object.values(CB_TEAM).find(function(m){ return m.email && m.email.toLowerCase() === SB_USER.email.toLowerCase(); });
+    if (match) { window.SWANSWAY_USER_ID = match.id; console.log('Auto-detected user:', match.name); }
+  }
   loadBrandKPIs();
   loadBrandChannels();
   syncBrandSitesFromHubSites();
@@ -3116,8 +3129,67 @@ function bbSelectBrand(id) {
   document.querySelectorAll('.bb-brand-pill').forEach(p=>p.classList.remove('bb-selected'));
   event.currentTarget.classList.add('bb-selected');
   document.getElementById('bb-btn-1-next').disabled = false;
+  // Show scope + dates sections
+  document.getElementById('bb-scope-section').style.display = 'block';
+  document.getElementById('bb-dates-section').style.display = 'block';
+  // Pre-populate channels from brand_channels table
+  var brandChs = BRAND_CHANNELS_DATA[id] || [];
+  if (brandChs.length) {
+    BB.channels = brandChs.map(function(c){ return c.channel; });
+  }
+  // Pre-populate co-op from brand_kpis
+  var bkpi = BRAND_KPIS_DATA[id];
+  if (bkpi && bkpi.coop_available > 0) {
+    BB.coop_available = bkpi.coop_available;
+  }
   bbUpdateBrief();
   bbUpdateScienceBox();
+  bbSetScope('brand', document.getElementById('scope-brand'));
+}
+
+function bbSetScope(scope, el) {
+  BB.scope = scope;
+  document.querySelectorAll('.bb-scope-btn').forEach(function(b){b.classList.remove('bb-selected');});
+  if(el) el.classList.add('bb-selected');
+  var sitePicker = document.getElementById('bb-site-picker');
+  if (scope === 'site') {
+    sitePicker.style.display = 'block';
+    bbRenderSiteGrid();
+  } else {
+    sitePicker.style.display = 'none';
+    BB.site_id = '';
+  }
+  bbUpdateBrief();
+}
+
+function bbRenderSiteGrid() {
+  var el = document.getElementById('bb-site-grid');
+  if (!el) return;
+  var sites = HUB_SITES ? HUB_SITES.filter(function(s){ return s.brand_id === (BB.brand && BB.brand.id); }) : [];
+  el.innerHTML = '';
+  sites.forEach(function(s) {
+    var d = document.createElement('div');
+    d.className = 'bb-site-tile' + (BB.site_id === s.site_id ? ' bb-selected' : '');
+    d.dataset.sid = s.site_id;
+    d.innerHTML = '<div style="font-weight:600">' + s.site_name + '</div>' + (s.town ? '<div style="font-size:10px;color:var(--ink-faint)">' + s.town + '</div>' : '');
+    d.onclick = function(){
+      BB.site_id = this.dataset.sid;
+      document.querySelectorAll('#bb-site-grid .bb-site-tile').forEach(function(t){t.classList.remove('bb-selected');});
+      this.classList.add('bb-selected');
+      bbUpdateBrief();
+    };
+    el.appendChild(d);
+  });
+}
+
+function bbCalcDuration() {
+  if (!BB.start_date || !BB.end_date) return;
+  var days = Math.round((new Date(BB.end_date) - new Date(BB.start_date)) / 86400000);
+  var weeks = Math.round(days / 7);
+  BB.duration_weeks = weeks;
+  BB.duration_label = weeks + ' week' + (weeks !== 1 ? 's' : '') + ' (' + days + ' days)';
+  var el = document.getElementById('bb-duration-display');
+  if (el) el.textContent = '⏱ ' + BB.duration_label;
 }
 
 /* ── STEP 2: CAMPAIGN TYPE & OBJECTIVE ── */
@@ -6125,6 +6197,88 @@ async function cbLaunchFromBrief(briefId, briefTitle) {
   } catch(e) {
     alert('Error creating campaign: ' + e.message);
   }
+}
+
+
+/* ── BRIEF STATUS FLOW ── */
+async function bbSubmitBrief() {
+  if (!window._lastSavedBriefId) return;
+  try {
+    await SB.from('briefs').update({status:'submitted', submitted_by: SWANSWAY_USER_ID || '', updated_at: new Date().toISOString()}).eq('id', window._lastSavedBriefId);
+    var fb = document.getElementById('bb-save-feedback');
+    if (fb) fb.innerHTML = '?? Brief submitted for approval by Anna or Marcus.';
+    loadBriefs();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function bbApproveBrief(briefId) {
+  var perms = window.CB_PERMS && CB_PERMS[window.SWANSWAY_USER_ID];
+  if (!perms || !perms.can_approve_all) { alert('You do not have permission to approve briefs.'); return; }
+  try {
+    await SB.from('briefs').update({status:'approved', approved_by: SWANSWAY_USER_ID, approved_at: new Date().toISOString(), updated_at: new Date().toISOString()}).eq('id', briefId);
+    loadBriefs();
+    alert('✓ Brief approved! Create a campaign from it.');
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function bbLaunchCampaign() {
+  if (!window._lastSavedBriefId) return;
+  // Switch to campaign builder view
+  switchView('campaigns', document.querySelector('[data-view="campaigns"]'));
+  setTimeout(async function() {
+    try {
+      // Check if campaign already exists for this brief
+      var existing = await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaigns?brief_id=eq.' + window._lastSavedBriefId + '&select=*', {
+        headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY}
+      }).then(function(r){return r.json();});
+      if (existing && existing.length) {
+        CB_CAMPAIGNS = existing;
+        cbRenderDashboard();
+        cbOpenCampaign(existing[0].id);
+        return;
+      }
+      // Create new campaign
+      var cr = await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaigns', {
+        method: 'POST',
+        headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation'},
+        body: JSON.stringify([{
+          title: window._lastSavedBriefTitle || 'Campaign',
+          brief_id: window._lastSavedBriefId,
+          scope: BB.scope || 'brand',
+          brand_id: BB.brand ? BB.brand.id : null,
+          site_id: BB.site_id || null,
+          status: 'active',
+          current_stage: 1,
+          confirmed_channels: BB.channels || [],
+          created_by: window.SWANSWAY_USER_ID || 'brief'
+        }])
+      });
+      if (!cr.ok) throw new Error(await cr.text());
+      var camps = await cr.json();
+      var camp = camps[0];
+      // Load and create tasks from template
+      var templates = await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaign_task_templates?select=*&order=stage,task_order', {
+        headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY}
+      }).then(function(r){return r.json();});
+      if (Array.isArray(templates) && templates.length) {
+        var cmap = {'Paid Search (Google/Bing)':'paid_search','Display & Programmatic':'display','Email Marketing':'email','Social Organic':'social_organic','Meta (Facebook/Instagram)':'social_paid','Events & Showroom':'events','OOH & Print':'ooh_print','Manufacturer Co-op':'manufacturer_coop'};
+        var ack = (BB.channels||[]).map(function(c){return cmap[c]||c.toLowerCase().replace(/[^a-z]/g,'_');});
+        var taskRows = templates.filter(function(t){return !t.channel||ack.includes(t.channel);}).map(function(t){
+          var notes = '';
+          if (t.stage===1&&t.task_order===3) notes = 'Budget: £' + (BB.budget||0).toLocaleString();
+          if (t.stage===1&&t.task_order===2) notes = (BB.start_date?'Start: '+BB.start_date:'') + (BB.end_date?' | End: '+BB.end_date:'');
+          return {campaign_id:camp.id,stage:t.stage,task_order:t.task_order,task_name:t.task_name,department:t.department,assigned_to:t.default_assignee,approver_scope:t.approver_scope,is_blocker:t.is_blocker,channel:t.channel,completed:false,approved:false,rejected:false,notes:notes};
+        });
+        await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaign_tasks', {
+          method: 'POST',
+          headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal'},
+          body: JSON.stringify(taskRows)
+        });
+      }
+      await cbLoad();
+      cbOpenCampaign(camp.id);
+    } catch(e) { alert('Error creating campaign: ' + e.message); }
+  }, 400);
 }
 
 const QPLAN_CACHE = {};
