@@ -295,8 +295,319 @@ function goStep(n){
 function rBrands(){var el=document.getElementById('brand-grid');if(!el)return;el.innerHTML=BRANDS.map(b=>'<div class="brand-tile" id="bt-'+b.id+'" onclick="selBrand('"+b.id+"')"><div style="width:26px;height:26px;border-radius:50%;background:'+b.c+';margin:0 auto 3px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:10px">'+b.n[0]+'</div><div class="btname" style="color:'+b.c+'">'+b.n+'</div><div class="btcount">'+b.s+' site'+(b.s!==1?'s':'')+'</div></div>').join('');}
 function selBrand(id){var b=BRANDS.find(x=>x.id===id);if(!b)return;BB.brand_id=id;BB.brand_name=b.n;BB.brand_color=b.c;document.querySelectorAll('.brand-tile').forEach(t=>t.classList.remove('selected'));document.getElementById('bt-'+id).classList.add('selected');document.getElementById('scope-card').style.display='block';document.getElementById('type-card').style.display='block';BB.confirmed_channels=(BCH[id]||[]).map(c=>c.channel);var bk=BKPI[id];if(bk&&bk.coop_available>0){var h=document.getElementById('coop-hint');if(h)h.textContent='£'+bk.coop_available.toLocaleString()+' available';}updateSbar();setScope('brand');}
 function setScope(s){BB.scope=s;['brand','site','group'].forEach(x=>{var e=document.getElementById('sc-'+x);if(e)e.classList.toggle('sel',x===s);});var sp=document.getElementById('site-pick');if(s==='site'){sp.style.display='block';rSiteGrid();}else{sp.style.display='none';BB.site_id='';}}
+function rSiteGrid(){
+  var el=document.getElementById('site-grid');
+  if(!el)return;
+  var sites=SITES.filter(function(s){return s.brand_id===BB.brand_id;});
+  el.innerHTML='';
+  if(!sites.length){el.innerHTML='<div style="font-size:12px;color:var(--ink-faint)">No sites found.</div>';return;}
+  sites.forEach(function(s){
+    var d=document.createElement('div');
+    d.className='tile'+(BB.site_id===s.site_id?' sel':'');
+    d.dataset.sid=s.site_id;
+    d.innerHTML=s.site_name+(s.town?'<br><span style="font-size:9px;color:var(--ink-faint)">'+s.town+'</span>':'');
+    d.onclick=function(){selSite(this.dataset.sid);};
+    el.appendChild(d);
+  });
+}!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swansway — Brief Builder</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--swansway:#C8102E;--ink:#1a1a1a;--ink-soft:#555;--ink-faint:#999;--surface:#f5f4f2;--surface-2:#ede9e3;--white:#fff;--border:#e0dbd4;--font-d:'Georgia',serif;--font-m:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--radius:6px;}
+*{box-sizing:border-box;margin:0;padding:0;}html{overflow-y:scroll;}
+body{font-family:var(--font-m);background:var(--surface);color:var(--ink);min-height:100vh;}
+.nav{height:54px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;z-index:100;}
+.nav-logo{font-family:var(--font-d);font-size:15px;font-weight:700;}.nav-logo span{color:var(--swansway);}
+.nav-back{font-size:12px;color:var(--ink-soft);text-decoration:none;padding:5px 12px;border:1px solid var(--border);border-radius:4px;}
+.nav-spacer{flex:1;}
+.btn{padding:8px 16px;border-radius:4px;cursor:pointer;font-family:var(--font-m);font-weight:600;font-size:13px;border:1px solid var(--border);background:var(--white);color:var(--ink);}
+.btn:hover{background:var(--surface);}
+.btn-p{background:var(--swansway)!important;color:#fff!important;border-color:var(--swansway)!important;}
+.btn-lg{padding:11px 22px;font-size:14px;}
+.wrap{max-width:1060px;margin:0 auto;padding:28px 24px;}
+.steps{display:flex;margin-bottom:24px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);}
+.step-btn{flex:1;padding:9px 4px;text-align:center;background:var(--white);border:none;border-right:1px solid var(--border);cursor:pointer;font-family:var(--font-m);transition:all .15s;}
+.step-btn:last-child{border-right:none;}.step-btn.active{background:var(--swansway);color:#fff;}.step-btn.done{background:#F0FDF4;color:#059669;}
+.step-num{font-size:14px;font-weight:700;display:block;}.step-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.04em;opacity:0.8;}
+.panel{display:none;}.panel.active{display:block;}
+.ptitle{font-family:var(--font-d);font-size:22px;font-weight:700;margin-bottom:4px;}
+.psub{font-size:13px;color:var(--ink-soft);margin-bottom:22px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
+.ctitle{font-family:var(--font-d);font-size:14px;font-weight:700;margin-bottom:12px;}
+.csub{font-size:12px;color:var(--ink-soft);margin-bottom:10px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:10px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;}
+.field input,.field select,.field textarea{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:4px;font-size:13px;font-family:var(--font-m);color:var(--ink);}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--swansway);}
+.field textarea{min-height:68px;resize:vertical;}
+.hint{font-size:10px;color:var(--ink-faint);margin-top:3px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.brand-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.brand-tile{padding:11px 7px;border:2px solid var(--border);border-radius:var(--radius);text-align:center;cursor:pointer;background:var(--white);transition:all .15s;}
+.brand-tile:hover,.brand-tile.selected{border-color:var(--swansway);}
+.brand-tile.selected{background:rgba(200,16,46,0.04);}
+.btname{font-size:11px;font-weight:700;margin-top:3px;}.btcount{font-size:9px;color:var(--ink-faint);}
+.pick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.tile{padding:9px 11px;border:2px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;background:var(--white);transition:all .15s;}
+.tile:hover,.tile.sel{border-color:var(--swansway);}.tile.sel{background:rgba(200,16,46,0.04);font-weight:600;}
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.tcard{padding:11px 7px;border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;text-align:center;background:var(--white);transition:all .15s;}
+.tcard:hover,.tcard.sel{border-color:var(--swansway);}.tcard.sel{background:rgba(200,16,46,0.04);}
+.ticon{font-size:16px;margin-bottom:3px;}.tname{font-size:10px;font-weight:700;}
+.obj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+.ocard{padding:13px;border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;background:var(--white);transition:all .15s;}
+.ocard:hover,.ocard.sel{border-color:var(--swansway);}.ocard.sel{background:rgba(200,16,46,0.04);}
+.oicon{font-size:20px;margin-bottom:5px;}.oname{font-size:12px;font-weight:700;margin-bottom:2px;}.odesc{font-size:10px;color:var(--ink-soft);}
+.ch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.chtile{padding:11px;border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;background:var(--white);transition:all .15s;}
+.chtile:hover,.chtile.sel{border-color:var(--swansway);}.chtile.sel{background:rgba(200,16,46,0.03);}
+.budget-val{font-family:var(--font-d);font-size:30px;font-weight:700;color:var(--swansway);text-align:center;margin:8px 0;}
+input[type=range]{width:100%;accent-color:var(--swansway);}
+.alloc-tbl{width:100%;border-collapse:collapse;}
+.alloc-tbl th{font-size:10px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;padding:6px 9px;text-align:left;border-bottom:2px solid var(--border);}
+.alloc-tbl td{padding:8px 9px;border-bottom:1px solid var(--border);font-size:12px;}
+.alloc-inp{width:75px;padding:3px 7px;border:1px solid var(--border);border-radius:3px;font-size:12px;text-align:right;}
+.rv-hero{border-radius:var(--radius);padding:18px;margin-bottom:16px;color:#fff;}
+.rv-title{font-family:var(--font-d);font-size:22px;font-weight:700;margin-bottom:5px;}
+.rv-sec{font-size:10px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:7px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+.rv-row{display:flex;gap:7px;margin-bottom:4px;font-size:13px;}
+.rv-lbl{color:var(--ink-soft);min-width:120px;flex-shrink:0;}
+.pactions{display:flex;justify-content:space-between;margin-top:24px;padding-top:14px;border-top:1px solid var(--border);}
+.sbar{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;margin-bottom:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.sbadge{font-size:10px;padding:2px 9px;border-radius:9px;font-weight:600;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:200;display:none;}
+.overlay.open{display:block;}
+.panel-slide{position:fixed;right:0;top:0;bottom:0;width:350px;background:var(--white);border-left:1px solid var(--border);z-index:201;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s;}
+.panel-slide.open{transform:translateX(0);}
+.psh{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.bcard{padding:11px 13px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:7px;cursor:pointer;transition:all .15s;}
+.bcard:hover{border-color:var(--swansway);}
+.bcard-t{font-size:13px;font-weight:700;margin-bottom:3px;}.bcard-m{font-size:11px;color:var(--ink-soft);}
+.ai-box{background:var(--ink);color:#fff;border-radius:var(--radius);padding:16px;margin-top:14px;}
+.ai-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:11px;margin:3px;transition:background .15s;}
+.ai-btn:hover{background:rgba(255,255,255,0.2);}
+.ai-res{margin-top:12px;font-size:12px;line-height:1.7;color:rgba(255,255,255,0.9);white-space:pre-wrap;}
+.toast{position:fixed;bottom:18px;right:18px;padding:9px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.15);transform:translateY(70px);transition:transform .25s;pointer-events:none;}
+.toast.show{transform:translateY(0);}.toast.success{background:#059669;color:#fff;}.toast.error{background:#DC2626;color:#fff;}
+.cb-sec{display:none;}
+.ccard{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:9px;cursor:pointer;transition:box-shadow .15s;border-left:4px solid #059669;}
+.ccard:hover{box-shadow:0 3px 10px rgba(0,0,0,0.07);}
+.pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:9px;background:var(--surface);color:var(--ink-soft);margin:2px;}
+.tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:9px;background:rgba(200,16,46,0.1);color:var(--swansway);margin:2px;}
+@media print{.nav,.steps,.pactions,.ai-box,.overlay,.panel-slide,.cb-sec,.toast,.no-print{display:none!important;}.panel{display:block!important;}body{background:#fff;}.rv-hero{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo"><span>Swansway</span> Brief Builder</div>
+  <a href="index.html" class="nav-back">← Hub</a>
+  <div class="nav-spacer"></div>
+  <select id="user-sel" onchange="setUser(this.value)" class="btn" style="min-width:155px"><option value="">— Who are you? —</option></select>
+  <button class="btn no-print" onclick="openPanel()">📋 My Briefs</button>
+  <button class="btn no-print" onclick="window.print()">📄 PDF</button>
+</nav>
+<div class="overlay" id="ov" onclick="closePanel()"></div>
+<div class="panel-slide" id="bpanel">
+  <div class="psh"><strong style="font-family:var(--font-d);font-size:16px">My Briefs</strong><button onclick="closePanel()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--ink-soft)">×</button></div>
+  <div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;gap:4px;flex-wrap:wrap">
+    <button class="btn" style="font-size:11px;padding:4px 10px" onclick="filterB('all')">All</button>
+    <button class="btn" style="font-size:11px;padding:4px 10px" onclick="filterB('draft')">Draft</button>
+    <button class="btn" style="font-size:11px;padding:4px 10px" onclick="filterB('submitted')">Submitted</button>
+    <button class="btn" style="font-size:11px;padding:4px 10px" onclick="filterB('approved')">Approved</button>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:10px" id="bpanel-body"><div style="padding:16px;text-align:center;color:var(--ink-faint);font-size:13px">Loading…</div></div>
+  <div style="padding:12px;border-top:1px solid var(--border)"><button class="btn btn-p" style="width:100%" onclick="closePanel();newBrief()">+ New brief</button></div>
+</div>
+<div class="wrap">
+  <div id="sec-brief">
+    <div class="sbar" id="sbar" style="display:none">
+      <div style="flex:1"><div style="font-size:14px;font-weight:700" id="sbar-title">Untitled</div><div style="font-size:11px;color:var(--ink-soft)" id="sbar-meta"></div></div>
+      <span class="sbadge" id="sbar-badge"></span>
+      <button class="btn no-print" id="approve-btn" style="display:none" onclick="approveBrief()">✓ Approve</button>
+      <button class="btn btn-p no-print" id="campaign-btn" style="display:none" onclick="launchCampaign()">🎯 Create Campaign →</button>
+    </div>
+    <div class="steps" id="steps-nav">
+      <button class="step-btn active" id="sbtn-1" onclick="goStep(1)"><span class="step-num">01</span><span class="step-lbl">What</span></button>
+      <button class="step-btn" id="sbtn-2" onclick="goStep(2)"><span class="step-num">02</span><span class="step-lbl">When</span></button>
+      <button class="step-btn" id="sbtn-3" onclick="goStep(3)"><span class="step-num">03</span><span class="step-lbl">Why</span></button>
+      <button class="step-btn" id="sbtn-4" onclick="goStep(4)"><span class="step-num">04</span><span class="step-lbl">Who</span></button>
+      <button class="step-btn" id="sbtn-5" onclick="goStep(5)"><span class="step-num">05</span><span class="step-lbl">How</span></button>
+      <button class="step-btn" id="sbtn-6" onclick="goStep(6)"><span class="step-num">06</span><span class="step-lbl">Review</span></button>
+    </div>
+    <!-- STEP 1 -->
+    <div class="panel active" id="step-1">
+      <div class="ptitle">What are we doing?</div><div class="psub">Brand, scope and campaign type.</div>
+      <div class="card"><div class="ctitle">Campaign title</div>
+        <div class="field"><input type="text" id="f-title" placeholder="e.g. Audi March Plate Change 2026" oninput="BB.title=this.value;updateSbar()"><div class="hint">A clear title the whole team will recognise</div></div>
+      </div>
+      <div class="card"><div class="ctitle">Brand</div><div class="brand-grid" id="brand-grid"></div></div>
+      <div class="card" id="scope-card" style="display:none">
+        <div class="ctitle">Campaign scope</div>
+        <div class="row3">
+          <div class="tcard" id="sc-brand" onclick="setScope('brand')"><div class="ticon">🏢</div><div class="tname">Brand-wide</div><div style="font-size:9px;color:var(--ink-soft);margin-top:2px">All sites for this brand</div></div>
+          <div class="tcard" id="sc-site" onclick="setScope('site')"><div class="ticon">📍</div><div class="tname">Site-specific</div><div style="font-size:9px;color:var(--ink-soft);margin-top:2px">One dealership only</div></div>
+          <div class="tcard" id="sc-group" onclick="setScope('group')"><div class="ticon">🌐</div><div class="tname">Group-wide</div><div style="font-size:9px;color:var(--ink-soft);margin-top:2px">Across all brands</div></div>
+        </div>
+        <div id="site-pick" style="display:none;margin-top:12px">
+          <div style="font-size:10px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px">Select site</div>
+          <div class="pick-grid" id="site-grid"></div>
+        </div>
+      </div>
+      <div class="card" id="type-card" style="display:none"><div class="ctitle">Campaign type</div><div class="type-grid" id="type-grid"></div></div>
+      <div class="pactions"><div></div><button class="btn btn-p" onclick="goStep(2)">Next: When →</button></div>
+    </div>
+    <!-- STEP 2 -->
+    <div class="panel" id="step-2">
+      <div class="ptitle">When is it running?</div><div class="psub">Dates and milestones.</div>
+      <div class="card"><div class="ctitle">Campaign dates</div>
+        <div class="row2">
+          <div class="field"><label>Start date</label><input type="date" id="f-start" onchange="BB.start_date=this.value;calcDur()"></div>
+          <div class="field"><label>End date</label><input type="date" id="f-end" onchange="BB.end_date=this.value;calcDur()"></div>
+        </div>
+        <div id="dur-display" style="font-size:13px;color:var(--ink-soft)"></div>
+      </div>
+      <div class="card"><div class="ctitle">Key milestones <span style="font-size:10px;font-weight:400;color:var(--ink-soft)">(optional)</span></div>
+        <div id="milestones"></div><button class="btn" style="margin-top:7px" onclick="addMilestone()">+ Add milestone</button>
+      </div>
+      <div class="pactions"><button class="btn" onclick="goStep(1)">← Back</button><button class="btn btn-p" onclick="goStep(3)">Next: Why →</button></div>
+    </div>
+    <!-- STEP 3 -->
+    <div class="panel" id="step-3">
+      <div class="ptitle">Why are we doing this?</div><div class="psub">Objective, KPIs and proposition.</div>
+      <div class="card"><div class="ctitle">Primary objective</div><div class="obj-grid" id="obj-grid"></div></div>
+      <div class="card" id="kpi-card" style="display:none"><div class="ctitle">KPI targets</div><div class="csub" id="kpi-sub">Adjust targets for this campaign.</div><div id="kpi-fields"></div></div>
+      <div class="card">
+        <div class="ctitle">Proposition</div>
+        <div class="field"><label>Key message or offer</label><textarea id="f-prop" placeholder="e.g. 0% APR on new Audi A3, March only." oninput="BB.proposition=this.value"></textarea></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Mandatories <span style="font-size:10px;font-weight:400;color:var(--ink-soft)">(optional)</span></div>
+        <div class="field"><label>Legal, compliance, brand requirements</label><textarea id="f-mand" placeholder="e.g. Must include FCA disclaimer." oninput="BB.mandatories=this.value" style="min-height:54px"></textarea></div>
+      </div>
+      <div class="pactions"><button class="btn" onclick="goStep(2)">← Back</button><button class="btn btn-p" onclick="goStep(4)">Next: Who →</button></div>
+    </div>
+    <!-- STEP 4 -->
+    <div class="panel" id="step-4">
+      <div class="ptitle">Who are we targeting?</div><div class="psub">Audiences and customer type.</div>
+      <div class="card"><div class="ctitle">Target audiences</div><div class="pick-grid" id="aud-grid"></div></div>
+      <div class="card"><div class="ctitle">Customer type</div>
+        <div class="row3">
+          <div class="tcard" id="ct-existing" onclick="setCtype('existing')"><div class="ticon">🔄</div><div class="tname">Existing</div></div>
+          <div class="tcard" id="ct-conquest" onclick="setCtype('conquest')"><div class="ticon">🎯</div><div class="tname">Conquest</div></div>
+          <div class="tcard" id="ct-both" onclick="setCtype('both')"><div class="ticon">🌐</div><div class="tname">Both</div></div>
+        </div>
+      </div>
+      <div class="pactions"><button class="btn" onclick="goStep(3)">← Back</button><button class="btn btn-p" onclick="goStep(5)">Next: How →</button></div>
+    </div>
+    <!-- STEP 5 -->
+    <div class="panel" id="step-5">
+      <div class="ptitle">How are we going to market?</div><div class="psub">Channels, budget and allocation. Pre-populated from your brand channel mix.</div>
+      <div class="card"><div class="ctitle">Total campaign budget</div>
+        <div class="budget-val" id="bval">£0</div>
+        <input type="range" id="bslider" min="0" max="100000" step="500" value="0" oninput="setBudget(this.value)">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink-faint);margin-top:2px"><span>£0</span><span>£100K</span></div>
+        <div class="field" style="margin-top:12px"><label>Or enter exact amount</label><input type="number" id="binput" placeholder="e.g. 36000" min="0" step="500" oninput="setBudget(this.value)"></div>
+      </div>
+      <div class="card"><div class="ctitle">Active channels</div><div class="csub">Pre-populated from your brand mix. Deselect channels not needed.</div><div class="ch-grid" id="ch-grid"></div></div>
+      <div class="card" id="alloc-card" style="display:none">
+        <div class="ctitle">Budget allocation</div><div class="csub" id="alloc-rem"></div>
+        <table class="alloc-tbl"><thead><tr><th>Channel</th><th>%</th><th>£ Amount</th><th style="width:90px">Bar</th></tr></thead><tbody id="alloc-tbody"></tbody></table>
+      </div>
+      <div class="card">
+        <div class="ctitle">Manufacturer co-op</div>
+        <div class="row2">
+          <div class="field"><label>Co-op applicable?</label><select id="f-coop" onchange="BB.coop_applicable=this.value==='true';showCoopAmt()"><option value="false">No</option><option value="true">Yes</option></select></div>
+          <div class="field" id="coop-amt" style="display:none"><label>Co-op amount (£)</label><input type="number" id="f-coop-amt" placeholder="0" oninput="BB.coop_amount=parseInt(this.value)||0"><div class="hint" id="coop-hint"></div></div>
+        </div>
+      </div>
+      <div class="pactions"><button class="btn" onclick="goStep(4)">← Back</button><button class="btn btn-p" onclick="goStep(6)">Next: Review →</button></div>
+    </div>
+    <!-- STEP 6 -->
+    <div class="panel" id="step-6">
+      <div class="ptitle">Review & save</div><div class="psub">Check everything looks right, then save. Submit for approval when ready.</div>
+      <div id="review-out"></div>
+      <div class="ai-box">
+        <div style="font-family:var(--font-d);font-size:14px;font-weight:700;margin-bottom:9px">⚡ AI Strategy Prompts</div>
+        <div id="ai-btns"></div>
+        <div id="ai-res" class="ai-res" style="display:none"></div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="ctitle">Save this brief</div>
+        <div class="field"><label>Brief title</label><input type="text" id="f-save-title" placeholder="e.g. Audi March Plate Change 2026"></div>
+        <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-p btn-lg" onclick="saveBrief()">💾 Save brief</button>
+          <button class="btn btn-lg" onclick="submitBrief()">📤 Submit for approval</button>
+          <div id="save-fb" style="font-size:13px;color:#059669;display:none"></div>
+        </div>
+      </div>
+      <div class="pactions"><button class="btn" onclick="goStep(5)">← Back</button><div></div></div>
+    </div>
+  </div>
+  <!-- CAMPAIGN SECTION -->
+  <div id="sec-campaign" class="cb-sec">
+    <button onclick="showSec('brief')" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--ink-soft);padding:0;margin-bottom:14px;display:inline-flex;align-items:center;gap:5px">← Back to brief</button>
+    <div id="cb-dash">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div><div style="font-family:var(--font-d);font-size:20px;font-weight:700">Campaign Builder</div><div style="font-size:12px;color:var(--ink-soft)" id="cb-bref"></div></div>
+        <div style="display:flex;gap:7px">
+          <select id="cb-filter-asgn" onchange="cbRenderDash()" class="btn" style="font-size:11px"><option value="">All team members</option></select>
+          <button class="btn" id="cb-mytasks-btn" onclick="cbToggleMy()">My tasks</button>
+        </div>
+      </div>
+      <div id="cb-list"></div>
+    </div>
+    <div id="cb-detail" style="display:none"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+const SU='https://humitzrleflxnlnodpde.supabase.co',SA='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1bWl0enJsZWZseG5sbm9kcGRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0Mzk1NTksImV4cCI6MjA5NTAxNTU1OX0.p-i5P0jAj9M6c0V9cLPP06C5I88laufatX1b2WS-1lE';
+var SB=null,SBU=null,CU=null;
+var BRANDS=[],SITES=[],BCH={},BKPI={},TEAM={},PERMS=[],BRIEFS=[];
+var BB={id:null,title:'',brand_id:'',brand_name:'',brand_color:'',scope:'brand',site_id:'',campaign_type_id:'',campaign_type:'',objective_id:'',objective:'',objective_kpi:'',objective_funnel:'',proposition:'',mandatories:'',kpi_primary_label:'',kpi_primary_value:'',kpi_cpl_meta:0,kpi_cpl_search:0,budget:0,duration_weeks:0,duration_label:'',start_date:'',end_date:'',milestone_dates:[],audience_ids:[],audiences:[],channel_ids:[],channels:[],confirmed_channels:[],allocation:{},coop_applicable:false,coop_amount:0,status:'draft',submitted_by:'',approved_by:'',approved_at:null,notes:'',customer_type:'both'};
+var STEP=1,BFILTER='all',CUR_CAMP=null,CTASKS={},CAMPS=[],MY_ONLY=false,_s5r=false;
+var CTYPES=[{id:'new_car',n:'New Car Launch',i:'🚗'},{id:'used',n:'Used Car',i:'🔑'},{id:'event',n:'Event',i:'🎪'},{id:'awareness',n:'Awareness',i:'📣'},{id:'retention',n:'Retention/CRM',i:'🔄'},{id:'fleet',n:'Fleet/B2B',i:'🏢'},{id:'seasonal',n:'Seasonal Offer',i:'📅'},{id:'ev',n:'EV/Hybrid',i:'⚡'}];
+var OBJS=[{id:'volume',t:'Sales Volume',i:'📈',k:'Units sold',f:'Bottom'},{id:'leads',t:'Lead Generation',i:'📧',k:'Leads per month',f:'Middle'},{id:'awareness',t:'Brand Awareness',i:'👁',k:'Impressions/reach',f:'Top'},{id:'event',t:'Event/Experience',i:'🎪',k:'RSVPs/attendance',f:'Middle'},{id:'retention',t:'Customer Retention',i:'🔄',k:'Repeat purchases',f:'Bottom'},{id:'fleet',t:'Fleet/B2B',i:'🏢',k:'Fleet enquiries',f:'Bottom'}];
+var AUDS=[{id:'new_car_buyer',n:'New car buyers',i:'🚗'},{id:'used_car_buyer',n:'Used car buyers',i:'🔑'},{id:'ev_intender',n:'EV intenders',i:'⚡'},{id:'fleet_manager',n:'Fleet managers',i:'🏢'},{id:'service_customer',n:'Service customers',i:'🔧'},{id:'conquest',n:'Conquest',i:'🎯'},{id:'local',n:'Local/geo audience',i:'📍'},{id:'existing',n:'Existing customers',i:'💚'},{id:'young',n:'Young drivers 18-30',i:'👤'}];
+var SN=['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'];
+var SI=['??','⚙️','✅','??','??','??'];
+
+async function init(){
+  SB=supabase.createClient(SU,SA);
+  SB.auth.onAuthStateChange(function(e,s){SBU=s?s.user:null;});
+  const{data:{session}}=await SB.auth.getSession();SBU=session?session.user:null;
+  BRANDS=[{id:'audi',n:'Audi',c:'#BB0A21',s:6},{id:'vw',n:'Volkswagen',c:'#001E50',s:3},{id:'vwcv',n:'VW Commercial',c:'#00B0F0',s:5},{id:'seat',n:'SEAT',c:'#FA0230',s:3},{id:'cupra',n:'CUPRA',c:'#C4A35A',s:3},{id:'landrover',n:'Land Rover',c:'#005A2B',s:1},{id:'jaguar',n:'Jaguar',c:'#1A1A1A',s:1},{id:'honda',n:'Honda',c:'#CC0000',s:2},{id:'peugeot',n:'Peugeot',c:'#003882',s:2},{id:'byd',n:'BYD',c:'#EB0029',s:3},{id:'omoda',n:'OMODA',c:'#2D2D2D',s:1},{id:'motormatch',n:'Motor Match',c:'#E85D04',s:5}];
+  await Promise.all([loadSites(),loadBCH(),loadBKPI(),loadTeam()]);
+  rBrands();rTypes();rObjs();rAuds();rTeamDrop();loadBriefs();newBrief();
+}
+async function loadSites(){try{var r=await fetch(SU+'/rest/v1/site_contacts?select=site_id,site_name,brand_id,town',{headers:{'apikey':SA,'Authorization':'Bearer '+SA}});SITES=await r.json();}catch(e){SITES=[];}}
+async function loadBCH(){try{var r=await fetch(SU+'/rest/v1/brand_channels?select=*&order=brand_id,sort_order',{headers:{'apikey':SA,'Authorization':'Bearer '+SA}});var rows=await r.json();BCH={};rows.forEach(function(x){if(!BCH[x.brand_id])BCH[x.brand_id]=[];BCH[x.brand_id].push(x);});}catch(e){}}
+async function loadBKPI(){try{var r=await fetch(SU+'/rest/v1/brand_kpis?select=*',{headers:{'apikey':SA,'Authorization':'Bearer '+SA}});var rows=await r.json();BKPI={};rows.forEach(function(x){BKPI[x.brand_id]=x;});}catch(e){}}
+async function loadTeam(){try{var t=await fetch(SU+'/rest/v1/campaign_team?select=*&active=eq.true',{headers:{'apikey':SA,'Authorization':'Bearer '+SA}}).then(r=>r.json());var p=await fetch(SU+'/rest/v1/campaign_permissions?select=*',{headers:{'apikey':SA,'Authorization':'Bearer '+SA}}).then(r=>r.json());TEAM={};(Array.isArray(t)?t:[]).forEach(m=>TEAM[m.id]=m);PERMS={};(Array.isArray(p)?p:[]).forEach(x=>PERMS[x.team_member_id]=x);}catch(e){}}
+function rTeamDrop(){var s=document.getElementById('user-sel');if(!s)return;Object.values(TEAM).forEach(function(m){var o=document.createElement('option');o.value=m.id;o.textContent=m.name+' — '+m.role;s.appendChild(o);});}
+function setUser(id){CU=id||null;updateSbar();}
+
+function goStep(n){
+  if(n===5&&!_s5r){rChannels();_s5r=true;}
+  STEP=n;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('step-'+n).classList.add('active');
+  document.querySelectorAll('.step-btn').forEach((b,i)=>{b.classList.remove('active','done');if(i+1===n)b.classList.add('active');else if(i+1<n)b.classList.add('done');});
+  if(n===6){rReview();rAIBtns();}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function rBrands(){var el=document.getElementById('brand-grid');if(!el)return;el.innerHTML=BRANDS.map(b=>'<div class="brand-tile" id="bt-'+b.id+'" onclick="selBrand('"+b.id+"')"><div style="width:26px;height:26px;border-radius:50%;background:'+b.c+';margin:0 auto 3px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:10px">'+b.n[0]+'</div><div class="btname" style="color:'+b.c+'">'+b.n+'</div><div class="btcount">'+b.s+' site'+(b.s!==1?'s':'')+'</div></div>').join('');}
+function selBrand(id){var b=BRANDS.find(x=>x.id===id);if(!b)return;BB.brand_id=id;BB.brand_name=b.n;BB.brand_color=b.c;document.querySelectorAll('.brand-tile').forEach(t=>t.classList.remove('selected'));document.getElementById('bt-'+id).classList.add('selected');document.getElementById('scope-card').style.display='block';document.getElementById('type-card').style.display='block';BB.confirmed_channels=(BCH[id]||[]).map(c=>c.channel);var bk=BKPI[id];if(bk&&bk.coop_available>0){var h=document.getElementById('coop-hint');if(h)h.textContent='£'+bk.coop_available.toLocaleString()+' available';}updateSbar();setScope('brand');}
+function setScope(s){BB.scope=s;['brand','site','group'].forEach(x=>{var e=document.getElementById('sc-'+x);if(e)e.classList.toggle('sel',x===s);});var sp=document.getElementById('site-pick');if(s==='site'){sp.style.display='block';rSiteGrid();}else{sp.style.display='none';BB.site_id='';}}
 function rSiteGrid(){var el=document.getElementById('site-grid');if(!el)return;var sites=SITES.filter(s=>s.brand_id===BB.brand_id);el.innerHTML=sites.map(s=>'<div class="tile'+(BB.site_id===s.site_id?' sel':'')+'" onclick="selSite('"+s.site_id+"')">'+s.site_name+(s.town?'<br><span style="font-size:9px;color:var(--ink-faint)">'+s.town+'</span>':'')+'</div>').join('')||'<div style="font-size:12px;color:var(--ink-faint)">No sites found.</div>';}
-function selSite(id){BB.site_id=id;document.querySelectorAll('#site-grid .tile').forEach(t=>t.classList.remove('sel'));var els=document.querySelectorAll('#site-grid .tile');els.forEach(t=>{if(t.onclick&&t.onclick.toString().includes("'"+id+"'"))t.classList.add('sel');});}
+function selSite(id){BB.site_id=id;document.querySelectorAll('#site-grid .tile').forEach(function(t){t.classList.toggle('sel',t.dataset.sid===id);});}
 function rTypes(){var el=document.getElementById('type-grid');if(!el)return;el.innerHTML=CTYPES.map(t=>'<div class="tcard" id="tc-'+t.id+'" onclick="selType('"+t.id+"')"><div class="ticon">'+t.i+'</div><div class="tname">'+t.n+'</div></div>').join('');}
 function selType(id){var t=CTYPES.find(x=>x.id===id);if(!t)return;BB.campaign_type_id=id;BB.campaign_type=t.n;document.querySelectorAll('.tcard').forEach(c=>c.classList.remove('sel'));document.getElementById('tc-'+id).classList.add('sel');}
 function rObjs(){var el=document.getElementById('obj-grid');if(!el)return;el.innerHTML=OBJS.map(o=>'<div class="ocard" id="oc-'+o.id+'" onclick="selObj('"+o.id+"')"><div class="oicon">'+o.i+'</div><div class="oname">'+o.t+'</div><div class="odesc">KPI: '+o.k+' · '+o.f+'</div></div>').join('');}
