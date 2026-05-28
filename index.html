@@ -629,6 +629,7 @@ td strong{font-weight:600}
       </div>
     </div>
     <button class="bnav-btn" data-view="brief" onclick="switchView('brief',this)" style="color:var(--accent);font-weight:700;border-left:1px solid var(--border);margin-left:6px;padding-left:18px">✏️ Brief Builder</button>
+    <button class="bnav-btn" data-view="campaigns" onclick="switchView('campaigns',this)">?? Campaign Builder</button>
     <div style="width:1px;background:var(--border);margin:8px 6px"></div>
     <button class="bnav-btn" data-view="crosscal" onclick="switchView('crosscal',this)">📆 Campaign Calendar</button>
     <button class="bnav-btn" data-view="budget" onclick="switchView('budget',this)">💰 Budget</button>
@@ -2228,7 +2229,7 @@ function switchView(id, el) {
   if(target) target.classList.add('active');
   if(el) el.classList.add('active');
 
-  const nonBrandViews = ['group','calendar','channels','kpis','brief'];
+  const nonBrandViews = ['group','calendar','channels','kpis','brief','campaigns'];
   if(!nonBrandViews.includes(id)) {
     const brand = BRANDS.find(b=>b.id===id);
     if(brand) renderBrand(brand);
