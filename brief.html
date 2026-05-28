@@ -279,8 +279,34 @@ async function loadSites(){try{var r=await fetch(SU+'/rest/v1/site_contacts?sele
 async function loadBCH(){try{var r=await fetch(SU+'/rest/v1/brand_channels?select=*&order=brand_id,sort_order',{headers:{'apikey':SA,'Authorization':'Bearer '+SA}});var rows=await r.json();BCH={};rows.forEach(function(x){if(!BCH[x.brand_id])BCH[x.brand_id]=[];BCH[x.brand_id].push(x);});}catch(e){}}
 async function loadBKPI(){try{var r=await fetch(SU+'/rest/v1/brand_kpis?select=*',{headers:{'apikey':SA,'Authorization':'Bearer '+SA}});var rows=await r.json();BKPI={};rows.forEach(function(x){BKPI[x.brand_id]=x;});}catch(e){}}
 async function loadTeam(){try{var t=await fetch(SU+'/rest/v1/campaign_team?select=*&active=eq.true',{headers:{'apikey':SA,'Authorization':'Bearer '+SA}}).then(r=>r.json());var p=await fetch(SU+'/rest/v1/campaign_permissions?select=*',{headers:{'apikey':SA,'Authorization':'Bearer '+SA}}).then(r=>r.json());TEAM={};(Array.isArray(t)?t:[]).forEach(m=>TEAM[m.id]=m);PERMS={};(Array.isArray(p)?p:[]).forEach(x=>PERMS[x.team_member_id]=x);}catch(e){}}
-function rTeamDrop(){var s=document.getElementById('user-sel');if(!s)return;Object.values(TEAM).forEach(function(m){var o=document.createElement('option');o.value=m.id;o.textContent=m.name+' — '+m.role;s.appendChild(o);});}
-function setUser(id){CU=id||null;updateSbar();}
+function rTeamDrop(){
+  var s=document.getElementById('user-sel');
+  if(!s)return;
+  s.innerHTML='<option value="">— Who are you? —</option>';
+  Object.values(TEAM).forEach(function(m){
+    var o=document.createElement('option');
+    o.value=m.id;
+    o.textContent=m.name+' — '+m.role;
+    s.appendChild(o);
+  });
+  // Auto-detect from auth email
+  var savedId=localStorage.getItem('sw_user_id');
+  if(savedId&&TEAM[savedId]){
+    s.value=savedId;CU=savedId;
+  } else if(SBU&&SBU.email){
+    var match=Object.values(TEAM).find(function(m){
+      return m.email&&m.email.toLowerCase()===SBU.email.toLowerCase();
+    });
+    if(match){s.value=match.id;CU=match.id;localStorage.setItem('sw_user_id',match.id);}
+  }
+  updateSbar();
+}
+function setUser(id){
+  CU=id||null;
+  if(id)localStorage.setItem('sw_user_id',id);
+  else localStorage.removeItem('sw_user_id');
+  updateSbar();
+}
 
 function goStep(n){
   if(n===5&&!_s5r){rChannels();_s5r=true;}
@@ -590,8 +616,34 @@ async function loadSites(){try{var r=await fetch(SU+'/rest/v1/site_contacts?sele
 async function loadBCH(){try{var r=await fetch(SU+'/rest/v1/brand_channels?select=*&order=brand_id,sort_order',{headers:{'apikey':SA,'Authorization':'Bearer '+SA}});var rows=await r.json();BCH={};rows.forEach(function(x){if(!BCH[x.brand_id])BCH[x.brand_id]=[];BCH[x.brand_id].push(x);});}catch(e){}}
 async function loadBKPI(){try{var r=await fetch(SU+'/rest/v1/brand_kpis?select=*',{headers:{'apikey':SA,'Authorization':'Bearer '+SA}});var rows=await r.json();BKPI={};rows.forEach(function(x){BKPI[x.brand_id]=x;});}catch(e){}}
 async function loadTeam(){try{var t=await fetch(SU+'/rest/v1/campaign_team?select=*&active=eq.true',{headers:{'apikey':SA,'Authorization':'Bearer '+SA}}).then(r=>r.json());var p=await fetch(SU+'/rest/v1/campaign_permissions?select=*',{headers:{'apikey':SA,'Authorization':'Bearer '+SA}}).then(r=>r.json());TEAM={};(Array.isArray(t)?t:[]).forEach(m=>TEAM[m.id]=m);PERMS={};(Array.isArray(p)?p:[]).forEach(x=>PERMS[x.team_member_id]=x);}catch(e){}}
-function rTeamDrop(){var s=document.getElementById('user-sel');if(!s)return;Object.values(TEAM).forEach(function(m){var o=document.createElement('option');o.value=m.id;o.textContent=m.name+' — '+m.role;s.appendChild(o);});}
-function setUser(id){CU=id||null;updateSbar();}
+function rTeamDrop(){
+  var s=document.getElementById('user-sel');
+  if(!s)return;
+  s.innerHTML='<option value="">— Who are you? —</option>';
+  Object.values(TEAM).forEach(function(m){
+    var o=document.createElement('option');
+    o.value=m.id;
+    o.textContent=m.name+' — '+m.role;
+    s.appendChild(o);
+  });
+  // Auto-detect from auth email
+  var savedId=localStorage.getItem('sw_user_id');
+  if(savedId&&TEAM[savedId]){
+    s.value=savedId;CU=savedId;
+  } else if(SBU&&SBU.email){
+    var match=Object.values(TEAM).find(function(m){
+      return m.email&&m.email.toLowerCase()===SBU.email.toLowerCase();
+    });
+    if(match){s.value=match.id;CU=match.id;localStorage.setItem('sw_user_id',match.id);}
+  }
+  updateSbar();
+}
+function setUser(id){
+  CU=id||null;
+  if(id)localStorage.setItem('sw_user_id',id);
+  else localStorage.removeItem('sw_user_id');
+  updateSbar();
+}
 
 function goStep(n){
   if(n===5&&!_s5r){rChannels();_s5r=true;}
