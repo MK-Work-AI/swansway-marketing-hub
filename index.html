@@ -5695,8 +5695,92 @@ function cbSetUser(id) {
 }
 
 function cbGoToBrief() {
-  var el = document.querySelector('[data-view="brief"]');
-  switchView('brief', el);
+  switchView('brief', document.querySelector('[data-view="brief"]'));
+}
+
+function cbEditBrief(briefId) {
+  var brief = CB_ALL_BRIEFS.find(function(b){ return b.id === briefId; });
+  if (!brief) { cbGoToBrief(); return; }
+
+  // Switch to brief builder
+  switchView('brief', document.querySelector('[data-view="brief"]'));
+
+  // Wait for brief builder to render then populate it
+  setTimeout(function() {
+    // Populate BB state from saved brief
+    if (typeof BB === 'undefined') return;
+    BB.id          = brief.id;
+    BB.title       = brief.title || '';
+    BB.status      = brief.status || 'draft';
+    BB.brand       = (window.BB_BRANDS||[]).find(function(b){ return b.id===brief.brand_id; }) || {id:brief.brand_id,name:brief.brand_name,color:brief.brand_color};
+    BB.proposition = brief.proposition || '';
+    BB.mandatories = brief.mandatories || '';
+    BB.budget      = brief.budget || 0;
+    BB.channels    = brief.channels || brief.confirmed_channels || [];
+    BB.allocation  = brief.allocation || {};
+    BB.audiences   = brief.audiences || [];
+    BB.audience_ids = brief.audience_ids || [];
+    BB.start_date  = brief.start_date || '';
+    BB.end_date    = brief.end_date || '';
+    BB.scope       = brief.scope || 'brand';
+    BB.site_id     = brief.site_id || '';
+    BB.campaign_type_id = brief.campaign_type_id || '';
+    BB.campaign_type    = brief.campaign_type || '';
+    BB.objective_id     = brief.objective_id || '';
+    BB.objective        = brief.objective || '';
+
+    // Populate form fields
+    var fields = {
+      'bb-title': BB.title,
+      'bb-budget': BB.budget,
+      'bb-proposition': BB.proposition,
+      'bb-mandatories': BB.mandatories,
+    };
+    Object.keys(fields).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.value = fields[id] || '';
+    });
+
+    // Set brand selection
+    if (brief.brand_id) {
+      document.querySelectorAll('.bb-brand-pill').forEach(function(p){ p.classList.remove('bb-selected'); });
+      var brandPill = document.querySelector('.bb-brand-pill[data-brand="'+brief.brand_id+'"]');
+      if (brandPill) brandPill.classList.add('bb-selected');
+      // Show scope + dates
+      var scopeSection = document.getElementById('bb-scope-section');
+      var datesSection = document.getElementById('bb-dates-section');
+      if (scopeSection) scopeSection.style.display = 'block';
+      if (datesSection) datesSection.style.display = 'block';
+    }
+
+    // Set dates
+    var startEl = document.getElementById('bb-start-date');
+    var endEl = document.getElementById('bb-end-date');
+    if (startEl && brief.start_date) startEl.value = brief.start_date;
+    if (endEl && brief.end_date) endEl.value = brief.end_date;
+
+    // Show status in brief builder
+    var saveBar = document.getElementById('bb-save-feedback');
+    if (saveBar) {
+      saveBar.style.display = 'block';
+      var statusColors = {draft:'#6B7280',submitted:'#D97706',approved:'#059669',campaigned:'#2563EB'};
+      saveBar.innerHTML = '<span style="color:'+(statusColors[brief.status]||'#6B7280')+'">&#9679; '+brief.status.charAt(0).toUpperCase()+brief.status.slice(1)+'</span>'
+        + ' &nbsp;<strong>'+brief.title+'</strong>'
+        + (brief.status === 'approved' ? ' &nbsp;<button onclick="bbLaunchCampaign()" style="background:var(--swansway);color:#fff;border:none;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700">&#127919; Create Campaign &#8594;</button>' : '')
+        + (brief.status === 'draft' || brief.status === 'submitted' ? ' &nbsp;<button onclick="bbSubmitBrief()" style="border:1px solid var(--border);background:var(--white);padding:5px 14px;border-radius:4px;cursor:pointer;font-size:12px">Submit for approval</button>' : '');
+    }
+
+    // Enable next button
+    var nextBtn = document.getElementById('bb-btn-1-next');
+    if (nextBtn) nextBtn.disabled = false;
+
+    // Store for save operations
+    window._lastSavedBriefId = brief.id;
+    window._lastSavedBriefTitle = brief.title;
+
+    bbUpdateBrief();
+    console.log('Brief loaded for edit:', brief.title);
+  }, 400);
 }
 
 function cbSetFilter(f, el) {
@@ -5810,7 +5894,10 @@ function cbRenderBriefsList() {
     editBtn.className = 'btn';
     editBtn.style.cssText = 'font-size:11px;padding:3px 10px';
     editBtn.textContent = '✏️ Edit';
-    editBtn.onclick = function(e) { e.stopPropagation(); cbGoToBrief(); };
+    editBtn.onclick = function(e) {
+        e.stopPropagation();
+        cbEditBrief(this.dataset.bid);
+      };
     actRow.appendChild(editBtn);
 
     // Approve button — Anna/Marcus only, status=submitted
@@ -6076,7 +6163,7 @@ function cbRenderBriefsList(){
     var editBtn=document.createElement('button');
     editBtn.className='btn';editBtn.style.cssText='font-size:11px;padding:3px 10px';
     editBtn.textContent='✏️ Edit';
-    editBtn.onclick=function(e){e.stopPropagation();cbGoToBrief();};
+    editBtn.onclick=function(e){e.stopPropagation();cbEditBrief(this.dataset.bid);};
     acts.appendChild(editBtn);
 
     if(brief.status==='submitted'&&perms.can_approve_all){
@@ -6109,7 +6196,7 @@ function cbRenderBriefsList(){
       var campRow=document.createElement('div');
       campRow.style.cssText='border-top:1px solid var(--border);padding:10px 20px;background:var(--surface);cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .15s';
       campRow.dataset.cid=campaign.id;
-      campRow.onclick=function(){cbOpenCampaign(this.dataset.cid);};
+      (function(cid){campRow.onclick=function(e){e.stopPropagation();cbOpenCampaign(cid);};} )(campaign.id);
       campRow.onmouseenter=function(){this.style.background='var(--surface-2)';};
       campRow.onmouseleave=function(){this.style.background='var(--surface)';};
 
