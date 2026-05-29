@@ -5864,14 +5864,14 @@ function cbRenderBriefsList() {
     var meta = document.createElement('div');
     meta.style.cssText = 'display:flex;gap:6px;align-items:center;flex-wrap:wrap';
     var pills = '';
-    if (brand.name) pills += '<span style="font-size:11px;padding:2px 8px;border-radius:9px;background:'+bColor+'20;color:'+bColor+';font-weight:600">'+brand.name+'</span>';
-    if (brief.campaign_type) pills += '<span style="font-size:11px;padding:2px 8px;border-radius:9px;background:var(--surface);color:var(--ink-soft)">'+brief.campaign_type+'</span>';
-    if (brief.budget) pills += '<span style="font-size:11px;padding:2px 8px;border-radius:9px;background:var(--surface);color:var(--ink-soft)">£'+brief.budget.toLocaleString()+'</span>';
-    if (brief.duration_label) pills += '<span style="font-size:11px;color:var(--ink-faint)">⏱ '+brief.duration_label+'</span>';
+    if (brand.name) pills += '<span style="font-size:13px;padding:3px 10px;border-radius:9px;background:'+bColor+'20;color:'+bColor+';font-weight:600">'+brand.name+'</span>';
+    if (brief.campaign_type) pills += '<span style="font-size:13px;padding:3px 10px;border-radius:9px;background:var(--surface);color:var(--ink-soft)">'+brief.campaign_type+'</span>';
+    if (brief.budget) pills += '<span style="font-size:13px;padding:3px 10px;border-radius:9px;background:var(--surface);color:var(--ink-soft)">£'+brief.budget.toLocaleString()+'</span>';
+    if (brief.duration_label) pills += '<span style="font-size:13px;color:var(--ink-faint)">⏱ '+brief.duration_label+'</span>';
     if (brief.start_date) {
       var sd = new Date(brief.start_date).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
       var ed = brief.end_date ? ' – '+new Date(brief.end_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '';
-      pills += '<span style="font-size:11px;color:var(--ink-faint)">'+sd+ed+'</span>';
+      pills += '<span style="font-size:13px;color:var(--ink-faint)">'+sd+ed+'</span>';
     }
     meta.innerHTML = pills;
     left.appendChild(meta);
@@ -5890,7 +5890,7 @@ function cbRenderBriefsList() {
     // Edit brief button
     var editBtn = document.createElement('button');
     editBtn.className = 'btn';
-    editBtn.style.cssText = 'font-size:11px;padding:3px 10px';
+    editBtn.style.cssText = 'font-size:13px;padding:4px 12px';
     editBtn.textContent = '✏️ Edit';
     editBtn.onclick = function(e) {
         e.stopPropagation();
@@ -5902,7 +5902,7 @@ function cbRenderBriefsList() {
     if (brief.status === 'submitted' && (perms.can_approve_all || perms.can_approve_digital)) {
       var appBtn = document.createElement('button');
       appBtn.className = 'btn';
-      appBtn.style.cssText = 'font-size:11px;padding:3px 10px;background:#059669;color:#fff;border-color:#059669';
+      appBtn.style.cssText = 'font-size:13px;padding:4px 12px;background:#059669;color:#fff;border-color:#059669';
       appBtn.innerHTML = '✓ Approve';
       appBtn.dataset.bid = brief.id;
       appBtn.onclick = function(e) { e.stopPropagation(); cbApproveBriefById(this.dataset.bid); };
@@ -5913,7 +5913,7 @@ function cbRenderBriefsList() {
     if (brief.status === 'approved' && !campaign && (perms.can_approve_all || perms.can_approve_digital)) {
       var campBtn = document.createElement('button');
       campBtn.className = 'btn btn-primary';
-      campBtn.style.cssText = 'font-size:11px;padding:3px 10px';
+      campBtn.style.cssText = 'font-size:13px;padding:4px 12px';
       campBtn.textContent = '?? Create Campaign';
       campBtn.dataset.bid = brief.id;
       campBtn.dataset.btitle = brief.title;
