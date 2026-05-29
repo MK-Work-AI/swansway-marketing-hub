@@ -2999,7 +2999,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadSiteBudgets();
   loadSiteKPIs();
   loadSiteContacts();
-  setTimeout(mtLoad, 2000);
+  setTimeout(mtLoad, 3000);
   // Auto-detect current user from auth email after team loads
   setTimeout(async function() {
     if (CB_CURRENT_USER) return; // already set
@@ -7080,7 +7080,7 @@ function mtRender(tasks) {
 }
 
 function mtToggle(e) {
-  if (e) e.stopPropagation();
+  if (e && e.stopPropagation) e.stopPropagation();
   MT_OPEN = !MT_OPEN;
   var dd = document.getElementById('mt-dropdown');
   if (!dd) return;
