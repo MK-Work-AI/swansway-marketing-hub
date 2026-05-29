@@ -590,6 +590,17 @@ td strong{font-weight:600}
     <div class="topbar-meta">
       <span class="topbar-pill" id="topbar-env-pill">Live 2026 Plan</span>
       <button onclick="switchView('brief',document.querySelector('[data-view=brief]'))" style="font-family:var(--font-b);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:var(--accent);border:none;border-radius:2px;color:#fff;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#a00d26'" onmouseout="this.style.background='var(--accent)'">✏ Brief Builder</button>
+      <div style="position:relative;display:inline-flex;align-items:center">
+        <button id="mt-btn" onclick="mtToggle(event)" style="font-family:var(--font-b);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:2px;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;position:relative">
+          MY TASKS
+          <span id="mt-badge" style="display:none;background:#C8102E;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;align-items:center;justify-content:center;line-height:1">0</span>
+        </button>
+        <div id="mt-dropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:340px;background:var(--white);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.15);z-index:500;overflow:hidden">
+          <div id="mt-header" style="padding:14px 18px;border-bottom:1px solid var(--border);font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink)">Your tasks</div>
+          <div id="mt-list" style="max-height:360px;overflow-y:auto"></div>
+          <div id="mt-footer" style="padding:10px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--ink-faint);text-align:center"></div>
+        </div>
+      </div>
       <button class="user-pill" id="user-pill" onclick="handleUserPillClick()" style="display:none">
         <div class="user-avatar" id="user-avatar">?</div>
         <span id="user-name">Loading…</span>
@@ -2988,6 +2999,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadSiteBudgets();
   loadSiteKPIs();
   loadSiteContacts();
+  setTimeout(mtLoad, 2000);
   // Auto-detect current user from auth email
   window.SWANSWAY_USER_ID = null;
   if (SB_USER && SB_USER.email && window.CB_TEAM) {
@@ -6957,6 +6969,99 @@ async function bbLaunchCampaign() {
     } catch(e) { alert('Error creating campaign: ' + e.message); }
   }, 400);
 }
+
+
+/* ==== MY TASKS ==== */
+var MT_OPEN = false;
+
+async function mtLoad() {
+  if (!CB_CURRENT_USER && window.SB_USER && SB_USER.email) {
+    if (!Object.keys(CB_TEAM).length) {
+      var anon = SUPABASE_ANON_KEY;
+      var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+      var t = await fetch(base+'/campaign_team?select=*&active=eq.true',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
+      (Array.isArray(t)?t:[]).forEach(function(m){CB_TEAM[m.id]=m;});
+      var p = await fetch(base+'/campaign_permissions?select=*',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
+      (Array.isArray(p)?p:[]).forEach(function(x){CB_PERMS[x.team_member_id]=x;});
+    }
+    var match = Object.values(CB_TEAM).find(function(m){return m.email&&m.email.toLowerCase()===SB_USER.email.toLowerCase();});
+    if (match) CB_CURRENT_USER = match.id;
+  }
+  if (!CB_CURRENT_USER) { mtRender([]); return; }
+
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+  try {
+    var tasks = await fetch(
+      base+'/campaign_tasks?select=id,task_name,stage,campaign_id,campaigns(id,title,current_stage,brief_id)&assigned_to=eq.'+CB_CURRENT_USER+'&completed=eq.false&approved=eq.false&rejected=eq.false',
+      {headers:hdrs}
+    ).then(function(r){return r.json();});
+    if (!Array.isArray(tasks)) tasks = [];
+    var active = tasks.filter(function(t){
+      var c = t.campaigns; return c && t.stage === c.current_stage;
+    });
+    mtRender(active);
+  } catch(e) { console.warn('mtLoad:', e); }
+}
+
+function mtRender(tasks) {
+  var badge = document.getElementById('mt-badge');
+  var header = document.getElementById('mt-header');
+  var list = document.getElementById('mt-list');
+  var footer = document.getElementById('mt-footer');
+  if (!list) return;
+  var me = CB_TEAM[CB_CURRENT_USER] || {};
+  var first = me.name ? me.name.split(' ')[0] : 'there';
+  var count = tasks.length;
+  if (badge) { badge.style.display = count > 0 ? 'flex' : 'none'; badge.textContent = count; }
+  if (header) header.textContent = count > 0
+    ? 'Hi ' + first + ' \u2014 ' + count + ' task' + (count !== 1 ? 's' : '') + ' waiting for you \uD83D\uDC4B'
+    : 'Hi ' + first + ' \u2014 nothing to do right now \uD83D\uDE4C';
+  list.innerHTML = '';
+  if (!count) {
+    list.innerHTML = '<div style="padding:20px 18px;text-align:center;color:var(--ink-soft);font-size:14px">You are all caught up \u2014 nice work! \uD83C\uDF89</div>';
+  } else {
+    tasks.forEach(function(t) {
+      var c = t.campaigns || {};
+      var row = document.createElement('div');
+      row.style.cssText = 'padding:12px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s';
+      row.onmouseenter = function(){this.style.background='var(--surface)';};
+      row.onmouseleave = function(){this.style.background='';};
+      row.innerHTML = '<div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:3px">'+t.task_name+'</div>'
+        + '<div style="font-size:12px;color:var(--ink-soft)">'+(c.title||'Campaign')+'</div>';
+      row.dataset.briefId = c.brief_id || '';
+      row.onclick = function(){
+        MT_OPEN = false;
+        var dd = document.getElementById('mt-dropdown');
+        if (dd) dd.style.display = 'none';
+        if (this.dataset.briefId) {
+          switchView('brief', document.querySelector('[data-view="brief"]'));
+          setTimeout(function(){if(typeof cbEditBrief==='function')cbEditBrief(row.dataset.briefId);}, 400);
+        }
+      };
+      list.appendChild(row);
+    });
+  }
+  if (footer) footer.textContent = count > 0 ? 'Click a task to jump straight to it' : '';
+}
+
+function mtToggle(e) {
+  if (e) e.stopPropagation();
+  MT_OPEN = !MT_OPEN;
+  var dd = document.getElementById('mt-dropdown');
+  if (!dd) return;
+  dd.style.display = MT_OPEN ? 'block' : 'none';
+  if (MT_OPEN) mtLoad();
+}
+
+document.addEventListener('click', function(e) {
+  if (!MT_OPEN) return;
+  if (e.target.closest && (e.target.closest('#mt-btn') || e.target.closest('#mt-dropdown'))) return;
+  MT_OPEN = false;
+  var dd = document.getElementById('mt-dropdown');
+  if (dd) dd.style.display = 'none';
+});
 
 const QPLAN_CACHE = {};
 
