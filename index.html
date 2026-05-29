@@ -7346,6 +7346,174 @@ function bbViewCampaign(campaignId) {
   alert('Campaign tasks view coming in Phase 4!');
 }
 
+
+/* ==== PHASE 3: BRIEF CAMPAIGN SECTION ==== */
+
+function bbRenderCampaignSection(brief) {
+  var section = document.getElementById('bb-campaign-section');
+  if (!section) return;
+  section.style.display = 'block';
+
+  var briefId = brief ? brief.id : window._lastSavedBriefId;
+  var briefTitle = brief ? brief.title : window._lastSavedBriefTitle;
+  var status = brief ? brief.status : 'draft';
+  var me = CB_TEAM[CB_CURRENT_USER] || {};
+  var firstName = me.name ? me.name.split(' ')[0] : 'there';
+  var canLaunch = !!(CB_PERMS[CB_CURRENT_USER] && (CB_PERMS[CB_CURRENT_USER].can_approve_all || CB_PERMS[CB_CURRENT_USER].can_approve_digital));
+
+  // Check if campaign already exists
+  var existingCamp = (typeof CB_CAMPAIGNS !== 'undefined') ? CB_CAMPAIGNS.find(function(c){return c.brief_id === briefId;}) : null;
+
+  section.innerHTML = '';
+
+  if (existingCamp) {
+    // Campaign already launched - show stage view
+    bbRenderStages(section, existingCamp, briefId);
+    return;
+  }
+
+  // Campaign not launched yet - show status + launch button
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'margin-top:24px;border-top:2px solid var(--border);padding-top:24px';
+
+  if (status === 'draft') {
+    // Not submitted yet
+    wrap.innerHTML = '<div style="background:var(--surface);border-radius:8px;padding:20px 24px;text-align:center">'
+      + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;margin-bottom:8px">Ready to submit?</div>'
+      + '<div style="font-size:14px;color:var(--ink-soft);margin-bottom:16px">Your brief looks great, ' + firstName + '. Submit it for approval and the team will get started.</div>'
+      + '<button onclick="bbSubmitBrief()" style="background:var(--ink);color:#fff;border:none;padding:12px 32px;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-m)">Submit for approval &rarr;</button>'
+      + '</div>';
+
+  } else if (status === 'submitted') {
+    // Submitted, waiting for approval
+    var approverMsg = canLaunch
+      ? '<div style="font-size:14px;color:var(--ink-soft);margin-bottom:16px">This brief is ready for your approval. Check everything looks right then launch the campaign.</div>'
+      + '<button onclick="bbApproveThenLaunch(\'' + briefId + '\',\'' + (briefTitle||'').replace(/'/g,'') + '\')" style="background:linear-gradient(135deg,#C8102E,#e8183e);color:#fff;border:none;padding:16px 40px;border-radius:8px;font-size:18px;font-weight:800;cursor:pointer;font-family:var(--font-m);letter-spacing:-0.02em;box-shadow:0 4px 16px rgba(200,16,46,0.35);width:100%;margin-bottom:8px">\uD83D\uDE80 LAUNCH CAMPAIGN</button>'
+      + '<div style="font-size:11px;color:var(--ink-faint);text-align:center">This will create all campaign tasks and assign them to the team</div>'
+      : '<div style="font-size:14px;color:var(--ink-soft)">Submitted and waiting for Anna, Marcus or Beth to approve it. Sit tight \uD83D\uDC4A</div>';
+
+    wrap.innerHTML = '<div style="background:var(--surface);border-radius:8px;padding:20px 24px;text-align:center">'
+      + '<div style="font-size:32px;margin-bottom:8px">' + (canLaunch ? '\uD83D\uDE80' : '\u23F3') + '</div>'
+      + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;margin-bottom:8px">' + (canLaunch ? 'Ready to launch!' : 'Submitted for approval') + '</div>'
+      + approverMsg
+      + '</div>';
+
+  } else if (status === 'approved') {
+    wrap.innerHTML = '<div style="background:var(--surface);border-radius:8px;padding:24px;text-align:center">'
+      + '<div style="font-size:32px;margin-bottom:8px">\uD83D\uDE80</div>'
+      + '<div style="font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:8px">Brief approved!</div>'
+      + '<div style="font-size:14px;color:var(--ink-soft);margin-bottom:20px">Everything is in order. Launch the campaign and get the team moving.</div>'
+      + '<button onclick="bbCreateCampaign(\'' + briefId + '\',\'' + (briefTitle||'').replace(/'/g,'') + '\')" style="background:linear-gradient(135deg,#C8102E,#e8183e);color:#fff;border:none;padding:18px 48px;border-radius:8px;font-size:20px;font-weight:800;cursor:pointer;font-family:var(--font-m);letter-spacing:-0.02em;box-shadow:0 6px 20px rgba(200,16,46,0.4);width:100%;transition:transform .1s" onmousedown="this.style.transform=\'scale(0.98)\'" onmouseup="this.style.transform=\'\'">&#128640; LAUNCH CAMPAIGN</button>'
+      + '<div style="font-size:11px;color:var(--ink-faint);margin-top:10px">Tasks will be automatically assigned to the team based on their roles</div>'
+      + '</div>';
+  }
+
+  section.appendChild(wrap);
+}
+
+async function bbApproveThenLaunch(briefId, briefTitle) {
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  try {
+    // Approve the brief first
+    var r = await fetch(base+'/briefs?id=eq.'+briefId, {
+      method:'PATCH',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({status:'approved',approved_by:CB_CURRENT_USER,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()})
+    });
+    if (!r.ok) throw new Error(await r.text());
+    // Update local brief status
+    if (typeof BB !== 'undefined') BB.status = 'approved';
+    // Now create campaign
+    await bbCreateCampaign(briefId, briefTitle);
+  } catch(e) { alert('Error: '+e.message); }
+}
+
+async function bbCreateCampaign(briefId, briefTitle) {
+  var btn = event && event.target;
+  if (btn) { btn.textContent = 'Launching...'; btn.disabled = true; }
+
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+
+  try {
+    // Load full brief data
+    var brief = await fetch(base+'/briefs?id=eq.'+briefId+'&select=*',{
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon}
+    }).then(function(r){return r.json();}).then(function(d){return d[0];});
+
+    // Create campaign
+    var cr = await fetch(base+'/campaigns',{
+      method:'POST',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify([{
+        title: briefTitle,
+        brief_id: briefId,
+        scope: brief.scope||'brand',
+        brand_id: brief.brand_id||null,
+        site_id: brief.site_id||null,
+        status: 'active',
+        current_stage: 1,
+        confirmed_channels: brief.confirmed_channels||brief.channels||[],
+        created_by: CB_CURRENT_USER||'system'
+      }])
+    });
+    if (!cr.ok) throw new Error(await cr.text());
+    var camp = (await cr.json())[0];
+
+    // Create tasks from template
+    var tmpl = await fetch(base+'/campaign_task_templates?select=*&order=stage,task_order',{
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon}
+    }).then(function(r){return r.json();});
+
+    if (Array.isArray(tmpl) && tmpl.length) {
+      var cmap = {'Paid Search (Google/Bing)':'paid_search','Display & Programmatic':'display','Email Marketing':'email','Social Organic':'social_organic','Meta (Facebook/Instagram)':'social_paid','Events & Showroom':'events','OOH & Print':'ooh_print','Manufacturer Co-op':'manufacturer_coop'};
+      var chs = (brief.confirmed_channels||brief.channels||[]).map(function(c){return cmap[c]||c.toLowerCase().replace(/[^a-z]/g,'_');});
+      var rows = tmpl.filter(function(t){return !t.channel||!chs.length||chs.includes(t.channel);}).map(function(t){
+        var notes = '';
+        if (t.stage===1&&t.task_order===3) notes = 'Budget: \u00a3'+(brief.budget||0).toLocaleString();
+        if (t.stage===1&&t.task_order===2) notes = (brief.start_date?'Start: '+brief.start_date:'')+(brief.end_date?' | End: '+brief.end_date:'');
+        return {campaign_id:camp.id,stage:t.stage,task_order:t.task_order,task_name:t.task_name,department:t.department,assigned_to:t.default_assignee,approver_scope:t.approver_scope,is_blocker:t.is_blocker,channel:t.channel,completed:false,approved:false,rejected:false,notes:notes};
+      });
+      await fetch(base+'/campaign_tasks',{
+        method:'POST',
+        headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify(rows)
+      });
+    }
+
+    // Mark brief as campaigned
+    await fetch(base+'/briefs?id=eq.'+briefId,{
+      method:'PATCH',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({status:'campaigned',updated_at:new Date().toISOString()})
+    });
+
+    // Update CB_CAMPAIGNS
+    if (typeof CB_CAMPAIGNS !== 'undefined') CB_CAMPAIGNS.unshift(camp);
+
+    // Update My Tasks badge
+    if (typeof mtLoad === 'function') mtLoad();
+
+    // Show campaign stages
+    var section = document.getElementById('bb-campaign-section');
+    if (section) bbRenderStages(section, camp, briefId);
+
+  } catch(e) {
+    if (btn) { btn.textContent = '\uD83D\uDE80 LAUNCH CAMPAIGN'; btn.disabled = false; }
+    alert('Error launching campaign: '+e.message);
+  }
+}
+
+function bbRenderStages(section, camp, briefId) {
+  // Will be built in Phase 4
+  section.innerHTML = '<div style="margin-top:24px;border-top:2px solid var(--border);padding-top:24px;text-align:center;padding-bottom:16px">'
+    + '<div style="font-size:28px;margin-bottom:8px">\uD83C\uDF89</div>'
+    + '<div style="font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:8px;color:var(--ink)">Campaign launched!</div>'
+    + '<div style="font-size:14px;color:var(--ink-soft)">Tasks have been assigned to the team. Stage view coming in the next update.</div>'
+    + '</div>';
+}
+
 const QPLAN_CACHE = {};
 
 /* ── TRIGGER UPLOAD ── */
