@@ -7561,14 +7561,354 @@ async function bbCreateCampaign(briefId, briefTitle) {
   }
 }
 
-function bbRenderStages(section, camp, briefId) {
-  // Will be built in Phase 4
-  section.innerHTML = '<div style="margin-top:24px;border-top:2px solid var(--border);padding-top:24px;text-align:center;padding-bottom:16px">'
-    + '<div style="font-size:28px;margin-bottom:8px">\uD83C\uDF89</div>'
-    + '<div style="font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:8px;color:var(--ink)">Campaign launched!</div>'
-    + '<div style="font-size:14px;color:var(--ink-soft)">Tasks have been assigned to the team. Stage view coming in the next update.</div>'
-    + '</div>';
+async function bbRenderStages(section, camp, briefId) {
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+
+  // Load all tasks for this campaign
+  var tasks = await fetch(base+'/campaign_tasks?campaign_id=eq.'+camp.id+'&order=stage,task_order',{headers:hdrs}).then(function(r){return r.json();});
+  if (!Array.isArray(tasks)) tasks = [];
+
+  var me = CB_TEAM[CB_CURRENT_USER] || {};
+  var myFirst = me.name ? me.name.split(' ')[0] : '';
+  var currentStage = camp.current_stage || 1;
+  var SN = ['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'];
+  var SI = ['\uD83D\uDCCB','\u2699\uFE0F','\u2705','\uD83D\uDE80','\uD83D\uDCCA','\uD83C\uDFC1'];
+  var canApprove = !!(CB_PERMS[CB_CURRENT_USER] && (CB_PERMS[CB_CURRENT_USER].can_approve_all || CB_PERMS[CB_CURRENT_USER].can_approve_digital));
+  var canAdvance = !!(CB_PERMS[CB_CURRENT_USER] && CB_PERMS[CB_CURRENT_USER].can_advance_stage);
+
+  section.innerHTML = '';
+
+  // ── Campaign header ──
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'margin-top:24px;border-top:2px solid var(--border);padding-top:24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px';
+  var hdrLeft = document.createElement('div');
+  hdrLeft.innerHTML = '<div style="font-family:var(--font-d);font-size:20px;font-weight:700;color:var(--ink)">Campaign is live \uD83C\uDF89</div>'
+    + '<div style="font-size:14px;color:var(--ink-soft);margin-top:2px">'
+    + (myFirst ? 'Great work ' + myFirst + ' \u2014 ' : '') + 'Stage ' + currentStage + ' of 6 is active</div>';
+  hdr.appendChild(hdrLeft);
+
+  if (canAdvance) {
+    var advBtn = document.createElement('button');
+    advBtn.style.cssText = 'background:var(--swansway);color:#fff;border:none;padding:8px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-m)';
+    advBtn.textContent = 'Advance to Stage ' + (currentStage + 1) + ' \u2192';
+    advBtn.dataset.campId = camp.id;
+    advBtn.dataset.stage = currentStage;
+    advBtn.onclick = function() { bbAdvanceStage(this.dataset.campId, parseInt(this.dataset.stage), section, camp, briefId); };
+    hdr.appendChild(advBtn);
+  }
+  section.appendChild(hdr);
+
+  // ── Stage tabs ──
+  var tabBar = document.createElement('div');
+  tabBar.style.cssText = 'display:flex;gap:4px;margin-bottom:20px;overflow-x:auto;padding-bottom:2px';
+  SN.forEach(function(sn, i) {
+    var stageNum = i + 1;
+    var done = stageNum < currentStage;
+    var active = stageNum === currentStage;
+    var btn = document.createElement('button');
+    btn.style.cssText = 'flex:1;min-width:100px;padding:10px 8px;border-radius:6px;border:2px solid '
+      + (active ? 'var(--swansway)' : done ? '#059669' : 'var(--border)')
+      + ';background:' + (active ? 'var(--swansway)' : done ? '#D1FAE5' : 'var(--white)')
+      + ';color:' + (active ? '#fff' : done ? '#059669' : 'var(--ink-faint)')
+      + ';font-size:11px;font-weight:' + (active ? '700' : done ? '600' : '400')
+      + ';cursor:pointer;text-align:center;transition:all .15s';
+    btn.innerHTML = '<div style="font-size:16px;margin-bottom:2px">' + (done ? '\u2705' : SI[i]) + '</div>'
+      + '<div>' + sn + '</div>';
+    btn.dataset.stageNum = stageNum;
+    btn.onclick = function() { bbShowStageDetail(parseInt(this.dataset.stageNum), tasks, currentStage, stageContent, camp, canApprove); };
+    tabBar.appendChild(btn);
+  });
+  section.appendChild(tabBar);
+
+  // ── Stage content area ──
+  var stageContent = document.createElement('div');
+  stageContent.id = 'bb-stage-content-' + camp.id;
+  section.appendChild(stageContent);
+
+  // Show active stage by default
+  bbShowStageDetail(currentStage, tasks, currentStage, stageContent, camp, canApprove);
 }
+
+function bbShowStageDetail(stageNum, allTasks, currentStage, container, camp, canApprove) {
+  container.innerHTML = '';
+  var stageTasks = allTasks.filter(function(t){ return t.stage === stageNum; });
+  var myTasks = stageTasks.filter(function(t){ return t.assigned_to === CB_CURRENT_USER; });
+  var otherTasks = stageTasks.filter(function(t){ return t.assigned_to !== CB_CURRENT_USER; });
+  var SN = ['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'];
+  var isActive = stageNum === currentStage;
+  var isPast = stageNum < currentStage;
+  var me = CB_TEAM[CB_CURRENT_USER] || {};
+  var myFirst = me.name ? me.name.split(' ')[0] : 'You';
+
+  // Stage header
+  var sh = document.createElement('div');
+  sh.style.cssText = 'padding:14px 18px;background:var(--ink);border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:space-between';
+  var doneCount = stageTasks.filter(function(t){return t.completed;}).length;
+  var blockers = stageTasks.filter(function(t){return t.is_blocker;}).length;
+  sh.innerHTML = '<div style="color:#fff"><div style="font-family:var(--font-d);font-size:16px;font-weight:700">Stage ' + stageNum + ': ' + SN[stageNum-1] + '</div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px">' + doneCount + ' of ' + stageTasks.length + ' tasks complete</div></div>'
+    + '<span style="padding:4px 12px;border-radius:12px;font-size:11px;font-weight:700;background:'
+    + (isPast ? '#059669' : isActive ? '#F59E0B' : 'rgba(255,255,255,0.15)') + ';color:#fff">'
+    + (isPast ? '\u2713 Complete' : isActive ? 'Active now' : 'Upcoming') + '</span>';
+  container.appendChild(sh);
+
+  var body = document.createElement('div');
+  body.style.cssText = 'border:2px solid var(--ink);border-top:none;border-radius:0 0 8px 8px;overflow:hidden';
+
+  // MY TASKS section
+  if (myTasks.length > 0 && isActive) {
+    var mySection = document.createElement('div');
+    mySection.style.cssText = 'padding:16px 18px;background:var(--white);border-bottom:2px solid var(--border)';
+    var myHdr = document.createElement('div');
+    myHdr.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:0.08em;color:var(--swansway);text-transform:uppercase;margin-bottom:12px';
+    myHdr.textContent = '\uD83D\uDC49 Your tasks, ' + myFirst;
+    mySection.appendChild(myHdr);
+
+    myTasks.forEach(function(task) {
+      var card = document.createElement('div');
+      var done = task.completed;
+      var approved = task.approved;
+      card.style.cssText = 'border:2px solid ' + (done ? '#059669' : 'var(--border)') + ';border-radius:8px;padding:16px 18px;margin-bottom:10px;background:' + (done ? '#F0FDF4' : '#fff');
+      
+      var taskName = document.createElement('div');
+      taskName.style.cssText = 'font-size:16px;font-weight:700;color:' + (done ? '#059669' : 'var(--ink)') + ';margin-bottom:6px;display:flex;align-items:center;gap:8px';
+      taskName.innerHTML = (done ? '\u2705 ' : '') + task.task_name + (task.is_blocker ? ' <span style="font-size:10px;background:#FEF3C7;color:#92400E;padding:2px 7px;border-radius:9px;font-weight:700">BLOCKER</span>' : '');
+      card.appendChild(taskName);
+
+      if (task.notes) {
+        var notes = document.createElement('div');
+        notes.style.cssText = 'font-size:12px;color:var(--ink-soft);margin-bottom:10px';
+        notes.textContent = task.notes;
+        card.appendChild(notes);
+      }
+
+      if (!done) {
+        var actions = document.createElement('div');
+        actions.style.cssText = 'display:flex;gap:8px;margin-top:10px';
+        var doneBtn = document.createElement('button');
+        doneBtn.style.cssText = 'background:var(--ink);color:#fff;border:none;padding:10px 20px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-m);flex:1';
+        doneBtn.textContent = '\u2713 Mark as done';
+        doneBtn.dataset.taskId = task.id;
+        doneBtn.dataset.campId = camp.id;
+        doneBtn.onclick = function() { bbMarkTaskDone(this.dataset.taskId, this.dataset.campId, card, taskName); };
+        actions.appendChild(doneBtn);
+        var notesBtn = document.createElement('button');
+        notesBtn.style.cssText = 'background:var(--white);color:var(--ink);border:2px solid var(--border);padding:10px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-family:var(--font-m)';
+        notesBtn.textContent = '\uD83D\uDCAC Notes';
+        notesBtn.dataset.taskId = task.id;
+        notesBtn.dataset.taskName = task.task_name;
+        notesBtn.onclick = function() { bbOpenNotesPanel(this.dataset.taskId, this.dataset.taskName); };
+        actions.appendChild(notesBtn);
+        card.appendChild(actions);
+      } else {
+        var doneRow = document.createElement('div');
+        doneRow.style.cssText = 'font-size:12px;color:#059669;margin-top:6px;display:flex;align-items:center;justify-content:space-between';
+        doneRow.innerHTML = '\u2713 Done' + (approved ? ' \u2022 Approved' : '');
+        var notesSmall = document.createElement('button');
+        notesSmall.style.cssText = 'background:none;border:none;color:var(--ink-soft);font-size:12px;cursor:pointer;text-decoration:underline';
+        notesSmall.textContent = 'View notes';
+        notesSmall.dataset.taskId = task.id;
+        notesSmall.dataset.taskName = task.task_name;
+        notesSmall.onclick = function() { bbOpenNotesPanel(this.dataset.taskId, this.dataset.taskName); };
+        doneRow.appendChild(notesSmall);
+        card.appendChild(doneRow);
+      }
+      mySection.appendChild(card);
+    });
+    body.appendChild(mySection);
+  } else if (myTasks.length === 0 && isActive) {
+    var noTasks = document.createElement('div');
+    noTasks.style.cssText = 'padding:20px 18px;background:#F0FDF4;border-bottom:2px solid var(--border);text-align:center;color:#059669;font-size:14px;font-weight:600';
+    noTasks.textContent = '\uD83C\uDF89 Nothing to do in this stage ' + myFirst + ' \u2014 you\u2019re all caught up!';
+    body.appendChild(noTasks);
+  }
+
+  // REST OF TEAM section
+  if (otherTasks.length > 0) {
+    var teamSection = document.createElement('div');
+    teamSection.style.cssText = 'padding:16px 18px;background:var(--surface)';
+    var teamHdr = document.createElement('div');
+    teamHdr.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:0.08em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:10px';
+    teamHdr.textContent = 'The rest of the team';
+    teamSection.appendChild(teamHdr);
+
+    // Group by assignee
+    var byAssignee = {};
+    otherTasks.forEach(function(t) {
+      var key = t.assigned_to || 'unassigned';
+      if (!byAssignee[key]) byAssignee[key] = [];
+      byAssignee[key].push(t);
+    });
+
+    Object.keys(byAssignee).forEach(function(assigneeId) {
+      var member = CB_TEAM[assigneeId] || {name: assigneeId};
+      var memberFirst = member.name ? member.name.split(' ')[0] : assigneeId;
+      var memberTasks = byAssignee[assigneeId];
+      var memberDone = memberTasks.filter(function(t){return t.completed;}).length;
+
+      var memberRow = document.createElement('div');
+      memberRow.style.cssText = 'margin-bottom:12px';
+      var memberName = document.createElement('div');
+      memberName.style.cssText = 'font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;display:flex;align-items:center;gap:8px';
+      memberName.innerHTML = '<span style="width:24px;height:24px;border-radius:50%;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--ink-soft)">'
+        + (member.name ? member.name.charAt(0) : '?') + '</span>'
+        + memberFirst
+        + ' <span style="font-size:11px;font-weight:400;color:var(--ink-faint)">' + memberDone + '/' + memberTasks.length + ' done</span>';
+      memberRow.appendChild(memberName);
+
+      memberTasks.forEach(function(task) {
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;margin-bottom:4px;background:' + (task.completed ? '#F0FDF4' : 'var(--white)') + ';border:1px solid var(--border)';
+        row.innerHTML = '<span style="font-size:14px">' + (task.completed ? '\u2705' : '\u25CB') + '</span>'
+          + '<span style="font-size:13px;color:' + (task.completed ? '#059669' : 'var(--ink-soft)') + ';flex:1">' + task.task_name + '</span>'
+          + (task.is_blocker ? '<span style="font-size:10px;background:#FEF3C7;color:#92400E;padding:1px 6px;border-radius:9px;font-weight:600">BLOCKER</span>' : '');
+        memberRow.appendChild(row);
+      });
+      teamSection.appendChild(memberRow);
+    });
+    body.appendChild(teamSection);
+  }
+
+  container.appendChild(body);
+}
+
+async function bbMarkTaskDone(taskId, campId, cardEl, taskNameEl) {
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  try {
+    var r = await fetch(base+'/campaign_tasks?id=eq.'+taskId, {
+      method:'PATCH',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({completed:true,completed_at:new Date().toISOString(),completed_by:CB_CURRENT_USER})
+    });
+    if (!r.ok) throw new Error(await r.text());
+    // Update card visually
+    cardEl.style.borderColor = '#059669';
+    cardEl.style.background = '#F0FDF4';
+    if (taskNameEl) taskNameEl.style.color = '#059669';
+    // Remove action buttons
+    var actions = cardEl.querySelector('[data-task-id]');
+    if (actions && actions.parentElement) actions.parentElement.remove();
+    // Add done row
+    var doneRow = document.createElement('div');
+    doneRow.style.cssText = 'font-size:13px;color:#059669;margin-top:8px;font-weight:600';
+    doneRow.textContent = '\u2705 Marked as done';
+    cardEl.appendChild(doneRow);
+    // Update My Tasks badge
+    if (typeof mtLoad === 'function') mtLoad();
+  } catch(e) { alert('Error: '+e.message); }
+}
+
+async function bbAdvanceStage(campId, currentStage, section, camp, briefId) {
+  if (!confirm('Advance to Stage ' + (currentStage+1) + '? Make sure all blocker tasks are done first.')) return;
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  try {
+    var r = await fetch(base+'/campaigns?id=eq.'+campId, {
+      method:'PATCH',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify({current_stage:currentStage+1,updated_at:new Date().toISOString()})
+    });
+    if (!r.ok) throw new Error(await r.text());
+    var updated = await r.json();
+    var newCamp = Array.isArray(updated) ? updated[0] : updated;
+    // Re-render stages
+    var tasks = await fetch(base+'/campaign_tasks?campaign_id=eq.'+campId+'&order=stage,task_order',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
+    if (typeof mtLoad === 'function') mtLoad();
+    bbRenderStages(section, newCamp, briefId);
+  } catch(e) { alert('Error advancing stage: '+e.message); }
+}
+
+function bbOpenNotesPanel(taskId, taskName) {
+  // Phase 5 - notes slide-out
+  var panel = document.getElementById('bb-notes-panel');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'bb-notes-panel';
+    panel.style.cssText = 'position:fixed;top:0;right:-420px;width:400px;height:100vh;background:var(--white);box-shadow:-4px 0 24px rgba(0,0,0,0.12);z-index:600;transition:right .3s ease;display:flex;flex-direction:column';
+    panel.innerHTML = '<div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">'
+      + '<div id="bb-notes-title" style="font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--ink)"></div>'
+      + '<button onclick="bbCloseNotesPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink-soft)">\u00d7</button>'
+      + '</div>'
+      + '<div id="bb-notes-thread" style="flex:1;overflow-y:auto;padding:16px 24px"></div>'
+      + '<div style="padding:16px 24px;border-top:1px solid var(--border)">'
+      + '<textarea id="bb-notes-input" placeholder="Add a note..." style="width:100%;border:1px solid var(--border);border-radius:6px;padding:10px;font-size:13px;font-family:var(--font-m);resize:none;height:72px;box-sizing:border-box"></textarea>'
+      + '<button onclick="bbSubmitNote()" style="width:100%;margin-top:8px;background:var(--ink);color:#fff;border:none;padding:10px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer">Send note</button>'
+      + '</div>';
+    document.body.appendChild(panel);
+    // Overlay
+    var overlay = document.createElement('div');
+    overlay.id = 'bb-notes-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:599;display:none';
+    overlay.onclick = bbCloseNotesPanel;
+    document.body.appendChild(overlay);
+  }
+  panel.dataset.taskId = taskId;
+  document.getElementById('bb-notes-title').textContent = taskName;
+  document.getElementById('bb-notes-thread').innerHTML = '<div style="color:var(--ink-soft);font-size:13px;text-align:center;padding:20px">Loading notes...</div>';
+  document.getElementById('bb-notes-overlay').style.display = 'block';
+  setTimeout(function(){ panel.style.right = '0'; }, 10);
+  bbLoadNotes(taskId);
+}
+
+function bbCloseNotesPanel() {
+  var p = document.getElementById('bb-notes-panel');
+  var o = document.getElementById('bb-notes-overlay');
+  if (p) p.style.right = '-420px';
+  if (o) o.style.display = 'none';
+}
+
+async function bbLoadNotes(taskId) {
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  try {
+    var notes = await fetch(base+'/campaign_task_notes?task_id=eq.'+taskId+'&order=created_at',{
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon}
+    }).then(function(r){return r.json();});
+    var thread = document.getElementById('bb-notes-thread');
+    if (!thread) return;
+    if (!Array.isArray(notes) || !notes.length) {
+      thread.innerHTML = '<div style="color:var(--ink-faint);font-size:13px;text-align:center;padding:32px 16px">\uD83D\uDCAC No notes yet \u2014 be the first!</div>';
+      return;
+    }
+    thread.innerHTML = notes.map(function(n) {
+      var member = CB_TEAM[n.created_by] || {name:n.created_by};
+      var firstName = member.name ? member.name.split(' ')[0] : n.created_by;
+      var date = new Date(n.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+      var isMe = n.created_by === CB_CURRENT_USER;
+      return '<div style="margin-bottom:14px;' + (isMe ? 'text-align:right' : '') + '">'
+        + '<div style="font-size:11px;color:var(--ink-faint);margin-bottom:3px">' + firstName + ' \u00b7 ' + date + '</div>'
+        + '<div style="display:inline-block;max-width:85%;padding:10px 14px;border-radius:' + (isMe ? '12px 12px 2px 12px' : '12px 12px 12px 2px') + ';background:' + (isMe ? 'var(--swansway)' : 'var(--surface)') + ';color:' + (isMe ? '#fff' : 'var(--ink)') + ';font-size:13px;text-align:left">'
+        + n.note_text + '</div></div>';
+    }).join('');
+    thread.scrollTop = thread.scrollHeight;
+  } catch(e) {
+    var thread = document.getElementById('bb-notes-thread');
+    if (thread) thread.innerHTML = '<div style="color:var(--ink-faint);font-size:13px;text-align:center;padding:32px 16px">Notes will appear here once the table is set up.</div>';
+  }
+}
+
+async function bbSubmitNote() {
+  var panel = document.getElementById('bb-notes-panel');
+  var input = document.getElementById('bb-notes-input');
+  if (!panel || !input || !input.value.trim()) return;
+  var taskId = panel.dataset.taskId;
+  var noteText = input.value.trim();
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  try {
+    await fetch(base+'/campaign_task_notes', {
+      method:'POST',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({task_id:taskId,note_text:noteText,created_by:CB_CURRENT_USER,created_at:new Date().toISOString()})
+    });
+    input.value = '';
+    bbLoadNotes(taskId);
+  } catch(e) { alert('Error saving note: '+e.message); }
+}
+
 
 const QPLAN_CACHE = {};
 
