@@ -5857,7 +5857,7 @@ function cbRenderBriefsList() {
     left.style.cssText = 'flex:1;min-width:0';
 
     var titleEl = document.createElement('div');
-    titleEl.style.cssText = 'font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:5px';
+    titleEl.style.cssText = 'font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px';
     titleEl.textContent = brief.title;
     left.appendChild(titleEl);
 
@@ -5880,7 +5880,7 @@ function cbRenderBriefsList() {
     right.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0';
 
     var badge = document.createElement('span');
-    badge.style.cssText = 'font-size:11px;padding:3px 10px;border-radius:10px;font-weight:600;white-space:nowrap;background:'+(sBg[brief.status]||'#F3F4F6')+';color:'+(sCol[brief.status]||'#6B7280');
+    badge.style.cssText = 'font-size:13px;padding:3px 10px;border-radius:10px;font-weight:600;white-space:nowrap;background:'+(sBg[brief.status]||'#F3F4F6')+';color:'+(sCol[brief.status]||'#6B7280');
     badge.textContent = sLbl[brief.status] || brief.status;
     right.appendChild(badge);
 
@@ -5954,15 +5954,15 @@ function cbRenderBriefsList() {
       });
 
       var stageInfo = document.createElement('div');
-      stageInfo.style.cssText = 'font-size:12px;color:var(--ink-soft);white-space:nowrap;flex-shrink:0';
+      stageInfo.style.cssText = 'font-size:14px;color:var(--ink-soft);white-space:nowrap;flex-shrink:0';
       stageInfo.innerHTML = '<strong>Stage '+stage+': '+SN[stage-1]+'</strong>';
 
       var statusSpan = document.createElement('span');
-      statusSpan.style.cssText = 'font-size:11px;padding:2px 8px;border-radius:9px;background:'+sc+'20;color:'+sc+';font-weight:600;white-space:nowrap;flex-shrink:0';
+      statusSpan.style.cssText = 'font-size:13px;padding:3px 10px;border-radius:9px;background:'+sc+'20;color:'+sc+';font-weight:600;white-space:nowrap;flex-shrink:0';
       statusSpan.textContent = campaign.status.charAt(0).toUpperCase()+campaign.status.slice(1);
 
       var viewLink = document.createElement('span');
-      viewLink.style.cssText = 'font-size:11px;color:var(--ink-faint);white-space:nowrap;flex-shrink:0';
+      viewLink.style.cssText = 'font-size:13px;color:var(--ink-faint);white-space:nowrap;flex-shrink:0';
       viewLink.textContent = 'View tasks →';
 
       campRow.appendChild(dotsWrap);
@@ -6129,7 +6129,7 @@ function cbRenderBriefsList(){
     hdr.style.cssText='padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-left:4px solid '+bColor;
 
     var left=document.createElement('div');
-    left.style.cssText='flex:1;min-width:0';
+    left.style.cssText='flex:1;min-width:0;font-size:13px';
 
     var titleEl=document.createElement('div');
     titleEl.style.cssText='font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:5px';
