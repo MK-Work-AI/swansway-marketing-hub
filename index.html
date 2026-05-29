@@ -5899,7 +5899,7 @@ function cbRenderBriefsList() {
     actRow.appendChild(editBtn);
 
     // Approve button — Anna/Marcus only, status=submitted
-    if (brief.status === 'submitted' && perms.can_approve_all) {
+    if (brief.status === 'submitted' && (perms.can_approve_all || perms.can_approve_digital)) {
       var appBtn = document.createElement('button');
       appBtn.className = 'btn';
       appBtn.style.cssText = 'font-size:11px;padding:3px 10px;background:#059669;color:#fff;border-color:#059669';
@@ -5910,7 +5910,7 @@ function cbRenderBriefsList() {
     }
 
     // Create campaign button — approved, no campaign yet
-    if (brief.status === 'approved' && !campaign) {
+    if (brief.status === 'approved' && !campaign && (perms.can_approve_all || perms.can_approve_digital)) {
       var campBtn = document.createElement('button');
       campBtn.className = 'btn btn-primary';
       campBtn.style.cssText = 'font-size:11px;padding:3px 10px';
@@ -5979,7 +5979,7 @@ function cbRenderBriefsList() {
 async function cbApproveBriefById(briefId) {
   if (!CB_CURRENT_USER) { alert('Select your name first'); return; }
   var perms = CB_PERMS[CB_CURRENT_USER] || {};
-  if (!perms.can_approve_all) { alert('You need approval permissions.'); return; }
+  if (!perms.can_approve_all && !perms.can_approve_digital) { alert('You need approval permissions.'); return; }
   var anon = SUPABASE_ANON_KEY;
   try {
     var r = await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/briefs?id=eq.'+briefId, {
@@ -6000,6 +6000,8 @@ async function cbApproveBriefById(briefId) {
 
 async function cbCreateFromBriefId(briefId, briefTitle) {
   if (!CB_CURRENT_USER) { alert('Select your name first'); return; }
+  var _cp = CB_PERMS[CB_CURRENT_USER]||{};
+  if (!_cp.can_approve_all && !_cp.can_approve_digital) { alert('You need approval permissions to create campaigns.'); return; }
   var brief = CB_ALL_BRIEFS.find(function(b){return b.id===briefId;});
   if (!brief) return;
   var anon = SUPABASE_ANON_KEY;
