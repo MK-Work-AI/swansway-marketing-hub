@@ -3203,7 +3203,9 @@ function bbSelectBrand(id) {
   BB.brand = BB_BRANDS.find(b=>b.id===id);
   BB.audiences = []; BB.channels = [];
   document.querySelectorAll('.bb-brand-pill').forEach(p=>p.classList.remove('bb-selected'));
-  event.currentTarget.classList.add('bb-selected');
+  // Use data-brand attribute instead of event.currentTarget (safer)
+  var pill = document.querySelector('.bb-brand-pill[data-brand="'+id+'"]');
+  if (pill) pill.classList.add('bb-selected');
   document.getElementById('bb-btn-1-next').disabled = false;
   // Show scope + dates sections
   document.getElementById('bb-scope-section').style.display = 'block';
