@@ -3208,8 +3208,10 @@ function bbSelectBrand(id) {
   if (pill) pill.classList.add('bb-selected');
   document.getElementById('bb-btn-1-next').disabled = false;
   // Show scope + dates sections
-  document.getElementById('bb-scope-section').style.display = 'block';
-  document.getElementById('bb-dates-section').style.display = 'block';
+  var _scope = document.getElementById('bb-scope-section');
+  var _dates = document.getElementById('bb-dates-section');
+  if (_scope) _scope.style.display = 'block';
+  if (_dates) _dates.style.display = 'block';
   // Pre-populate channels from brand_channels table
   var brandChs = BRAND_CHANNELS_DATA[id] || [];
   if (brandChs.length) {
