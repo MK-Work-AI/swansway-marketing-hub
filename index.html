@@ -4664,14 +4664,7 @@ function bbGetAssetChecklist() {
   return assets;
 }
 
-function renderAssetChecklist() {
-  var assets = bbGetAssetChecklist();
-  if (!assets.length) return '';
-  var items = assets.map(function(a, i) {
-    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);border-radius:3px;background:var(--surface);cursor:pointer" onclick="this.querySelector(\'input\').click()"><input type="checkbox" style="width:16px;height:16px;cursor:pointer;accent-color:var(--swansway);flex-shrink:0" onchange="this.closest(\'div\').style.opacity=this.checked?\'0.45\':\'1\'"><div style="flex:1"><div style="font-size:12px;font-weight:600">' + a.format + '</div><div style="font-family:var(--font-m);font-size:10px;color:var(--ink-soft)">' + a.spec + '</div></div><div style="font-family:var(--font-m);font-size:10px;color:var(--ink-faint)">x' + a.qty + '</div></div>';
-  }).join('');
-  return '<div style="margin-bottom:1.5rem"><div class="bb-out-section-title" style="color:var(--swansway)">Creative Asset Checklist</div><div style="font-size:12px;color:var(--ink-soft);margin-bottom:12px">' + assets.length + ' assets required based on your channel selection. Tick off as produced.</div><div style="display:flex;flex-direction:column;gap:4px">' + items + '</div></div>';
-}
+function renderAssetChecklist() { return ''; }
 
 var _origBBGenerate = bbGenerateBrief;
 bbGenerateBrief = function() {
@@ -7429,6 +7422,25 @@ async function bbApproveThenLaunch(briefId, briefTitle) {
   } catch(e) { alert('Error: '+e.message); }
 }
 
+
+async function bbApproveThenShowLaunch() {
+  if (!CB_CURRENT_USER) { alert('Select your name first'); return; }
+  var briefId = window._lastSavedBriefId;
+  if (!briefId) return;
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  try {
+    var r = await fetch(base+'/briefs?id=eq.'+briefId, {
+      method:'PATCH',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify({status:'approved',approved_by:CB_CURRENT_USER,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()})
+    });
+    if (!r.ok) throw new Error(await r.text());
+    var data = await r.json();
+    var brief = Array.isArray(data) ? data[0] : data;
+    await bbRenderCampaignSection(brief);
+  } catch(e) { alert('Error approving: '+e.message); }
+}
 async function bbCreateCampaign(briefId, briefTitle) {
   var btn = event && event.target;
   if (btn) { btn.textContent = 'Launching...'; btn.disabled = true; }
