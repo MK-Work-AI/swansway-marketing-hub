@@ -8318,17 +8318,34 @@ async function bbSaveBrief() {
     feedback.style.color='var(--accent)';
     feedback.textContent = '✗ Error saving: '+error.message;
   } else {
-    feedback.style.display='block';
-    feedback.style.color='#15803D';
+    feedback.style.display = 'block';
+    feedback.style.color = '#15803D';
     window._lastSavedBriefId = data ? data.id : null;
     window._lastSavedBriefTitle = title;
-    feedback.innerHTML = '✓ Brief saved!'
-      + ' &nbsp;<button onclick="bbSubmitBrief()" style="background:none;border:1px solid #15803D;color:#15803D;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:12px;font-family:var(--font-m);font-weight:600">Submit for approval</button>'
-      + ' &nbsp;<button onclick="bbLaunchCampaign()" style="background:var(--swansway);color:#fff;border:none;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:700">?? Campaign Builder →</button>';
-    window._lastSavedBriefId = data ? data.id : null;
-    window._lastSavedBriefTitle = title;
+    feedback.innerHTML = '✓ Brief saved — great work!';
     btn.textContent = '✓ Saved';
     loadBriefs();
+    // Load team permissions then render campaign section
+    if (!Object.keys(CB_PERMS).length) {
+      var _anon = SUPABASE_ANON_KEY, _base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1', _h = {'apikey':_anon,'Authorization':'Bearer '+_anon};
+      Promise.all([
+        fetch(_base+'/campaign_team?select=*&active=eq.true',{headers:_h}).then(function(r){return r.json();}),
+        fetch(_base+'/campaign_permissions?select=*',{headers:_h}).then(function(r){return r.json();}),
+        fetch(_base+'/campaigns?brief_id=eq.'+(data?data.id:'')+'&select=*',{headers:_h}).then(function(r){return r.json();}),
+      ]).then(function(results) {
+        (Array.isArray(results[0])?results[0]:[]).forEach(function(m){CB_TEAM[m.id]=m;});
+        (Array.isArray(results[1])?results[1]:[]).forEach(function(p){CB_PERMS[p.team_member_id]=p;});
+        if (Array.isArray(results[2])&&results[2].length) CB_CAMPAIGNS = (CB_CAMPAIGNS||[]).concat(results[2]);
+        // Auto-detect current user
+        if (!CB_CURRENT_USER && window.SB_USER && SB_USER.email) {
+          var match = Object.values(CB_TEAM).find(function(m){return m.email&&m.email.toLowerCase()===SB_USER.email.toLowerCase();});
+          if (match) CB_CURRENT_USER = match.id;
+        }
+        if (typeof bbRenderCampaignSection === 'function') bbRenderCampaignSection(data);
+      });
+    } else {
+      if (typeof bbRenderCampaignSection === 'function') bbRenderCampaignSection(data);
+    }
   }
 }
 
