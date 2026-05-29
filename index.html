@@ -6885,13 +6885,30 @@ async function cbLaunchFromBrief(briefId, briefTitle) {
 
 /* ── BRIEF STATUS FLOW ── */
 async function bbSubmitBrief() {
-  if (!window._lastSavedBriefId) return;
+  if (!window._lastSavedBriefId) { alert('Save the brief first'); return; }
+  var me = CB_TEAM[CB_CURRENT_USER] || {};
+  var firstName = me.name ? me.name.split(' ')[0] : '';
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
   try {
-    await SB.from('briefs').update({status:'submitted', submitted_by: SWANSWAY_USER_ID || '', updated_at: new Date().toISOString()}).eq('id', window._lastSavedBriefId);
+    var r = await fetch(base+'/briefs?id=eq.'+window._lastSavedBriefId, {
+      method:'PATCH',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify({status:'submitted',submitted_by:CB_CURRENT_USER||'',updated_at:new Date().toISOString()})
+    });
+    if (!r.ok) throw new Error(await r.text());
+    var data = await r.json();
+    var brief = Array.isArray(data) ? data[0] : data;
+    // Update feedback bar cleanly
     var fb = document.getElementById('bb-save-feedback');
-    if (fb) fb.innerHTML = '?? Brief submitted for approval by Anna or Marcus.';
-    loadBriefs();
-  } catch(e) { alert('Error: ' + e.message); }
+    if (fb) {
+      fb.style.cssText = 'display:block;font-size:14px;color:#059669;padding:8px 0';
+      fb.innerHTML = '✓ Submitted for approval — great work' + (firstName ? ', '+firstName : '') + '!';
+    }
+    // Render campaign section with submitted state
+    if (typeof bbRenderCampaignSection === 'function') await bbRenderCampaignSection(brief);
+    if (typeof loadBriefs === 'function') loadBriefs();
+  } catch(e) { alert('Error submitting: '+e.message); }
 }
 
 async function bbApproveBrief(briefId) {
