@@ -6383,6 +6383,10 @@ function cbRenderCampaignDetail(c) {
   if (listEl) listEl.style.display = 'none';
   detailEl.style.display = 'block';
   detailEl.innerHTML = '';
+  // Scroll to top of campaigns view
+  var vcEl = document.getElementById('view-campaigns');
+  if (vcEl) vcEl.scrollIntoView({behavior:'smooth', block:'start'});
+  window.scrollTo({top:0, behavior:'smooth'});
 
   var tasks = CB_TASKS[c.id] || [];
   var stage = c.current_stage || 1;
@@ -6640,6 +6644,7 @@ function cbBackToDashboard(){
   var l=document.getElementById('cb-briefs-list') || document.getElementById('cb-campaign-list');
   if(d) d.style.display='none';
   if(l) l.style.display='block';
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 async function cbCompleteTask(taskId){
