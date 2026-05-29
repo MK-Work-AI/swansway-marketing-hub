@@ -6379,10 +6379,10 @@ async function cbOpenCampaign(campaignId) {
 }
 
 function cbRenderCampaignDetail(c) {
-  var listEl = document.getElementById('cb-campaign-list');
+  var listEl = document.getElementById('cb-briefs-list') || document.getElementById('cb-campaign-list');
   var detailEl = document.getElementById('cb-detail');
-  if (!listEl || !detailEl) return;
-  listEl.style.display = 'none';
+  if (!detailEl) return;
+  if (listEl) listEl.style.display = 'none';
   detailEl.style.display = 'block';
   detailEl.innerHTML = '';
 
@@ -6639,7 +6639,7 @@ function cbRenderCampaignDetail(c) {
 function cbBackToDashboard(){
   CB_CURRENT=null;
   var d=document.getElementById('cb-detail');
-  var l=document.getElementById('cb-campaign-list');
+  var l=document.getElementById('cb-briefs-list') || document.getElementById('cb-campaign-list');
   if(d) d.style.display='none';
   if(l) l.style.display='block';
 }
