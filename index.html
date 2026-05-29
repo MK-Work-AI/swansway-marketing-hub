@@ -7231,18 +7231,22 @@ async function bbRenderCampaignSection(briefData) {
   }
 
   if (brief.status === 'submitted') {
-    var msg = canLaunch
-      ? (firstName ? firstName + ', this brief needs your approval \uD83D\uDC4B' : 'This brief needs your approval')
-      : 'Submitted \u2014 waiting for Anna, Marcus or Beth to approve \uD83D\uDE4C';
-    el.innerHTML = '<div style="background:var(--white);border:2px solid #FCD34D;border-radius:8px;padding:24px;text-align:center">'
-      + '<div style="font-size:32px;margin-bottom:10px">\u23F3</div>'
-      + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px">' + msg + '</div>'
-      + (canLaunch ? '<button onclick="bbApproveBriefAndLaunch()" style="background:#F59E0B;color:#fff;border:none;padding:12px 28px;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-m);margin-top:8px">\u2713 Approve this brief</button>' : '')
+    var submitMsg = canLaunch
+      ? (firstName + ', this brief is waiting for your approval ??')
+      : 'Submitted — waiting for Anna, Marcus or Beth to approve it ??';
+    var submitSub = canLaunch
+      ? 'Everything looks good. Approve it and the team will be ready to launch.'
+      : 'You’ll get your tasks as soon as it goes live. Great work!';
+    el.innerHTML = '<div style="background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:32px;text-align:center">'
+      + '<div style="font-size:40px;margin-bottom:12px">' + (canLaunch ? '✏️' : '⏳') + '</div>'
+      + '<div style="font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--ink);margin-bottom:10px">' + submitMsg + '</div>'
+      + '<div style="font-size:15px;color:var(--ink-soft);max-width:440px;margin:0 auto 20px">' + submitSub + '</div>'
+      + (canLaunch ? '<button onclick="bbApproveThenShowLaunch()" style="background:#059669;color:#fff;border:none;padding:14px 36px;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--font-m)">✓ Approve this brief</button>' : '')
       + '</div>';
     return;
   }
 
-  if (brief.status === 'approved') {
+    if (brief.status === 'approved') {
     var launchMsg = firstName ? 'Go for it ' + firstName + ' \uD83D\uDE80' : 'Ready to launch \uD83D\uDE80';
     el.innerHTML = '<div style="background:linear-gradient(135deg,#C8102E,#9B0D23);border-radius:8px;padding:32px;text-align:center">'
       + '<div style="font-size:36px;margin-bottom:10px">\uD83D\uDE80</div>'
