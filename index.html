@@ -1451,12 +1451,12 @@ td strong{font-weight:600}
       </select>
     </div>
     <div style="width:1px;height:20px;background:var(--border);flex-shrink:0"></div>
-    <div style="display:flex;flex-direction:row;gap:5px;flex-wrap:wrap">
-      <button class="cal-q-tab active" id="cbf-all" onclick="cbSetFilter('all',this)" style="display:inline-block">All</button>
-      <button class="cal-q-tab" id="cbf-draft" onclick="cbSetFilter('draft',this)" style="display:inline-block">Draft</button>
-      <button class="cal-q-tab" id="cbf-submitted" onclick="cbSetFilter('submitted',this)" style="display:inline-block">Submitted</button>
-      <button class="cal-q-tab" id="cbf-approved" onclick="cbSetFilter('approved',this)" style="display:inline-block">Approved</button>
-      <button class="cal-q-tab" id="cbf-campaigned" onclick="cbSetFilter('campaigned',this)" style="display:inline-block">Live</button>
+    <div style="display:flex;flex-direction:row;gap:5px;flex-wrap:wrap;align-items:center">
+      <button id="cbf-all" onclick="cbSetFilter('all',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--swansway);background:var(--swansway);color:#fff;font-size:12px;font-family:var(--font-m);font-weight:600;cursor:pointer">All</button>
+      <button id="cbf-draft" onclick="cbSetFilter('draft',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--ink-soft);font-size:12px;font-family:var(--font-m);cursor:pointer">Draft</button>
+      <button id="cbf-submitted" onclick="cbSetFilter('submitted',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--ink-soft);font-size:12px;font-family:var(--font-m);cursor:pointer">Submitted</button>
+      <button id="cbf-approved" onclick="cbSetFilter('approved',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--ink-soft);font-size:12px;font-family:var(--font-m);cursor:pointer">Approved</button>
+      <button id="cbf-campaigned" onclick="cbSetFilter('campaigned',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--ink-soft);font-size:12px;font-family:var(--font-m);cursor:pointer">Live</button>
     </div>
     <div style="margin-left:auto">
       <button class="btn" id="cb-mytasks-btn" onclick="cbToggleMyTasksFilter()" style="font-size:12px">&#128100; My tasks only</button>
@@ -5701,8 +5701,20 @@ function cbGoToBrief() {
 
 function cbSetFilter(f, el) {
   CB_BRIEF_FILTER = f;
-  document.querySelectorAll('#view-campaigns .cal-q-tab').forEach(function(b){b.classList.remove('active');});
-  if (el) el.classList.add('active');
+  ['cbf-all','cbf-draft','cbf-submitted','cbf-approved','cbf-campaigned'].forEach(function(id){
+    var btn = document.getElementById(id);
+    if (!btn) return;
+    btn.style.background = 'var(--white)';
+    btn.style.color = 'var(--ink-soft)';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.fontWeight = 'normal';
+  });
+  if (el) {
+    el.style.background = 'var(--swansway)';
+    el.style.color = '#fff';
+    el.style.borderColor = 'var(--swansway)';
+    el.style.fontWeight = '600';
+  }
   cbRenderBriefsList();
 }
 
@@ -5757,7 +5769,7 @@ function cbRenderBriefsList() {
 
     // Brief header row
     var hdr = document.createElement('div');
-    hdr.style.cssText = 'padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-left:4px solid '+bColor;
+    hdr.style.cssText = 'padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px';
 
     var left = document.createElement('div');
     left.style.cssText = 'flex:1;min-width:0';
