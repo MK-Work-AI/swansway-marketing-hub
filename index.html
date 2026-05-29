@@ -9032,13 +9032,27 @@ function bbLoadBrief(id) {
     if(saveBar) saveBar.style.display = 'flex';
   }, 100);
 
-  // After loading brief, check if it has a campaign and render section
+  // After loading brief - if it's campaigned/approved, jump to Step 6 and show campaign section
   setTimeout(async function() {
-    if (typeof bbRenderCampaignSection === 'function') {
+    if (typeof bbRenderCampaignSection === 'function' && (brief.status === 'campaigned' || brief.status === 'approved' || brief.status === 'submitted')) {
+      // Show Step 6
+      document.querySelectorAll('.bb-step').forEach(function(p){p.classList.remove('bb-active');});
+      var s6 = document.getElementById('bb-step-6');
+      if (s6) s6.classList.add('bb-active');
+      var saveBar = document.getElementById('bb-save-bar');
+      if (saveBar) saveBar.style.display = 'flex';
+      var titleEl = document.getElementById('bb-brief-title');
+      if (titleEl) titleEl.value = brief.title;
+      var saveBtn = document.getElementById('bb-save-btn');
+      if (saveBtn) saveBtn.textContent = '✓ Saved';
+      window._lastSavedBriefId = brief.id;
+      window._lastSavedBriefTitle = brief.title;
+      window.scrollTo(0, 0);
+
+      // Load team/perms if needed
       var anon = SUPABASE_ANON_KEY;
       var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
       var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
-      // Load team/perms if needed
       if (!Object.keys(CB_PERMS).length) {
         var t = await fetch(base+'/campaign_team?select=*&active=eq.true',{headers:hdrs}).then(function(r){return r.json();});
         var p = await fetch(base+'/campaign_permissions?select=*',{headers:hdrs}).then(function(r){return r.json();});
