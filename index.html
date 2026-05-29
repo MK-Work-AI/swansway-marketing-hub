@@ -7063,6 +7063,136 @@ document.addEventListener('click', function(e) {
   if (dd) dd.style.display = 'none';
 });
 
+
+/* ==== PHASE 3: POST-SAVE EXPERIENCE ==== */
+function bbShowPostSave(briefId, status) {
+  var fb = document.getElementById('bb-save-feedback');
+  if (!fb) return;
+  fb.style.display = 'block';
+
+  // Who is the current user?
+  var me = CB_TEAM[CB_CURRENT_USER] || {};
+  var firstName = me.name ? me.name.split(' ')[0] : 'there';
+  var canLaunch = CB_CURRENT_USER && CB_PERMS[CB_CURRENT_USER] && (CB_PERMS[CB_CURRENT_USER].can_approve_all || CB_PERMS[CB_CURRENT_USER].can_approve_digital);
+
+  if (status === 'draft') {
+    // Just saved as draft
+    fb.style.color = '#059669';
+    fb.innerHTML = '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+      + '<span style="font-size:14px">\u2713 Brief saved, ' + firstName + '! Looking great so far.</span>'
+      + '<button onclick="bbSubmitBrief()" style="background:#059669;color:#fff;border:none;padding:8px 18px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:700;font-family:var(--font-m)">Submit for approval \u2192</button>'
+      + '</div>';
+  } else if (status === 'submitted') {
+    if (canLaunch) {
+      // Approver sees the launch button
+      fb.style.color = 'var(--ink)';
+      fb.innerHTML = '<div style="margin-bottom:12px;font-size:14px;color:var(--ink-soft)">Brief submitted \u2014 you can approve and launch it right now.</div>'
+        + '<button onclick="bbApproveBriefAndLaunch()" '
+        + 'style="width:100%;padding:18px;background:linear-gradient(135deg,#C8102E,#ff2d55);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:20px;font-weight:800;font-family:var(--font-d);letter-spacing:-0.02em;box-shadow:0 4px 20px rgba(200,16,46,0.4);transition:transform .15s" '
+        + 'onmouseover="this.style.transform=\'scale(1.01)\'" onmouseout="this.style.transform=\'scale(1)\'">'
+        + '\uD83D\uDE80 LAUNCH CAMPAIGN'
+        + '</button>'
+        + '<div style="text-align:center;margin-top:8px;font-size:12px;color:var(--ink-faint)">This will create all campaign tasks and notify the team</div>';
+    } else {
+      // Team member — submitted, waiting
+      fb.style.color = 'var(--ink)';
+      fb.innerHTML = '<div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:6px;padding:14px 18px">'
+        + '<div style="font-size:15px;font-weight:700;color:#92400E;margin-bottom:4px">\uD83D\uDC4B Brief submitted, ' + firstName + '!</div>'
+        + '<div style="font-size:13px;color:#92400E">Anna, Marcus or Beth will review and launch it. You\'ll get your tasks as soon as it goes live. Great work building this brief!</div>'
+        + '</div>';
+    }
+  } else if (status === 'approved' || status === 'campaigned') {
+    fb.style.color = 'var(--ink)';
+    fb.innerHTML = '<div style="background:#D1FAE5;border:1px solid #6EE7B7;border-radius:6px;padding:14px 18px">'
+      + '<div style="font-size:15px;font-weight:700;color:#065F46;margin-bottom:4px">\uD83C\uDF89 Campaign is live!</div>'
+      + '<div style="font-size:13px;color:#065F46">Scroll down to see the campaign stages and your tasks.</div>'
+      + '</div>';
+  }
+}
+
+async function bbSubmitBrief() {
+  if (!window._lastSavedBriefId) return;
+  var anon = SUPABASE_ANON_KEY;
+  try {
+    var r = await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/briefs?id=eq.' + window._lastSavedBriefId, {
+      method: 'PATCH',
+      headers: {'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify({status:'submitted', submitted_by: CB_CURRENT_USER||'', updated_at: new Date().toISOString()})
+    });
+    if (!r.ok) throw new Error(await r.text());
+    loadBriefs();
+    bbShowPostSave(window._lastSavedBriefId, 'submitted');
+    // Refresh My Tasks badge
+    setTimeout(mtLoad, 500);
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function bbApproveBriefAndLaunch() {
+  if (!window._lastSavedBriefId) return;
+  var perms = CB_PERMS[CB_CURRENT_USER] || {};
+  if (!perms.can_approve_all && !perms.can_approve_digital) { alert('You need approval permissions.'); return; }
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  try {
+    // 1. Approve the brief
+    await fetch(base+'/briefs?id=eq.'+window._lastSavedBriefId, {
+      method:'PATCH',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({status:'approved', approved_by:CB_CURRENT_USER, approved_at:new Date().toISOString(), updated_at:new Date().toISOString()})
+    });
+
+    // 2. Create campaign
+    var brief = (typeof CB_ALL_BRIEFS !== 'undefined' ? CB_ALL_BRIEFS : []).find(function(b){return b.id===window._lastSavedBriefId;}) || {};
+    var cr = await fetch(base+'/campaigns', {
+      method:'POST',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify([{
+        title: window._lastSavedBriefTitle || 'Campaign',
+        brief_id: window._lastSavedBriefId,
+        scope: brief.scope||'brand',
+        brand_id: brief.brand_id||null,
+        site_id: brief.site_id||null,
+        status: 'active',
+        current_stage: 1,
+        confirmed_channels: brief.confirmed_channels||brief.channels||[],
+        created_by: CB_CURRENT_USER||'system'
+      }])
+    });
+    if (!cr.ok) throw new Error(await cr.text());
+    var camp = (await cr.json())[0];
+
+    // 3. Create tasks from template
+    var tmpl = await fetch(base+'/campaign_task_templates?select=*&order=stage,task_order',{
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon}
+    }).then(function(r){return r.json();});
+
+    if (Array.isArray(tmpl)&&tmpl.length) {
+      var rows = tmpl.map(function(t){
+        return {campaign_id:camp.id,stage:t.stage,task_order:t.task_order,task_name:t.task_name,department:t.department,assigned_to:t.default_assignee,approver_scope:t.approver_scope,is_blocker:t.is_blocker,channel:t.channel,completed:false,approved:false,rejected:false,notes:''};
+      });
+      await fetch(base+'/campaign_tasks',{method:'POST',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(rows)});
+    }
+
+    // 4. Mark as campaigned
+    await fetch(base+'/briefs?id=eq.'+window._lastSavedBriefId,{
+      method:'PATCH',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({status:'campaigned',updated_at:new Date().toISOString()})
+    });
+
+    loadBriefs();
+    setTimeout(mtLoad, 500);
+    bbShowPostSave(window._lastSavedBriefId, 'campaigned');
+
+    // Show success banner
+    var banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:80px;right:24px;background:linear-gradient(135deg,#059669,#10b981);color:#fff;padding:16px 24px;border-radius:8px;font-size:15px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(5,150,105,0.4)';
+    banner.textContent = '\uD83C\uDF89 Campaign launched! Tasks are now live for the team.';
+    document.body.appendChild(banner);
+    setTimeout(function(){banner.remove();}, 5000);
+
+  } catch(e) { alert('Error launching campaign: ' + e.message); }
+}
+
 const QPLAN_CACHE = {};
 
 /* ── TRIGGER UPLOAD ── */
