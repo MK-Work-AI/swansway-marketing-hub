@@ -589,7 +589,10 @@ td strong{font-weight:600}
     </div>
     <div class="topbar-meta">
       <span class="topbar-pill" id="topbar-env-pill">Live 2026 Plan</span>
-      <button onclick="switchView('brief',document.querySelector('[data-view=brief]'))" style="font-family:var(--font-b);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:var(--accent);border:none;border-radius:2px;color:#fff;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#a00d26'" onmouseout="this.style.background='var(--accent)'">✏ Brief Builder</button>
+      <button class="user-pill" id="user-pill" onclick="handleUserPillClick()" style="display:none">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <span id="user-name">Loading…</span>
+      </button>
       <div style="position:relative;display:inline-flex;align-items:center">
         <button id="mt-btn" onclick="mtToggle(event)" style="font-family:var(--font-b);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:2px;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;position:relative">
           MY TASKS
@@ -600,11 +603,7 @@ td strong{font-weight:600}
           <div id="mt-list" style="max-height:360px;overflow-y:auto"></div>
           <div id="mt-footer" style="padding:10px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--ink-faint);text-align:center"></div>
         </div>
-      </div>
-      <button class="user-pill" id="user-pill" onclick="handleUserPillClick()" style="display:none">
-        <div class="user-avatar" id="user-avatar">?</div>
-        <span id="user-name">Loading…</span>
-      </button>
+      <button onclick="switchView('brief',document.querySelector('[data-view=brief]'))" style="font-family:var(--font-b);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:var(--accent);border:none;border-radius:2px;color:#fff;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#a00d26'" onmouseout="this.style.background='var(--accent)'">✏ Brief Builder</button>
       <button onclick="openAuth()" id="signin-btn" style="display:none;font-family:var(--font-b);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 16px;background:#fff;border:none;border-radius:2px;color:var(--swansway);cursor:pointer;transition:all .2s" onmouseover="this.style.background='#f0ede8'" onmouseout="this.style.background='#fff'">Sign in</button>
       <button id="briefs-btn" onclick="openBriefsPanel()" style="display:none;font-family:var(--font-b);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 16px;background:#fff;border:none;border-radius:2px;color:var(--swansway);cursor:pointer;transition:all .2s" onmouseover="this.style.background='#f0ede8'" onmouseout="this.style.background='#fff'">📋 My Briefs</button>
       <a href="admin.html" class="ai-link" style="text-decoration:none;color:rgba(255,255,255,0.6)">⚙ Admin</a>
@@ -7676,7 +7675,7 @@ function bbShowStageDetail(stageNum, allTasks, currentStage, container, camp, ca
     mySection.style.cssText = 'padding:16px 18px;background:var(--white);border-bottom:2px solid var(--border)';
     var myHdr = document.createElement('div');
     myHdr.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:0.08em;color:var(--swansway);text-transform:uppercase;margin-bottom:12px';
-    myHdr.textContent = '\uD83D\uDC49 Your tasks, ' + myFirst;
+    myHdr.textContent = '\uD83D\uDC49 Your tasks' + (myFirst ? ', ' + myFirst : '') + ' \u2014 let\u2019s go!';
     mySection.appendChild(myHdr);
 
     myTasks.forEach(function(task) {
@@ -7734,7 +7733,7 @@ function bbShowStageDetail(stageNum, allTasks, currentStage, container, camp, ca
   } else if (myTasks.length === 0 && isActive) {
     var noTasks = document.createElement('div');
     noTasks.style.cssText = 'padding:20px 18px;background:#F0FDF4;border-bottom:2px solid var(--border);text-align:center;color:#059669;font-size:14px;font-weight:600';
-    noTasks.textContent = '\uD83C\uDF89 Nothing to do in this stage ' + myFirst + ' \u2014 you\u2019re all caught up!';
+    noTasks.textContent = (myFirst ? myFirst + ', you' : 'You') + '\u2019re all done in this stage \uD83C\uDF89 The team is on it!'
     body.appendChild(noTasks);
   }
 
@@ -9032,6 +9031,27 @@ function bbLoadBrief(id) {
     const saveBar = document.getElementById('bb-save-bar');
     if(saveBar) saveBar.style.display = 'flex';
   }, 100);
+
+  // After loading brief, check if it has a campaign and render section
+  setTimeout(async function() {
+    if (typeof bbRenderCampaignSection === 'function') {
+      var anon = SUPABASE_ANON_KEY;
+      var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+      var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+      // Load team/perms if needed
+      if (!Object.keys(CB_PERMS).length) {
+        var t = await fetch(base+'/campaign_team?select=*&active=eq.true',{headers:hdrs}).then(function(r){return r.json();});
+        var p = await fetch(base+'/campaign_permissions?select=*',{headers:hdrs}).then(function(r){return r.json();});
+        (Array.isArray(t)?t:[]).forEach(function(m){CB_TEAM[m.id]=m;});
+        (Array.isArray(p)?p:[]).forEach(function(x){CB_PERMS[x.team_member_id]=x;});
+        if (window.SB_USER && SB_USER.email) {
+          var match = Object.values(CB_TEAM).find(function(m){return m.email&&m.email.toLowerCase()===SB_USER.email.toLowerCase();});
+          if (match) CB_CURRENT_USER = match.id;
+        }
+      }
+      await bbRenderCampaignSection(brief);
+    }
+  }, 300);
 }
 
 /* ── BRIEF STATUS / ARCHIVE / DELETE ── */
