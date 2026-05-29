@@ -7589,15 +7589,28 @@ async function bbRenderStages(section, camp, briefId) {
     + (myFirst ? 'Great work ' + myFirst + ' \u2014 ' : '') + 'Stage ' + currentStage + ' of 6 is active</div>';
   hdr.appendChild(hdrLeft);
 
-  if (canAdvance) {
+  // Buttons row
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;flex-shrink:0;align-items:center';
+
+  // View Brief button - always shown
+  var briefBtn = document.createElement('button');
+  briefBtn.style.cssText = 'background:var(--white);color:var(--ink);border:2px solid var(--border);padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-m)';
+  briefBtn.innerHTML = '&#128203; View Brief';
+  briefBtn.dataset.briefId = briefId;
+  briefBtn.onclick = function() { bbOpenBriefPanel(this.dataset.briefId); };
+  btnRow.appendChild(briefBtn);
+
+  if (canAdvance && currentStage < 6) {
     var advBtn = document.createElement('button');
     advBtn.style.cssText = 'background:var(--swansway);color:#fff;border:none;padding:8px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-m)';
     advBtn.textContent = 'Advance to Stage ' + (currentStage + 1) + ' \u2192';
     advBtn.dataset.campId = camp.id;
     advBtn.dataset.stage = currentStage;
     advBtn.onclick = function() { bbAdvanceStage(this.dataset.campId, parseInt(this.dataset.stage), section, camp, briefId); };
-    hdr.appendChild(advBtn);
+    btnRow.appendChild(advBtn);
   }
+  hdr.appendChild(btnRow);
   section.appendChild(hdr);
 
   // ── Stage tabs ──
@@ -7857,6 +7870,126 @@ function bbCloseNotesPanel() {
   var p = document.getElementById('bb-notes-panel');
   var o = document.getElementById('bb-notes-overlay');
   if (p) p.style.right = '-420px';
+  if (o) o.style.display = 'none';
+}
+
+async function bbOpenBriefPanel(briefId) {
+  // Create panel if it doesn't exist
+  var panel = document.getElementById('bb-brief-panel');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'bb-brief-panel';
+    panel.style.cssText = 'position:fixed;top:0;right:-540px;width:520px;height:100vh;background:var(--white);box-shadow:-4px 0 32px rgba(0,0,0,0.15);z-index:600;transition:right .3s ease;display:flex;flex-direction:column;overflow:hidden';
+    document.body.appendChild(panel);
+    // Shared overlay
+    var overlay = document.getElementById('bb-notes-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'bb-notes-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:599;display:none';
+      document.body.appendChild(overlay);
+    }
+    overlay.onclick = function() { bbCloseBriefPanel(); bbCloseNotesPanel(); };
+  }
+
+  panel.innerHTML = '<div style="padding:0;flex:1;overflow-y:auto"></div>';
+  document.getElementById('bb-notes-overlay').style.display = 'block';
+  setTimeout(function(){ panel.style.right = '0'; }, 10);
+
+  // Load brief from DB
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  var brief = await fetch(base+'/briefs?id=eq.'+briefId+'&select=*',{
+    headers:{'apikey':anon,'Authorization':'Bearer '+anon}
+  }).then(function(r){return r.json();}).then(function(d){return d[0];});
+
+  if (!brief) { panel.innerHTML = '<div style="padding:24px">Brief not found</div>'; return; }
+
+  var bColor = brief.brand_color || '#C8102E';
+  var approver = brief.approved_by ? (CB_TEAM[brief.approved_by] ? CB_TEAM[brief.approved_by].name : brief.approved_by) : '';
+  var approvedDate = brief.approved_at ? new Date(brief.approved_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '';
+  var audiences = Array.isArray(brief.audiences) ? brief.audiences.map(function(a){return typeof a==='object'?a.name:a;}).join(', ') : '';
+  var channels = Array.isArray(brief.channels) ? brief.channels.length + ' channels selected' : '';
+  var allocation = Array.isArray(brief.allocation) ? brief.allocation : [];
+
+  panel.innerHTML =
+    // Hero header with brand colour
+    '<div style="background:' + bColor + ';padding:24px 24px 20px;position:relative">'
+    + '<button onclick="bbCloseBriefPanel()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.2);border:none;border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;color:#fff;line-height:1">×</button>'
+    + '<div style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:6px">Campaign Brief</div>'
+    + '<div style="font-family:var(--font-d);font-size:22px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:8px">' + brief.title + '</div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    + '<span style="background:rgba(255,255,255,0.2);color:#fff;padding:3px 10px;border-radius:10px;font-size:12px">' + (brief.brand_name||'') + '</span>'
+    + '<span style="background:rgba(255,255,255,0.2);color:#fff;padding:3px 10px;border-radius:10px;font-size:12px">' + (brief.campaign_type||'') + '</span>'
+    + '<span style="background:rgba(255,255,255,0.2);color:#fff;padding:3px 10px;border-radius:10px;font-size:12px">' + (brief.status.charAt(0).toUpperCase()+brief.status.slice(1)) + '</span>'
+    + '</div>'
+    + '</div>'
+
+    // Key stats row
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border)">'
+    + bbBriefStat('Budget', '£' + (brief.budget||0).toLocaleString())
+    + bbBriefStat('Duration', brief.duration_label || (brief.duration_weeks + ' weeks'))
+    + bbBriefStat('Scope', (brief.scope||'').charAt(0).toUpperCase()+(brief.scope||'').slice(1))
+    + '</div>'
+
+    // Sections
+    + '<div style="padding:20px 24px;overflow-y:auto;flex:1">'
+
+    // Objective
+    + (brief.objective ? bbBriefSection('Campaign Objective', brief.objective
+      + (brief.objective_kpi ? '<div style="margin-top:8px;font-size:12px;color:var(--ink-soft)">KPI: ' + brief.objective_kpi + '</div>' : '')
+      + (brief.kpi_primary_value ? '<div style="margin-top:4px;font-size:12px;color:var(--ink-soft)">Target: ' + brief.kpi_primary_value + '</div>' : '')
+    ) : '')
+
+    // Audiences
+    + (audiences ? bbBriefSection('Target Audiences', audiences) : '')
+
+    // Locations
+    + (Array.isArray(brief.locations) && brief.locations.length ? bbBriefSection('Locations', brief.locations.join(', ')) : '')
+
+    // Budget allocation
+    + (allocation.length ? bbBriefSection('Budget Allocation',
+      allocation.map(function(a) {
+        return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+          + '<div style="width:28px;height:28px;border-radius:4px;background:'+a.c+';flex-shrink:0"></div>'
+          + '<div style="flex:1;font-size:13px">' + a.n + '</div>'
+          + '<div style="font-size:13px;font-weight:700;color:var(--ink)">' + a.p + '%</div>'
+          + '<div style="width:80px;height:6px;border-radius:3px;background:var(--surface);overflow:hidden">'
+          + '<div style="width:'+a.p+'%;height:100%;background:'+a.c+';border-radius:3px"></div></div>'
+          + '</div>';
+      }).join('')
+    ) : '')
+
+    // KPIs
+    + (brief.kpi_cpl_search || brief.kpi_cpl_meta ? bbBriefSection('CPL Benchmarks',
+      (brief.kpi_cpl_search ? '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--ink-soft)">Search CPL</span><strong>£'+brief.kpi_cpl_search+'</strong></div>' : '')
+      + (brief.kpi_cpl_meta ? '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px"><span style="color:var(--ink-soft)">Meta CPL</span><strong>£'+brief.kpi_cpl_meta+'</strong></div>' : '')
+    ) : '')
+
+    // Approval
+    + (approver ? bbBriefSection('Approval', '✓ Approved by ' + approver + (approvedDate ? ' on ' + approvedDate : '')) : '')
+
+    + '</div>';
+}
+
+function bbBriefStat(label, value) {
+  return '<div style="padding:14px 20px;text-align:center;border-right:1px solid var(--border)">'
+    + '<div style="font-size:11px;font-weight:700;letter-spacing:0.06em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:3px">' + label + '</div>'
+    + '<div style="font-size:18px;font-weight:700;color:var(--ink)">' + value + '</div>'
+    + '</div>';
+}
+
+function bbBriefSection(title, body) {
+  return '<div style="margin-bottom:20px">'
+    + '<div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px">' + title + '</div>'
+    + '<div style="font-size:14px;color:var(--ink);line-height:1.5">' + body + '</div>'
+    + '</div>';
+}
+
+function bbCloseBriefPanel() {
+  var p = document.getElementById('bb-brief-panel');
+  var o = document.getElementById('bb-notes-overlay');
+  if (p) p.style.right = '-540px';
   if (o) o.style.display = 'none';
 }
 
