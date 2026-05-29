@@ -1451,12 +1451,12 @@ td strong{font-weight:600}
       </select>
     </div>
     <div style="width:1px;height:20px;background:var(--border);flex-shrink:0"></div>
-    <div style="display:flex;gap:5px;flex-wrap:wrap">
-      <button class="cal-q-tab active" id="cbf-all" onclick="cbSetFilter('all',this)">All</button>
-      <button class="cal-q-tab" id="cbf-draft" onclick="cbSetFilter('draft',this)">Draft</button>
-      <button class="cal-q-tab" id="cbf-submitted" onclick="cbSetFilter('submitted',this)">Submitted</button>
-      <button class="cal-q-tab" id="cbf-approved" onclick="cbSetFilter('approved',this)">Approved</button>
-      <button class="cal-q-tab" id="cbf-campaigned" onclick="cbSetFilter('campaigned',this)">Live</button>
+    <div style="display:flex;flex-direction:row;gap:5px;flex-wrap:wrap">
+      <button class="cal-q-tab active" id="cbf-all" onclick="cbSetFilter('all',this)" style="display:inline-block">All</button>
+      <button class="cal-q-tab" id="cbf-draft" onclick="cbSetFilter('draft',this)" style="display:inline-block">Draft</button>
+      <button class="cal-q-tab" id="cbf-submitted" onclick="cbSetFilter('submitted',this)" style="display:inline-block">Submitted</button>
+      <button class="cal-q-tab" id="cbf-approved" onclick="cbSetFilter('approved',this)" style="display:inline-block">Approved</button>
+      <button class="cal-q-tab" id="cbf-campaigned" onclick="cbSetFilter('campaigned',this)" style="display:inline-block">Live</button>
     </div>
     <div style="margin-left:auto">
       <button class="btn" id="cb-mytasks-btn" onclick="cbToggleMyTasksFilter()" style="font-size:12px">&#128100; My tasks only</button>
@@ -5724,6 +5724,7 @@ function cbRenderBriefsList() {
   el.style.display = 'block';
   el.innerHTML = '';
 
+  var BRAND_COLOR_MAP = {audi:'#BB0A21',vw:'#001E50',vwcv:'#00B0F0',seat:'#FA0230',cupra:'#C4A35A',landrover:'#005A2B',jaguar:'#1A1A1A',honda:'#CC0000',peugeot:'#003882',byd:'#EB0029',omoda:'#2D2D2D',motormatch:'#E85D04'};
   var briefs = CB_ALL_BRIEFS.filter(function(b) {
     return CB_BRIEF_FILTER === 'all' || b.status === CB_BRIEF_FILTER;
   });
@@ -5746,9 +5747,9 @@ function cbRenderBriefsList() {
   var perms = CB_PERMS[CB_CURRENT_USER] || {};
 
   briefs.forEach(function(brief) {
-    var brandList = window.BB_BRANDS || window.BRANDS || [];
-    var brand = brandList.find(function(b){return b.id===brief.brand_id;}) || {};
-    var bColor = brand.color || '#C8102E';
+    var brandList = window.BB_BRANDS || [];
+    var brand = brandList.find(function(b){return b.id===brief.brand_id;}) || {name:brief.brand_name,color:BRAND_COLOR_MAP[brief.brand_id]}||{};
+    var bColor = brand.color || BRAND_COLOR_MAP[brief.brand_id] || '#C8102E';
     var campaign = CB_CAMPAIGNS.find(function(c){return c.brief_id===brief.id;});
 
     var card = document.createElement('div');
