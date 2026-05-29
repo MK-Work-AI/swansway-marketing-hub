@@ -3001,6 +3001,35 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadSiteKPIs();
   loadSiteContacts();
   setTimeout(mtLoad, 2000);
+  // Auto-detect current user from auth email after team loads
+  setTimeout(async function() {
+    if (CB_CURRENT_USER) return; // already set
+    if (!window.SB_USER || !SB_USER.email) return;
+    var anon = SUPABASE_ANON_KEY;
+    var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+    var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+    try {
+      if (!Object.keys(CB_TEAM).length) {
+        var t = await fetch(base+'/campaign_team?select=*&active=eq.true',{headers:hdrs}).then(r=>r.json());
+        (Array.isArray(t)?t:[]).forEach(function(m){CB_TEAM[m.id]=m;});
+      }
+      if (!Object.keys(CB_PERMS).length) {
+        var p = await fetch(base+'/campaign_permissions?select=*',{headers:hdrs}).then(r=>r.json());
+        (Array.isArray(p)?p:[]).forEach(function(x){CB_PERMS[x.team_member_id]=x;});
+      }
+      var emailLower = SB_USER.email.toLowerCase();
+      var match = Object.values(CB_TEAM).find(function(m){return m.email&&m.email.toLowerCase()===emailLower;});
+      if (match) {
+        CB_CURRENT_USER = match.id;
+        console.log('User detected:', match.name);
+        // Update user dropdown if it exists
+        var sel = document.getElementById('cb-user-sel');
+        if (sel) sel.value = match.id;
+        // Update My Tasks
+        if (typeof mtLoad === 'function') mtLoad();
+      }
+    } catch(e) { console.warn('User detect error:', e); }
+  }, 1000);
   // Auto-detect current user from auth email
   window.SWANSWAY_USER_ID = null;
   if (SB_USER && SB_USER.email && window.CB_TEAM) {
