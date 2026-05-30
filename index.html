@@ -798,6 +798,7 @@ td strong{font-weight:600}
 <!-- BUDGET TRACKER -->
 <div class="view" id="view-budget">
   <div class="page-strip"><div><div class="page-title">Budget Tracker</div><div class="page-subtitle">Planned vs actual &middot; Click any cell to enter actuals</div></div><div class="action-row"><button class="btn" onclick="budgetImportCSV()">&#8593; Import CSV</button><button class="btn btn-accent" onclick="budgetExportCSV()">&#8595; Export CSV</button></div></div>
+  <div id="budget-summary" style="margin-bottom:1.25rem"></div>
   <div class="metrics-row" id="budget-metrics"></div>
   <div style="overflow-x:auto;margin-bottom:1.5rem"><table class="plan-table" id="budget-table" style="min-width:1100px"><thead id="budget-thead"></thead><tbody id="budget-tbody"></tbody></table></div>
   <div class="chart-wrap"><div class="chart-title">Planned vs actual &mdash; group total by month</div><div class="chart-canvas-wrap" style="height:240px"><canvas id="budgetChart"></canvas></div></div>
@@ -4252,6 +4253,58 @@ function renderBudgetTracker() {
   }).join('');
 
   renderBudgetChart(mPlanned, mActual);
+  renderBudgetSummary();
+}
+
+function renderBudgetSummary() {
+  var el = document.getElementById('budget-summary');
+  if (!el) return;
+  // Build per-brand summary bars
+  var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">';
+  BUDGET_BRANDS.forEach(function(b) {
+    var sites = (typeof HUB_SITES !== 'undefined') ? HUB_SITES.filter(function(s){ return s.brand_id === b.id; }) : [];
+    var planned = 0, actual = 0, committed = 0;
+    sites.forEach(function(site) {
+      var d = SITE_BUDGETS[site.site_id] || {};
+      for (var i = 0; i < 12; i++) {
+        planned   += d['m' + i + '_planned'] || 0;
+        actual    += d['m' + i + '_actual']  || 0;
+        committed += (BRIEF_COMMITMENTS[site.site_id] || {})[i] || 0;
+      }
+    });
+    if (planned === 0 && actual === 0 && committed === 0) {
+      // No data yet — show placeholder
+      html += '<div style="background:var(--white);border:1px solid var(--border);border-left:4px solid ' + b.color + ';border-radius:4px;padding:10px 14px">'
+        + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">'
+        + '<div style="font-size:12px;font-weight:700;color:var(--ink)">' + b.name + '</div>'
+        + '<div style="font-size:10px;color:var(--ink-faint)">No budget set</div>'
+        + '</div>'
+        + '<div style="height:5px;background:var(--border);border-radius:3px"></div>'
+        + '</div>';
+      return;
+    }
+    var pctActual    = planned > 0 ? Math.min(100, Math.round(actual    / planned * 100)) : 0;
+    var pctCommitted = planned > 0 ? Math.min(100 - pctActual, Math.round(committed / planned * 100)) : 0;
+    var pctRemaining = Math.max(0, 100 - pctActual - pctCommitted);
+    var statusColor  = pctActual > 90 ? '#DC2626' : pctActual > 50 ? '#059669' : '#6B7280';
+    var actualStr    = actual    > 0 ? '&pound;' + (actual/1000).toFixed(0)    + 'K spent'    : '';
+    var committedStr = committed > 0 ? '&pound;' + (committed/1000).toFixed(0) + 'K committed' : '';
+    var subStr       = actualStr + (actualStr && committedStr ? ' &middot; ' : '') + committedStr
+                       || ('&pound;' + (planned/1000).toFixed(0) + 'K planned');
+    html += '<div style="background:var(--white);border:1px solid var(--border);border-left:4px solid ' + b.color + ';border-radius:4px;padding:10px 14px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">'
+      + '<div style="font-size:12px;font-weight:700;color:var(--ink)">' + b.name + '</div>'
+      + '<div style="font-size:12px;font-weight:700;color:' + statusColor + '">' + pctActual + '%</div>'
+      + '</div>'
+      + '<div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:flex">'
+      + (pctActual    > 0 ? '<div style="width:' + pctActual    + '%;background:#059669;height:6px"></div>' : '')
+      + (pctCommitted > 0 ? '<div style="width:' + pctCommitted + '%;background:#D97706;height:6px"></div>' : '')
+      + '</div>'
+      + '<div style="font-size:10px;color:var(--ink-faint);margin-top:4px">' + subStr + '</div>'
+      + '</div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
 }
 
 function btToggle(brandId) {
