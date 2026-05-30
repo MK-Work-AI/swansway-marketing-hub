@@ -3085,6 +3085,7 @@ const BB_BRANDS = [
   { id:'cupra',    name:'CUPRA',         color:'#D4A017', segment:'Performance EV',  sites:3,  tagline:'Born To Be Electrifying',  models:['Leon','Formentor','Born','Tavascan','Terramar'], tone:['Unconventional','Provocative','Tribe','Bold','Urban'], cpl:{meta:55,google:42,autotrader:48}, locations:['Crewe','Oldham','Bolton'] },
   { id:'vw',       name:'Volkswagen',    color:'#001E50', segment:'Volume',           sites:3,  tagline:'Das Auto',                 models:['Polo','Golf','Tiguan','T-Roc','ID.3','ID.4','ID.5'], tone:['Reliable','Trustworthy','Democratic','Approachable','Quality'], cpl:{meta:35,google:28,autotrader:32}, locations:['Crewe','Wrexham','Chester'] },
   { id:'landrover',name:'Land Rover',    color:'#005A2B', segment:'Premium Luxury',  sites:1,  tagline:'Above and Beyond',         models:['Defender','Discovery','Range Rover','RR Sport','Evoque'], tone:['Adventurous','Aspirational','Timeless','Cinematic','Heritage'], cpl:{meta:95,google:75,autotrader:85}, locations:['Stafford','Chester','Crewe'] },
+  { id:'jaguar',   name:'Jaguar',        color:'#1B2631', segment:'Premium Luxury',  sites:1,  tagline:'Copy Nothing',              models:['F-Pace','E-Pace','XE','XF','F-Type'], tone:['Audacious','British','Expressive','Exhilarating','Iconic'], cpl:{meta:110,google:85,autotrader:95}, locations:['Crewe'] },
   { id:'honda',    name:'Honda',         color:'#CC0000', segment:'Hybrid Family',   sites:2,  tagline:'The Power of Dreams',      models:['Jazz e:HEV','HR-V e:HEV','Civic e:HEV','CR-V e:HEV','ZR-V'], tone:['Trustworthy','Ingenious','Dependable','Optimistic','Reliable'], cpl:{meta:38,google:30,autotrader:35}, locations:['Stockport'] },
   { id:'seat',     name:'SEAT',          color:'#FA0030', segment:'Volume / Entry',  sites:3,  tagline:'Enjoy Every Moment',       models:['Ibiza','Arona','Leon','Ateca','Tarraco'], tone:['Vibrant','Youthful','Accessible','Fun','Spanish warmth'], cpl:{meta:28,google:22,autotrader:26}, locations:['Crewe','Stoke','Bolton'] },
   { id:'peugeot',  name:'Peugeot',       color:'#002F5F', segment:'Volume / EV-fwd', sites:2,  tagline:'Unboring the Future',      models:['e-208','e-2008','308','408','e-3008','5008'], tone:['Bold design','French flair','Electric-forward','Confident','Accessible'], cpl:{meta:32,google:25,autotrader:30}, locations:['Chester','Crewe','Stoke'] },
@@ -3203,7 +3204,7 @@ function bbRenderBrands() {
   const el = document.getElementById('bb-brand-grid');
   if(!el) return;
   el.innerHTML = BB_BRANDS.map(b=>`
-    <div class="bb-brand-pill" style="--pill-color:${b.color}" onclick="bbSelectBrand('${b.id}')">
+    <div class="bb-brand-pill" data-brand="${b.id}" style="--pill-color:${b.color}" onclick="bbSelectBrand('${b.id}')">
       <div class="bb-pill-check">✓</div>
       <div class="bb-pill-name" style="color:${b.color}">${b.name}</div>
       <div class="bb-pill-seg">${b.segment}</div>
