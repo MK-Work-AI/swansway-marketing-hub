@@ -3152,6 +3152,7 @@ let BB = {
   brand:null, ctype:null, objective:null,
   budget:5000, duration:null, audiences:[],
   channels:[], step:1,
+  site_id:'', scope:'brand', start_date:'', end_date:'',
 };
 
 function bbInit() {
@@ -3237,6 +3238,11 @@ function bbSelectBrand(id) {
   bbUpdateBrief();
   bbUpdateScienceBox();
   bbSetScope('brand', document.getElementById('scope-brand'));
+  var _sc = document.getElementById('bb-scope-section');
+  var _dt = document.getElementById('bb-dates-section');
+  if (_sc) _sc.style.display = 'block';
+  if (_dt) _dt.style.display = 'block';
+  bbLoadHeadroom();
 }
 
 function bbSetScope(scope, el) {
@@ -3251,6 +3257,7 @@ function bbSetScope(scope, el) {
     BB.site_id = '';
   }
   bbUpdateBrief();
+  bbLoadHeadroom();
 }
 
 function bbRenderSiteGrid() {
@@ -3268,6 +3275,7 @@ function bbRenderSiteGrid() {
       document.querySelectorAll('#bb-site-grid .bb-site-tile').forEach(function(t){t.classList.remove('bb-selected');});
       this.classList.add('bb-selected');
       bbUpdateBrief();
+      bbLoadHeadroom();
     };
     el.appendChild(d);
   });
@@ -3281,6 +3289,96 @@ function bbCalcDuration() {
   BB.duration_label = weeks + ' week' + (weeks !== 1 ? 's' : '') + ' (' + days + ' days)';
   var el = document.getElementById('bb-duration-display');
   if (el) el.textContent = '⏱ ' + BB.duration_label;
+}
+
+function bbOnDateChange() {
+  var sd = document.getElementById('bb-start-date');
+  var ed = document.getElementById('bb-end-date');
+  BB.start_date = sd ? sd.value : '';
+  BB.end_date   = ed ? ed.value : '';
+  var durEl = document.getElementById('bb-date-duration');
+  if (BB.start_date && BB.end_date && durEl) {
+    var days = Math.round((new Date(BB.end_date) - new Date(BB.start_date)) / 86400000);
+    var weeks = Math.round(days / 7);
+    BB.duration_weeks = weeks;
+    durEl.textContent = weeks + ' week' + (weeks !== 1 ? 's' : '') + ' \u00b7 ' + days + ' days';
+    var matchDur = BB_DURATIONS.find(function(d){ return d.weeks === weeks; });
+    if (matchDur) {
+      BB.duration = matchDur;
+      document.querySelectorAll('.bb-dur-card').forEach(function(dc){ dc.classList.remove('bb-selected'); });
+      document.querySelectorAll('.bb-dur-card').forEach(function(dc){ if(dc.textContent.indexOf(String(matchDur.weeks)) > -1) dc.classList.add('bb-selected'); });
+      var btn3 = document.getElementById('bb-btn-3-next');
+      if (btn3 && BB.budget) btn3.disabled = false;
+    }
+  } else if (durEl) { durEl.textContent = ''; }
+  bbUpdateBrief();
+  bbLoadHeadroom();
+}
+
+function bbGetCampaignMonths(startDate, endDate) {
+  if (!startDate || !endDate) return [];
+  var months = [];
+  var cur = new Date(startDate + 'T00:00:00');
+  var end = new Date(endDate + 'T00:00:00');
+  var seen = {};
+  while (cur <= end) {
+    var mi = cur.getMonth();
+    if (!seen[mi]) { seen[mi] = true; months.push({ index: mi }); }
+    cur.setDate(cur.getDate() + 1);
+  }
+  return months;
+}
+
+async function bbLoadHeadroom() {
+  var barEl = document.getElementById('bb-headroom-bar');
+  if (!barEl) return;
+  var brandId = BB.brand ? BB.brand.id : null;
+  if (!BB.start_date || !BB.end_date || !brandId) { barEl.style.display = 'none'; return; }
+  var months = bbGetCampaignMonths(BB.start_date, BB.end_date);
+  if (!months.length) { barEl.style.display = 'none'; return; }
+  var siteId = BB.scope === 'site' ? BB.site_id : null;
+  var sites = siteId ? [siteId]
+    : HUB_SITES.filter(function(s){ return s.brand_id === brandId; }).map(function(s){ return s.site_id; });
+  if (!sites.length) { barEl.style.display = 'none'; return; }
+  var totalPlanned = 0;
+  sites.forEach(function(sid) {
+    var d = SITE_BUDGETS[sid] || {};
+    months.forEach(function(m) { totalPlanned += (d['m' + m.index + '_planned'] || 0); });
+  });
+  var committed = 0;
+  try {
+    var anon = SUPABASE_ANON_KEY;
+    var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+    var rows = await fetch(base + '/brief_budget_commitments?year=eq.2026&site_id=in.(' + sites.join(',') + ')&select=brief_id,site_id,month_index,amount', {
+      headers: {'apikey':anon,'Authorization':'Bearer '+anon}
+    }).then(function(r){ return r.json(); });
+    if (Array.isArray(rows)) {
+      var mSet = new Set(months.map(function(m){ return m.index; }));
+      rows.forEach(function(r) {
+        if (mSet.has(r.month_index) && r.brief_id !== window._lastSavedBriefId) committed += (r.amount || 0);
+      });
+    }
+  } catch(e) {}
+  var available = totalPlanned - committed;
+  var pct = totalPlanned > 0 ? Math.round(committed / totalPlanned * 100) : 0;
+  var scopeLabel = siteId
+    ? ((HUB_SITES.find(function(s){ return s.site_id === siteId; }) || {}).site_name || siteId)
+    : (BB.brand.name + ' (all sites)');
+  barEl.style.display = 'block';
+  var avColour = available >= BB.budget ? '#059669' : '#DC2626';
+  var barColour = pct > 80 ? '#DC2626' : pct > 50 ? '#D97706' : '#059669';
+  barEl.innerHTML = '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:12px 16px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">'
+    + '<div style="font-size:11px;font-family:var(--font-m);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft)">Budget headroom \u00b7 ' + scopeLabel + '</div>'
+    + '<div style="font-size:13px;font-weight:700;color:' + avColour + '">\u00a3' + available.toLocaleString() + ' available</div>'
+    + '</div>'
+    + '<div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">'
+    + '<div style="height:6px;border-radius:3px;background:' + barColour + ';width:' + Math.min(100,pct) + '%"></div>'
+    + '</div>'
+    + '<div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--ink-faint)">'
+    + '<span>\u00a3' + committed.toLocaleString() + ' already committed</span>'
+    + '<span>\u00a3' + totalPlanned.toLocaleString() + ' planned</span>'
+    + '</div></div>';
 }
 
 /* ── STEP 2: CAMPAIGN TYPE & OBJECTIVE ── */
@@ -4057,8 +4155,16 @@ function renderBudgetTracker() {
     }
 
     var variance = brandActual - brandPlan;
-    var varStyle = brandActual === 0 ? '' : (variance > 0 ? 'color:#DC2626' : 'color:#059669');
-    var varStr   = brandActual === 0 ? '&mdash;' : (variance >= 0 ? '+' : '') + '&pound;' + Math.abs(variance).toLocaleString();
+    var varStyle, varStr;
+    if (brandActual > 0) { varStyle = variance > 0 ? 'color:#DC2626' : 'color:#059669'; varStr = (variance >= 0 ? '+' : '') + '&pound;' + Math.abs(variance).toLocaleString(); }
+    else if (brandCommitted > 0) { varStyle = 'color:#D97706'; varStr = '&pound;' + (brandPlan - brandCommitted).toLocaleString() + ' left'; }
+    else { varStyle = ''; varStr = '&mdash;'; }
+
+    var brandMonthlyCommitted = new Array(12).fill(0);
+    sites.forEach(function(site) {
+      for (var mi2 = 0; mi2 < 12; mi2++) { brandMonthlyCommitted[mi2] += (BRIEF_COMMITMENTS[site.site_id] || {})[mi2] || 0; }
+    });
+    var brandCommitted = brandMonthlyCommitted.reduce(function(s, v) { return s + v; }, 0);
 
     // Brand row (accordion header)
     var brandRowId = 'bt-sites-' + b.id;
@@ -4066,10 +4172,11 @@ function renderBudgetTracker() {
     for (var mi = 0; mi < 12; mi++) {
       var plan = brandMonthlyPlan[mi];
       var act  = brandMonthlyActual[mi];
+      var cmt  = brandMonthlyCommitted[mi];
       var diff = act - plan;
       var cls  = act === 0 ? '' : (diff > plan * 0.1 ? ' budget-over' : diff < -plan * 0.1 ? ' budget-under' : ' budget-on');
-      var inner = act > 0
-        ? '&pound;' + act.toLocaleString()
+      var inner = act > 0 ? '&pound;' + act.toLocaleString()
+        : cmt > 0 ? '<span style="color:#D97706;font-weight:600">&pound;' + cmt.toLocaleString() + '</span>'
         : '<em style="color:var(--ink-faint)">&pound;' + plan.toLocaleString() + '</em>';
       brandCells += '<td class="budget-cell' + cls + '">' + inner + '</td>';
     }
@@ -4085,7 +4192,7 @@ function renderBudgetTracker() {
       + '</td>'
       + brandCells
       + '<td style="text-align:right;font-size:11px;color:var(--ink-soft)">&pound;' + brandPlan.toLocaleString() + '</td>'
-      + '<td style="text-align:right;font-size:12px;font-weight:600">' + (brandActual > 0 ? '&pound;' + brandActual.toLocaleString() : '&mdash;') + '</td>'
+      + '<td style="text-align:right;font-size:12px;font-weight:600">' + (brandActual > 0 ? '&pound;' + brandActual.toLocaleString() : brandCommitted > 0 ? '<span style="color:#D97706">&pound;' + brandCommitted.toLocaleString() + ' cmt</span>' : '&mdash;') + '</td>'
       + '<td style="text-align:right;font-size:11px;' + varStyle + '">' + varStr + '</td>'
       + '</tr>';
 
@@ -4096,44 +4203,54 @@ function renderBudgetTracker() {
 
       sites.forEach(function(site) {
         var d = SITE_BUDGETS[site.site_id] || {};
-        var sitePlan = 0, siteActual = 0;
+        var sitePlan = 0, siteActual = 0, siteCommitted = 0;
         var siteCells = '';
         for (var mi = 0; mi < 12; mi++) {
           var sp = d['m' + mi + '_planned'] || 0;
           var sa = d['m' + mi + '_actual']  || 0;
-          sitePlan   += sp;
-          siteActual += sa;
-          var sdiff = sa - sp;
-          var scls  = sa === 0 ? '' : (sdiff > sp * 0.1 ? ' budget-over' : sdiff < -sp * 0.1 ? ' budget-under' : ' budget-on');
-          var sinner = sa > 0
-            ? '&pound;' + sa.toLocaleString()
-            : sp > 0 ? '<em style="color:var(--ink-faint)">&pound;' + sp.toLocaleString() + '</em>' : '<em style="color:var(--ink-faint)">&mdash;</em>';
-          siteCells += '<td class="budget-cell' + scls + '" style="font-size:11px;padding:4px 8px">' + sinner + '</td>';
+          var sc = (BRIEF_COMMITMENTS[site.site_id] || {})[mi] || 0;
+          sitePlan += sp; siteActual += sa; siteCommitted += sc;
+          var scls = sa === 0 ? '' : ((sa-sp) > sp*0.1 ? ' budget-over' : (sa-sp) < -sp*0.1 ? ' budget-under' : ' budget-on');
+          var sinner;
+          if (sa > 0) { sinner = '&pound;' + sa.toLocaleString(); }
+          else if (sc > 0) { sinner = '<span style="color:#D97706;font-weight:600">&pound;' + sc.toLocaleString() + '</span><div style="font-size:9px;color:#D97706;line-height:1">committed</div>'; }
+          else { sinner = sp > 0 ? '<em style="color:var(--ink-faint)">&pound;' + sp.toLocaleString() + '</em>' : '<em style="color:var(--ink-faint)">&mdash;</em>'; }
+          siteCells += '<td class="budget-cell' + scls + '" style="font-size:11px;padding:4px 8px;line-height:1.3">' + sinner + '</td>';
         }
-        var sVar = siteActual - sitePlan;
-        var sVarStyle = siteActual === 0 ? '' : (sVar > 0 ? 'color:#DC2626' : 'color:#059669');
+        var sVarStr, sVarStyle;
+        if (siteActual > 0) {
+          var sVn = siteActual - sitePlan;
+          sVarStyle = sVn > 0 ? 'color:#DC2626' : 'color:#059669';
+          sVarStr = '&pound;' + Math.abs(sVn).toLocaleString() + (sVn > 0 ? ' over' : ' under');
+        } else if (siteCommitted > 0) {
+          sVarStyle = 'color:#D97706';
+          sVarStr = '&pound;' + (sitePlan - siteCommitted).toLocaleString() + ' left';
+        } else { sVarStyle = ''; sVarStr = '&mdash;'; }
+        var actOrCmt = siteActual > 0 ? '&pound;' + siteActual.toLocaleString()
+          : siteCommitted > 0 ? '<span style="color:#D97706">&pound;' + siteCommitted.toLocaleString() + ' cmt</span>' : '&mdash;';
         rows += '<tr style="background:var(--white);border-top:1px solid var(--border)">'
           + '<td style="padding:5px 8px 5px 24px;font-size:12px;color:var(--ink-soft)">' + site.site_name + '</td>'
           + siteCells
           + '<td style="text-align:right;font-size:11px;color:var(--ink-faint);padding:4px 8px">' + (sitePlan > 0 ? '&pound;' + sitePlan.toLocaleString() : '&mdash;') + '</td>'
-          + '<td style="text-align:right;font-size:11px;padding:4px 8px">' + (siteActual > 0 ? '&pound;' + siteActual.toLocaleString() : '&mdash;') + '</td>'
-          + '<td style="text-align:right;font-size:11px;' + sVarStyle + ';padding:4px 8px">' + (siteActual > 0 ? '&pound;' + Math.abs(sVar).toLocaleString() + (sVar > 0 ? ' over' : ' under') : '&mdash;') + '</td>'
+          + '<td style="text-align:right;font-size:11px;padding:4px 8px">' + actOrCmt + '</td>'
+          + '<td style="text-align:right;font-size:11px;' + sVarStyle + ';padding:4px 8px">' + sVarStr + '</td>'
           + '</tr>';
       });
-
-      rows += '</table></td></tr>';
     }
   });
 
   tbody.innerHTML = rows;
 
   // Metrics
-  var pct = totalActual > 0 ? Math.round(totalActual / totalPlanned * 100) : 0;
+  var totalCommitted = 0;
+  Object.values(BRIEF_COMMITMENTS).forEach(function(sm) { Object.values(sm).forEach(function(v){ totalCommitted += v; }); });
+  var trueRemaining = totalPlanned - totalCommitted - totalActual;
+  var pct = totalActual > 0 ? Math.round(totalActual/totalPlanned*100) : totalCommitted > 0 ? Math.round(totalCommitted/totalPlanned*100) : 0;
   metricsEl.innerHTML = [
-    {label:'Total planned 2026', val:'&pound;' + (totalPlanned/1000000).toFixed(2) + 'M', sub:'Across all brands', color:'var(--swansway)'},
-    {label:'Total actual entered', val: totalActual > 0 ? '&pound;' + (totalActual/1000000).toFixed(2) + 'M' : '&pound;0', sub:'From site budgets', color:'#059669'},
-    {label:'Budget utilisation', val: pct + '%', sub:'Of annual plan', color:'#D97706'},
-    {label:'Remaining', val:'&pound;' + ((totalPlanned-totalActual)/1000000).toFixed(2) + 'M', sub:'To year end', color:'#6B7280'},
+    {label:'Total planned 2026',  val:'&pound;' + (totalPlanned/1000000).toFixed(2) + 'M',                                        sub:'Across all brands',             color:'var(--swansway)'},
+    {label:'Committed (briefs)',   val:totalCommitted > 0 ? '&pound;' + (totalCommitted/1000000).toFixed(2) + 'M' : '&pound;0',  sub:'From saved briefs',             color:'#D97706'},
+    {label:'Actual spent',         val:totalActual > 0 ? '&pound;' + (totalActual/1000000).toFixed(2) + 'M' : '&pound;0',        sub:'Entered in site budgets',       color:'#059669'},
+    {label:'Remaining headroom',   val:'&pound;' + (Math.max(0,trueRemaining)/1000000).toFixed(2) + 'M',                          sub:'Planned − committed − actual', color:'#6B7280'},
   ].map(function(m) {
     return '<div class="metric" style="border-top-color:' + m.color + '"><div class="metric-label">' + m.label + '</div><div class="metric-val" style="color:' + m.color + '">' + m.val + '</div><div class="metric-sub">' + m.sub + '</div></div>';
   }).join('');
@@ -5142,6 +5259,7 @@ const ANTHROPIC_API_KEY = ''; // Key removed — all AI calls go via Vercel prox
 
 /* ════ SITE BUDGETS — HUB ════ */
 var SITE_BUDGETS = {};  // site_id -> row
+var BRIEF_COMMITMENTS = {}; // site_id -> { monthIndex -> amount }
 var HUB_SITES = [{"site_id": "audi-blackburn", "site_name": "Audi Blackburn", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-carlisle", "site_name": "Audi Carlisle", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-crewe", "site_name": "Audi Crewe", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-preston", "site_name": "Audi Preston", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-stafford", "site_name": "Audi Stafford", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "audi-stoke", "site_name": "Audi Stoke", "brand_id": "audi", "brand_name": "Audi"}, {"site_id": "vw-wrexham", "site_name": "VW Wrexham", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-crewe", "site_name": "VW Crewe", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vw-oldham", "site_name": "VW Oldham", "brand_id": "vw", "brand_name": "Volkswagen"}, {"site_id": "vwcv-wrexham", "site_name": "VWC Wrexham", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-liverpool", "site_name": "VWC Liverpool", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-lancashire", "site_name": "VWC Lancashire", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-birmingham", "site_name": "VWC Birmingham", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "vwcv-oldham", "site_name": "VWC Oldham", "brand_id": "vwcv", "brand_name": "VW Commercial"}, {"site_id": "seat-crewe", "site_name": "SEAT Crewe", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "seat-oldham", "site_name": "SEAT Oldham", "brand_id": "seat", "brand_name": "SEAT"}, {"site_id": "cupra-crewe", "site_name": "CUPRA Crewe", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "cupra-oldham", "site_name": "CUPRA Oldham", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "lr-stafford", "site_name": "Land Rover Stafford", "brand_id": "landrover", "brand_name": "Land Rover"}, {"site_id": "jag-crewe", "site_name": "Jaguar Crewe", "brand_id": "jaguar", "brand_name": "Jaguar"}, {"site_id": "honda-stockport", "site_name": "Honda Stockport", "brand_id": "honda", "brand_name": "Honda"}, {"site_id": "honda-bolton", "site_name": "Honda Bolton", "brand_id": "honda", "brand_name": "Honda"}, {"site_id": "peugeot-chester", "site_name": "Peugeot Chester", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "peugeot-crewe", "site_name": "Peugeot Crewe", "brand_id": "peugeot", "brand_name": "Peugeot"}, {"site_id": "byd-crewe", "site_name": "BYD Crewe", "brand_id": "byd", "brand_name": "BYD"}, {"site_id": "byd-chester", "site_name": "BYD Chester", "brand_id": "byd", "brand_name": "BYD"}, {"site_id": "byd-stoke", "site_name": "BYD Stoke", "brand_id": "byd", "brand_name": "BYD"}, {"site_id": "omoda-stockport", "site_name": "OMODA/JAECOO Stockport", "brand_id": "omoda", "brand_name": "OMODA/JAECOO"}, {"site_id": "mm-crewe", "site_name": "Motor Match Crewe", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-stockport", "site_name": "Motor Match Stockport", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-bolton", "site_name": "Motor Match Bolton", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-chester", "site_name": "Motor Match Chester", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "mm-stoke", "site_name": "Motor Match Stoke", "brand_id": "motormatch", "brand_name": "Motor Match"}, {"site_id": "cupra-bolton", "site_name": "CUPRA Bolton Service", "brand_id": "cupra", "brand_name": "CUPRA"}, {"site_id": "seat-bolton", "site_name": "SEAT Bolton Service", "brand_id": "seat", "brand_name": "SEAT"}]
 var HUB_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -5210,6 +5328,23 @@ function renderBrandSites(brandId) {
   el.innerHTML = html;
 }
 
+async function loadBriefCommitmentsForTracker() {
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  try {
+    var rows = await fetch(base + '/brief_budget_commitments?year=eq.2026&select=site_id,month_index,amount', {
+      headers: {'apikey':anon,'Authorization':'Bearer '+anon}
+    }).then(function(r){ return r.json(); });
+    BRIEF_COMMITMENTS = {};
+    if (Array.isArray(rows)) {
+      rows.forEach(function(r) {
+        if (!BRIEF_COMMITMENTS[r.site_id]) BRIEF_COMMITMENTS[r.site_id] = {};
+        BRIEF_COMMITMENTS[r.site_id][r.month_index] = (BRIEF_COMMITMENTS[r.site_id][r.month_index] || 0) + (r.amount || 0);
+      });
+    }
+  } catch(e) { console.warn('loadBriefCommitmentsForTracker:', e); }
+}
+
 async function loadSiteBudgets() {
   try {
     var resp = await fetch(SUPABASE_URL + '/rest/v1/site_budgets?select=*', {
@@ -5234,6 +5369,7 @@ async function loadSiteBudgets() {
     }
     updateBrandBudgetsFromSites();
     syncBrandSitesFromHubSites();
+    await loadBriefCommitmentsForTracker();
     if (typeof renderBudgetTracker === 'function') renderBudgetTracker();
     if (typeof renderGroupChannels === 'function') renderGroupChannels();
     console.log('Site budgets loaded: ' + rows.length + ' sites, £' + groupTotal.toLocaleString());
@@ -8789,6 +8925,10 @@ async function bbSaveBrief() {
     kpi_cpl_search:    BB.brand?.cpl?.google || null,
     locations:         BB.brand?.locations || [],
     notes:             '',
+    start_date:        BB.start_date || null,
+    end_date:          BB.end_date || null,
+    site_id:           BB.site_id || null,
+    scope:             BB.scope || 'brand',
   };
 
   // If we already have a saved brief ID, update it — don't create a duplicate
@@ -8812,6 +8952,7 @@ async function bbSaveBrief() {
     window._lastSavedBriefId = data ? data.id : null;
     window._lastSavedBriefTitle = title;
     loadBriefs();
+    if (data && data.id && BB.start_date && BB.end_date && BB.budget > 0) { bbSaveBudgetCommitments(data.id, title); }
     // Always load fresh team/perms/campaign state then render
     var _anon2 = SUPABASE_ANON_KEY, _base2 = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1', _h2 = {'apikey':_anon2,'Authorization':'Bearer '+_anon2};
     var _briefId2 = data ? data.id : null;
@@ -8836,6 +8977,33 @@ async function bbSaveBrief() {
       if (typeof bbRenderCampaignSection === 'function' && data) bbRenderCampaignSection(data);
     });
   }
+}
+
+async function bbSaveBudgetCommitments(briefId, briefTitle) {
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'};
+  try {
+    await fetch(base + '/brief_budget_commitments?brief_id=eq.' + briefId, { method:'DELETE', headers:hdrs });
+    var months = bbGetCampaignMonths(BB.start_date, BB.end_date);
+    if (!months.length || !BB.brand) return;
+    var sites = BB.scope === 'site' && BB.site_id
+      ? [BB.site_id]
+      : HUB_SITES.filter(function(s){ return s.brand_id === BB.brand.id; }).map(function(s){ return s.site_id; });
+    if (!sites.length) return;
+    var perMPS = Math.round(BB.budget / months.length / sites.length);
+    var rows = [];
+    sites.forEach(function(sid) {
+      months.forEach(function(m) {
+        rows.push({ brief_id:briefId, site_id:sid, brand_id:BB.brand.id, month_index:m.index, year:2026, amount:perMPS, brief_title:briefTitle });
+      });
+    });
+    await fetch(base + '/brief_budget_commitments', { method:'POST', headers:hdrs, body:JSON.stringify(rows) });
+    console.log('Commitments saved: £' + BB.budget.toLocaleString() + ' across ' + rows.length + ' rows');
+    bbLoadHeadroom();
+    await loadBriefCommitmentsForTracker();
+    if (typeof renderBudgetTracker === 'function') renderBudgetTracker();
+  } catch(e) { console.warn('bbSaveBudgetCommitments:', e); }
 }
 
 /* ── BRIEFS PANEL ── */
