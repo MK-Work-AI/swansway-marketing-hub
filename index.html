@@ -6908,6 +6908,7 @@ async function cbLaunchFromBrief(briefId, briefTitle) {
 /* ── BRIEF STATUS FLOW ── */
 async function bbSubmitBrief() {
   if (!window._lastSavedBriefId) { alert('Save the brief first'); return; }
+  await swEnsureUser();
   var me = CB_TEAM[CB_CURRENT_USER] || {};
   var firstName = me.name ? me.name.split(' ')[0] : '';
   var anon = SUPABASE_ANON_KEY;
@@ -7233,6 +7234,9 @@ async function bbRenderCampaignSection(briefData) {
   if (!el) return;
   if (!briefData || !briefData.id) { el.style.display='none'; return; }
 
+  // Ensure user is detected before rendering
+  await swEnsureUser();
+
   var brief = briefData;
   var perms = CB_PERMS[CB_CURRENT_USER] || {};
   var canLaunch = perms.can_approve_all || perms.can_approve_digital;
@@ -7467,7 +7471,8 @@ async function bbApproveThenLaunch(briefId, briefTitle) {
 
 
 async function bbApproveThenShowLaunch() {
-  if (!CB_CURRENT_USER) { alert('Select your name first'); return; }
+  await swEnsureUser();
+  if (!CB_CURRENT_USER) { alert('Could not detect your login. Please refresh the page.'); return; }
   var briefId = window._lastSavedBriefId;
   if (!briefId) return;
   var anon = SUPABASE_ANON_KEY;
@@ -7485,6 +7490,7 @@ async function bbApproveThenShowLaunch() {
   } catch(e) { alert('Error approving: '+e.message); }
 }
 async function bbCreateCampaign(briefId, briefTitle) {
+  await swEnsureUser();
   var btn = event && event.target;
   if (btn) { btn.textContent = 'Launching...'; btn.disabled = true; }
 
@@ -8041,6 +8047,50 @@ async function bbSubmitNote() {
   } catch(e) { alert('Error saving note: '+e.message); }
 }
 
+
+
+/* ════════════════════════════════
+   SWANSWAY USER INIT - always call this before any user-dependent action
+   ════════════════════════════════ */
+var SW_INIT_DONE = false;
+var SW_INIT_PROMISE = null;
+
+async function swEnsureUser() {
+  if (CB_CURRENT_USER) return CB_CURRENT_USER;
+  if (SW_INIT_PROMISE) return SW_INIT_PROMISE;
+  SW_INIT_PROMISE = (async function() {
+    var anon = SUPABASE_ANON_KEY;
+    var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+    var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+    try {
+      // Load team + perms if needed
+      if (!Object.keys(CB_TEAM).length) {
+        var results = await Promise.all([
+          fetch(base+'/campaign_team?select=*&active=eq.true',{headers:hdrs}).then(function(r){return r.json();}),
+          fetch(base+'/campaign_permissions?select=*',{headers:hdrs}).then(function(r){return r.json();})
+        ]);
+        (Array.isArray(results[0])?results[0]:[]).forEach(function(m){CB_TEAM[m.id]=m;});
+        (Array.isArray(results[1])?results[1]:[]).forEach(function(p){CB_PERMS[p.team_member_id]=p;});
+      }
+      // Get auth email from Supabase session
+      var sess = await SB.auth.getSession();
+      var email = sess && sess.data && sess.data.session ? sess.data.session.user.email : null;
+      if (email) {
+        var match = Object.values(CB_TEAM).find(function(m){return m.email&&m.email.toLowerCase()===email.toLowerCase();});
+        if (match) {
+          CB_CURRENT_USER = match.id;
+          // Update user dropdown
+          var sel = document.getElementById('cb-user-sel');
+          if (sel) sel.value = match.id;
+          console.log('swEnsureUser: ' + match.name);
+        }
+      }
+    } catch(e) { console.warn('swEnsureUser error:', e); }
+    SW_INIT_PROMISE = null;
+    return CB_CURRENT_USER;
+  })();
+  return SW_INIT_PROMISE;
+}
 
 const QPLAN_CACHE = {};
 
@@ -9059,17 +9109,8 @@ function bbLoadBrief(id) {
       (Array.isArray(t)?t:[]).forEach(function(m){CB_TEAM[m.id]=m;});
       (Array.isArray(p)?p:[]).forEach(function(x){CB_PERMS[x.team_member_id]=x;});
 
-      // Detect user from Supabase session directly
-      if (!CB_CURRENT_USER) {
-        try {
-          var sess = await SB.auth.getSession();
-          var email = sess && sess.data && sess.data.session && sess.data.session.user ? sess.data.session.user.email : null;
-          if (email) {
-            var match = Object.values(CB_TEAM).find(function(m){return m.email&&m.email.toLowerCase()===email.toLowerCase();});
-            if (match) { CB_CURRENT_USER = match.id; console.log('User from session:', match.name); }
-          }
-        } catch(e) { console.warn('Session check failed:', e); }
-      }
+      // Ensure user is detected
+      await swEnsureUser();
 
       console.log('bbLoadBrief campaign render: user='+CB_CURRENT_USER+' perms='+Object.keys(CB_PERMS).length+' brief='+brief.title+' status='+brief.status);
       if (typeof bbRenderCampaignSection === 'function') await bbRenderCampaignSection(brief);
