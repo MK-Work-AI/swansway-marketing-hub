@@ -4298,7 +4298,7 @@ function renderBudgetChart(planned, actual) {
       {label:'Planned',data:planned,backgroundColor:'rgba(26,46,74,0.15)',borderColor:'rgba(26,46,74,0.4)',borderWidth:1},
       {label:'Actual',data:actual,backgroundColor:'rgba(200,16,46,0.7)',borderColor:'rgba(200,16,46,1)',borderWidth:1}
     ]},
-    options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{ticks:{callback:function(v){return '&pound;'+(v/1000).toFixed(0)+'K';}}}}}
+    options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{ticks:{callback:function(v){return '£'+(v/1000).toFixed(0)+'K';}}}}}
   });
 }
 
