@@ -4155,17 +4155,17 @@ function renderBudgetTracker() {
       mActual[i]  += brandMonthlyActual[i];
     }
 
-    var variance = brandActual - brandPlan;
-    var varStyle, varStr;
-    if (brandActual > 0) { varStyle = variance > 0 ? 'color:#DC2626' : 'color:#059669'; varStr = (variance >= 0 ? '+' : '') + '&pound;' + Math.abs(variance).toLocaleString(); }
-    else if (brandCommitted > 0) { varStyle = 'color:#D97706'; varStr = '&pound;' + (brandPlan - brandCommitted).toLocaleString() + ' left'; }
-    else { varStyle = ''; varStr = '&mdash;'; }
-
     var brandMonthlyCommitted = new Array(12).fill(0);
     sites.forEach(function(site) {
       for (var mi2 = 0; mi2 < 12; mi2++) { brandMonthlyCommitted[mi2] += (BRIEF_COMMITMENTS[site.site_id] || {})[mi2] || 0; }
     });
     var brandCommitted = brandMonthlyCommitted.reduce(function(s, v) { return s + v; }, 0);
+
+    var variance = brandActual - brandPlan;
+    var varStyle, varStr;
+    if (brandActual > 0) { varStyle = variance > 0 ? 'color:#DC2626' : 'color:#059669'; varStr = (variance >= 0 ? '+' : '') + '&pound;' + Math.abs(variance).toLocaleString(); }
+    else if (brandCommitted > 0) { varStyle = 'color:#D97706'; varStr = '&pound;' + (brandPlan - brandCommitted).toLocaleString() + ' left'; }
+    else { varStyle = ''; varStr = '&mdash;'; }
 
     // Brand row (accordion header)
     var brandRowId = 'bt-sites-' + b.id;
@@ -4178,7 +4178,8 @@ function renderBudgetTracker() {
       var cls  = act === 0 ? '' : (diff > plan * 0.1 ? ' budget-over' : diff < -plan * 0.1 ? ' budget-under' : ' budget-on');
       var inner = act > 0 ? '&pound;' + act.toLocaleString()
         : cmt > 0 ? '<span style="color:#D97706;font-weight:600">&pound;' + cmt.toLocaleString() + '</span>'
-        : '<em style="color:var(--ink-faint)">&pound;' + plan.toLocaleString() + '</em>';
+        : plan > 0 ? '<em style="color:var(--ink-faint)">&pound;' + plan.toLocaleString() + '</em>'
+        : '<em style="color:var(--ink-faint)">&mdash;</em>';
       brandCells += '<td class="budget-cell' + cls + '">' + inner + '</td>';
     }
 
@@ -4192,7 +4193,7 @@ function renderBudgetTracker() {
       + (sites.length > 0 ? '<div style="font-size:10px;color:var(--ink-soft);margin-left:14px;margin-top:1px">' + sites.length + (sites.length === 1 ? ' site' : ' sites') + '</div>' : '')
       + '</td>'
       + brandCells
-      + '<td style="text-align:right;font-size:11px;color:var(--ink-soft)">&pound;' + brandPlan.toLocaleString() + '</td>'
+      + '<td style="text-align:right;font-size:11px;color:var(--ink-soft)">' + (brandPlan > 0 ? '&pound;' + brandPlan.toLocaleString() : '&mdash;') + '</td>'
       + '<td style="text-align:right;font-size:12px;font-weight:600">' + (brandActual > 0 ? '&pound;' + brandActual.toLocaleString() : brandCommitted > 0 ? '<span style="color:#D97706">&pound;' + brandCommitted.toLocaleString() + ' cmt</span>' : '&mdash;') + '</td>'
       + '<td style="text-align:right;font-size:11px;' + varStyle + '">' + varStr + '</td>'
       + '</tr>';
