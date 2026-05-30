@@ -312,17 +312,26 @@ td strong{font-weight:600}
 .brief-card-btn:hover{background:var(--surface-2);color:var(--ink)}
 .brief-card-btn.danger:hover{background:#FEE2E2;color:var(--accent);border-color:var(--accent)}
 
-/* Save brief bar (appears at bottom of step 6) */
-.bb-save-bar{display:flex;align-items:center;gap:10px;padding:14px 20px;background:var(--swansway);border-radius:4px;margin-bottom:1.5rem}
-.bb-save-bar-text{flex:1;font-size:13px;color:rgba(255,255,255,0.8)}
-.bb-save-bar-text strong{color:#fff;font-weight:700}
-.bb-save-input{flex:2;padding:8px 12px;border:1.5px solid rgba(255,255,255,0.2);border-radius:3px;font-family:var(--font-b);font-size:13px;color:#fff;background:rgba(255,255,255,0.1);outline:none}
-.bb-save-input::placeholder{color:rgba(255,255,255,0.4)}
-.bb-save-input:focus{border-color:rgba(255,255,255,0.5)}
-.bb-save-btn{padding:9px 20px;background:var(--accent);color:#fff;border:none;border-radius:3px;font-family:var(--font-b);font-size:12px;font-weight:700;cursor:pointer;transition:background .2s;white-space:nowrap}
-.bb-save-btn:hover{background:#a00d26}
+/* ── Step 6 unified save card ── */
+.bb-save-card{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:1.5rem;display:none}
+.bb-save-card-label{font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.bb-save-row{display:flex;align-items:center;gap:10px}
+.bb-save-input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:14px;color:var(--ink);background:var(--white);outline:none;transition:border-color .15s}
+.bb-save-input::placeholder{color:var(--ink-faint)}
+.bb-save-input:focus{border-color:var(--swansway)}
+.bb-save-btn{padding:10px 22px;background:var(--swansway);color:#fff;border:none;border-radius:6px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;transition:background .2s;white-space:nowrap}
+.bb-save-btn:hover{background:var(--accent)}
 .bb-save-btn:disabled{opacity:0.5;cursor:not-allowed}
-.bb-save-status{font-size:11px;color:rgba(255,255,255,0.6);margin-top:6px}
+.bb-save-divider{border:none;border-top:1.5px solid var(--border);margin:18px 0}
+/* States rendered inside .bb-save-card-body */
+.bb-save-card-body{}
+/* saved-inline confirmation row */
+.bb-saved-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.bb-saved-check{width:28px;height:28px;border-radius:50%;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.bb-saved-text{flex:1;font-size:14px;color:var(--ink)}
+.bb-saved-text strong{font-family:var(--font-d);font-weight:700}
+.bb-saved-submit{padding:10px 22px;background:var(--ink);color:#fff;border:none;border-radius:6px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;white-space:nowrap}
+.bb-saved-submit:hover{opacity:0.85}
 
 /* Overlay for briefs panel */
 .panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:399;display:none}
@@ -1432,13 +1441,16 @@ td strong{font-weight:600}
 
     <!-- Step 6: Output -->
     <div class="bb-step" id="bb-step-6">
-      <div class="bb-save-bar" id="bb-save-bar" style="display:none">
-        <div class="bb-save-bar-text"><strong>Save this brief</strong> for future reference</div>
-        <input class="bb-save-input" id="bb-brief-title" placeholder="Brief title e.g. Audi March Plate Change 2026" maxlength="80">
-        <button class="bb-save-btn" id="bb-save-btn" onclick="bbSaveBrief()">Save brief</button>
+      <!-- Step 6: unified save + submit card -->
+      <div class="bb-save-card" id="bb-save-bar">
+        <div class="bb-save-card-label">Save this brief</div>
+        <div class="bb-save-row">
+          <input class="bb-save-input" id="bb-brief-title" placeholder="Give this brief a title — e.g. Audi Plate Change May 2026" maxlength="80">
+          <button class="bb-save-btn" id="bb-save-btn" onclick="bbSaveBrief()">Save brief</button>
+        </div>
+        <div id="bb-save-feedback" style="display:none;margin-top:14px"></div>
       </div>
-      <div id="bb-save-feedback" style="font-size:12px;color:var(--ink-soft);margin-bottom:1rem;display:none"></div>
-      <div id="bb-campaign-section" style="display:none;margin-top:1.5rem"></div>
+      <div id="bb-campaign-section" style="display:none;margin-top:0"></div>
       <div id="bb-output"></div>
     </div>
 
@@ -3597,7 +3609,7 @@ function bbGenerateBrief() {
   const saveBar = document.getElementById('bb-save-bar');
   const feedback = document.getElementById('bb-save-feedback');
   if(saveBar) {
-    saveBar.style.display = 'flex';
+    saveBar.style.display = 'block';
     const saveBtn = document.getElementById('bb-save-btn');
     if(saveBtn) {
       if(SB_USER) {
@@ -7119,44 +7131,50 @@ document.addEventListener('click', function(e) {
 function bbShowPostSave(briefId, status) {
   var fb = document.getElementById('bb-save-feedback');
   if (!fb) return;
-  fb.style.display = 'block';
 
-  // Who is the current user?
   var me = CB_TEAM[CB_CURRENT_USER] || {};
   var firstName = me.name ? me.name.split(' ')[0] : 'there';
   var canLaunch = CB_CURRENT_USER && CB_PERMS[CB_CURRENT_USER] && (CB_PERMS[CB_CURRENT_USER].can_approve_all || CB_PERMS[CB_CURRENT_USER].can_approve_digital);
 
+  // Lock the title input and update save button
+  var titleInput = document.getElementById('bb-brief-title');
+  var saveBtn = document.getElementById('bb-save-btn');
+  if (titleInput) titleInput.disabled = true;
+  if (saveBtn) { saveBtn.textContent = '\u2713 Saved'; saveBtn.style.background = '#059669'; saveBtn.disabled = true; }
+
+  fb.style.display = 'block';
+  fb.style.color = '';
+
   if (status === 'draft') {
-    // Just saved as draft
-    fb.style.color = '#059669';
-    fb.innerHTML = '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
-      + '<span style="font-size:14px">\u2713 Brief saved, ' + firstName + '! Looking great so far.</span>'
-      + '<button onclick="bbSubmitBrief()" style="background:#059669;color:#fff;border:none;padding:8px 18px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:700;font-family:var(--font-m)">Submit for approval \u2192</button>'
+    fb.innerHTML = '<hr style="border:none;border-top:1.5px solid var(--border);margin:4px 0 16px">'
+      + '<div class="bb-saved-row">'
+      + '<div class="bb-saved-check">\u2713</div>'
+      + '<div class="bb-saved-text"><strong>Brief saved, ' + firstName + '.</strong> When you\'re ready, submit it for approval and the team will get started.</div>'
+      + '<button class="bb-saved-submit" onclick="bbSubmitBrief()">Submit for approval \u2192</button>'
       + '</div>';
   } else if (status === 'submitted') {
     if (canLaunch) {
-      // Approver sees the launch button
-      fb.style.color = 'var(--ink)';
-      fb.innerHTML = '<div style="margin-bottom:12px;font-size:14px;color:var(--ink-soft)">Brief submitted \u2014 you can approve and launch it right now.</div>'
-        + '<button onclick="bbApproveBriefAndLaunch()" '
-        + 'style="width:100%;padding:18px;background:linear-gradient(135deg,#C8102E,#ff2d55);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:20px;font-weight:800;font-family:var(--font-d);letter-spacing:-0.02em;box-shadow:0 4px 20px rgba(200,16,46,0.4);transition:transform .15s" '
-        + 'onmouseover="this.style.transform=\'scale(1.01)\'" onmouseout="this.style.transform=\'scale(1)\'">'
-        + '\uD83D\uDE80 LAUNCH CAMPAIGN'
+      fb.innerHTML = '<hr style="border:none;border-top:1.5px solid var(--border);margin:4px 0 16px">'
+        + '<div style="margin-bottom:14px">'
+        + '<div style="font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px">Ready to launch, ' + firstName + '.</div>'
+        + '<div style="font-size:13px;color:var(--ink-soft)">This brief is approved and waiting for you. Hit the button to create campaign tasks for the whole team.</div>'
+        + '</div>'
+        + '<button onclick="bbApproveBriefAndLaunch()" style="width:100%;padding:16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:17px;font-weight:800;font-family:var(--font-d);letter-spacing:-0.01em;box-shadow:0 4px 16px rgba(200,16,46,0.3);transition:opacity .15s" onmouseover="this.style.opacity=\'0.9\'" onmouseout="this.style.opacity=\'1\'">'
+        + '\uD83D\uDE80\u2002LAUNCH CAMPAIGN'
         + '</button>'
-        + '<div style="text-align:center;margin-top:8px;font-size:12px;color:var(--ink-faint)">This will create all campaign tasks and notify the team</div>';
+        + '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--ink-faint)">Creates all 58 campaign tasks and assigns them to the team</div>';
     } else {
-      // Team member — submitted, waiting
-      fb.style.color = 'var(--ink)';
-      fb.innerHTML = '<div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:6px;padding:14px 18px">'
-        + '<div style="font-size:15px;font-weight:700;color:#92400E;margin-bottom:4px">\uD83D\uDC4B Brief submitted, ' + firstName + '!</div>'
-        + '<div style="font-size:13px;color:#92400E">Anna, Marcus or Beth will review and launch it. You\'ll get your tasks as soon as it goes live. Great work building this brief!</div>'
+      fb.innerHTML = '<hr style="border:none;border-top:1.5px solid var(--border);margin:4px 0 16px">'
+        + '<div class="bb-saved-row">'
+        + '<div class="bb-saved-check" style="background:#FEF3C7;font-size:15px">&#9203;</div>'
+        + '<div class="bb-saved-text"><strong>Brief submitted, ' + firstName + '!</strong> Anna, Marcus or Beth will review it. You\'ll get your tasks as soon as it goes live.</div>'
         + '</div>';
     }
   } else if (status === 'approved' || status === 'campaigned') {
-    fb.style.color = 'var(--ink)';
-    fb.innerHTML = '<div style="background:#D1FAE5;border:1px solid #6EE7B7;border-radius:6px;padding:14px 18px">'
-      + '<div style="font-size:15px;font-weight:700;color:#065F46;margin-bottom:4px">\uD83C\uDF89 Campaign is live!</div>'
-      + '<div style="font-size:13px;color:#065F46">Scroll down to see the campaign stages and your tasks.</div>'
+    fb.innerHTML = '<hr style="border:none;border-top:1.5px solid var(--border);margin:4px 0 16px">'
+      + '<div class="bb-saved-row">'
+      + '<div class="bb-saved-check" style="font-size:15px">&#127881;</div>'
+      + '<div class="bb-saved-text"><strong>Campaign is live!</strong> Scroll down to see the campaign stages and your tasks.</div>'
       + '</div>';
   }
 }
@@ -7281,38 +7299,44 @@ async function bbRenderCampaignSection(briefData) {
   }
 
   if (brief.status === 'draft') {
-    el.innerHTML = '<div style="background:var(--white);border:2px dashed var(--border);border-radius:8px;padding:24px;text-align:center">'
-      + '<div style="font-size:32px;margin-bottom:10px">\uD83D\uDCCB</div>'
-      + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px">Ready to submit?</div>'
-      + '<div style="font-size:14px;color:var(--ink-soft);margin-bottom:18px;max-width:400px;margin-left:auto;margin-right:auto">When this brief looks good, submit it for approval. Anna, Marcus or Beth will review and launch the campaign.</div>'
-      + '<button onclick="bbSubmitBrief()" style="background:var(--ink);color:#fff;border:none;padding:12px 28px;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-m)">\uD83D\uDCE4 Submit for approval</button>'
-      + '</div>';
+    // Draft state is handled entirely by bbShowPostSave — campaign section hidden
+    el.style.display = 'none';
     return;
   }
 
   if (brief.status === 'submitted') {
-    var submitMsg = canLaunch
-      ? (firstName + ', this brief is waiting for your approval ??')
-      : 'Submitted — waiting for Anna, Marcus or Beth to approve it ??';
-    var submitSub = canLaunch
-      ? 'Everything looks good. Approve it and the team will be ready to launch.'
-      : 'You’ll get your tasks as soon as it goes live. Great work!';
-    el.innerHTML = '<div style="background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:32px;text-align:center">'
-      + '<div style="font-size:40px;margin-bottom:12px">' + (canLaunch ? '✏️' : '⏳') + '</div>'
-      + '<div style="font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--ink);margin-bottom:10px">' + submitMsg + '</div>'
-      + '<div style="font-size:15px;color:var(--ink-soft);max-width:440px;margin:0 auto 20px">' + submitSub + '</div>'
-      + (canLaunch ? '<button onclick="bbApproveThenShowLaunch()" style="background:#059669;color:#fff;border:none;padding:14px 36px;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--font-m)">✓ Approve this brief</button>' : '')
-      + '</div>';
+    el.style.display = 'block';
+    if (canLaunch) {
+      el.innerHTML = '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:24px;margin-top:1.5rem">'
+        + '<div style="font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px">Ready to launch</div>'
+        + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px">' + firstName + ', this brief is waiting for you.</div>'
+        + '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">Approve it and the team will get their tasks automatically.</div>'
+        + '<button onclick="bbApproveThenShowLaunch()" style="width:100%;padding:15px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:17px;font-weight:800;font-family:var(--font-d);letter-spacing:-0.01em;box-shadow:0 4px 16px rgba(200,16,46,0.25);transition:opacity .15s" onmouseover="this.style.opacity=&apos;0.9&apos;" onmouseout="this.style.opacity=&apos;1&apos;">'
+        + '\uD83D\uDE80\u2002LAUNCH CAMPAIGN'
+        + '</button>'
+        + '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--ink-faint)">Creates all 58 campaign tasks and assigns them to the team</div>'
+        + '</div>';
+    } else {
+      el.innerHTML = '<div style="background:var(--white);border:1.5px solid #FCD34D;border-radius:10px;padding:20px 24px;margin-top:1.5rem;display:flex;align-items:flex-start;gap:14px">'
+        + '<div style="width:36px;height:36px;background:#FEF3C7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">&#9203;</div>'
+        + '<div><div style="font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">Brief submitted, ' + firstName + '!</div>'
+        + '<div style="font-size:13px;color:var(--ink-soft)">Anna, Marcus or Beth will review it. You\'ll get your tasks as soon as it goes live.</div></div>'
+        + '</div>';
+    }
     return;
   }
 
-    if (brief.status === 'approved') {
-    var launchMsg = firstName ? 'Go for it ' + firstName + ' \uD83D\uDE80' : 'Ready to launch \uD83D\uDE80';
-    el.innerHTML = '<div style="background:linear-gradient(135deg,#C8102E,#9B0D23);border-radius:8px;padding:32px;text-align:center">'
-      + '<div style="font-size:36px;margin-bottom:10px">\uD83D\uDE80</div>'
-      + '<div style="font-family:var(--font-d);font-size:24px;font-weight:700;color:#fff;margin-bottom:8px">' + launchMsg + '</div>'
-      + '<div style="font-size:15px;color:rgba(255,255,255,0.85);margin-bottom:24px;max-width:420px;margin-left:auto;margin-right:auto">This brief has been approved. Hit the button below to create the campaign and automatically assign tasks to the whole team.</div>'
-      + '<button onclick="bbLaunchCampaignFromBrief(\''+brief.id+'\',\''+brief.title.replace(/'/g,'').replace(/"/g,'')+'\') " style="background:#fff;color:#C8102E;border:none;padding:16px 48px;border-radius:8px;font-size:18px;font-weight:800;cursor:pointer;font-family:var(--font-d);letter-spacing:-0.02em;box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:transform .1s" onmousedown="this.style.transform=\'scale(0.97)\'" onmouseup="this.style.transform=\'scale(1)\'">\uD83D\uDE80 LAUNCH CAMPAIGN</button>'
+  if (brief.status === 'approved') {
+    el.style.display = 'block';
+    var safeTitle = brief.title ? brief.title.replace(/'/g,'').replace(/"/g,'') : '';
+    el.innerHTML = '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:24px;margin-top:1.5rem">'
+      + '<div style="font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px">Brief approved</div>'
+      + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px">' + (firstName ? 'Go for it, ' + firstName + '.' : 'Ready to launch.') + '</div>'
+      + '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">This brief has been approved. Hit the button to create the campaign and assign all tasks to the team.</div>'
+      + '<button onclick="bbLaunchCampaignFromBrief(\'' + brief.id + '\',\'' + safeTitle + '\')" style="width:100%;padding:15px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:17px;font-weight:800;font-family:var(--font-d);letter-spacing:-0.01em;box-shadow:0 4px 16px rgba(200,16,46,0.25);transition:opacity .15s" onmouseover="this.style.opacity=&apos;0.9&apos;" onmouseout="this.style.opacity=&apos;1&apos;">'
+      + '\uD83D\uDE80\u2002LAUNCH CAMPAIGN'
+      + '</button>'
+      + '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--ink-faint)">Creates all 58 campaign tasks and assigns them to the team</div>'
       + '</div>';
   }
 }
@@ -8780,7 +8804,7 @@ function sbHandleSession(session) {
   const step6 = document.getElementById('bb-step-6');
   if(step6 && step6.classList.contains('bb-active') && saveBar) {
     if(typeof cbAddBriefButton === 'function') cbAddBriefButton();
-    saveBar.style.display = 'flex';
+    saveBar.style.display = 'block';
     if(saveBtn) saveBtn.textContent = 'Save brief';
   }
 }
@@ -8816,7 +8840,7 @@ function showUserState(user) {
   // Show save bar if on step 6
   const saveBar = document.getElementById('bb-save-bar');
   if(saveBar && document.getElementById('bb-step-6')?.classList.contains('bb-active')) {
-    saveBar.style.display = 'flex';
+    saveBar.style.display = 'block';
   }
 }
 
@@ -8966,12 +8990,9 @@ async function bbSaveBrief() {
     feedback.style.color='var(--accent)';
     feedback.textContent = '✗ Error saving: '+error.message;
   } else {
-    feedback.style.display = 'block';
-    feedback.style.color = '#15803D';
+    feedback.style.display = 'none';
     window._lastSavedBriefId = data ? data.id : null;
     window._lastSavedBriefTitle = title;
-    feedback.innerHTML = '✓ Brief saved — great work!';
-    btn.textContent = '✓ Saved';
     loadBriefs();
     // Always load fresh team/perms/campaign state then render
     var _anon2 = SUPABASE_ANON_KEY, _base2 = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1', _h2 = {'apikey':_anon2,'Authorization':'Bearer '+_anon2};
@@ -8992,7 +9013,8 @@ async function bbSaveBrief() {
         var _match2 = Object.values(CB_TEAM).find(function(m){return m.email&&m.email.toLowerCase()===SB_USER.email.toLowerCase();});
         if (_match2) CB_CURRENT_USER = _match2.id;
       }
-      // Render with the real brief data from DB
+      // Show post-save state then render campaign section
+      bbShowPostSave(data ? data.id : null, 'draft');
       if (typeof bbRenderCampaignSection === 'function' && data) bbRenderCampaignSection(data);
     });
   }
@@ -9149,7 +9171,7 @@ function bbLoadBrief(id) {
     bbGoStep(6);
     // Show save bar immediately with existing title
     const saveBar = document.getElementById('bb-save-bar');
-    if(saveBar) saveBar.style.display = 'flex';
+    if(saveBar) saveBar.style.display = 'block';
   }, 100);
 
   // After loading brief - if it's campaigned/approved/submitted, jump to Step 6
@@ -9160,7 +9182,7 @@ function bbLoadBrief(id) {
       var s6 = document.getElementById('bb-step-6');
       if (s6) s6.classList.add('bb-active');
       var saveBar = document.getElementById('bb-save-bar');
-      if (saveBar) saveBar.style.display = 'flex';
+      if (saveBar) saveBar.style.display = 'block';
       var titleEl = document.getElementById('bb-brief-title');
       if (titleEl) titleEl.value = brief.title;
       var saveBtn = document.getElementById('bb-save-btn');
