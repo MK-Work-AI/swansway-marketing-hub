@@ -6918,34 +6918,6 @@ async function cbLaunchFromBrief(briefId, briefTitle) {
 
 
 /* ── BRIEF STATUS FLOW ── */
-async function bbSubmitBrief() {
-  if (!window._lastSavedBriefId) { alert('Save the brief first'); return; }
-  await swEnsureUser();
-  var me = CB_TEAM[CB_CURRENT_USER] || {};
-  var firstName = me.name ? me.name.split(' ')[0] : '';
-  var anon = SUPABASE_ANON_KEY;
-  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-  try {
-    var r = await fetch(base+'/briefs?id=eq.'+window._lastSavedBriefId, {
-      method:'PATCH',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
-      body:JSON.stringify({status:'submitted',submitted_by:CB_CURRENT_USER||'',updated_at:new Date().toISOString()})
-    });
-    if (!r.ok) throw new Error(await r.text());
-    var data = await r.json();
-    var brief = Array.isArray(data) ? data[0] : data;
-    // Update feedback bar cleanly
-    var fb = document.getElementById('bb-save-feedback');
-    if (fb) {
-      fb.style.cssText = 'display:block;font-size:14px;color:#059669;padding:8px 0';
-      fb.innerHTML = '✓ Submitted for approval — great work' + (firstName ? ', '+firstName : '') + '!';
-    }
-    // Render campaign section with submitted state
-    if (typeof bbRenderCampaignSection === 'function') await bbRenderCampaignSection(brief);
-    if (typeof loadBriefs === 'function') loadBriefs();
-  } catch(e) { alert('Error submitting: '+e.message); }
-}
-
 async function bbApproveBrief(briefId) {
   var perms = window.CB_PERMS && CB_PERMS[window.SWANSWAY_USER_ID];
   if (!perms || !perms.can_approve_all) { alert('You do not have permission to approve briefs.'); return; }
@@ -7195,151 +7167,6 @@ async function bbSubmitBrief() {
 }
 
 async function bbApproveBriefAndLaunch() {
-  if (!window._lastSavedBriefId) return;
-  var perms = CB_PERMS[CB_CURRENT_USER] || {};
-  if (!perms.can_approve_all && !perms.can_approve_digital) { alert('You need approval permissions.'); return; }
-  var anon = SUPABASE_ANON_KEY;
-  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-  try {
-    // 1. Approve the brief
-    await fetch(base+'/briefs?id=eq.'+window._lastSavedBriefId, {
-      method:'PATCH',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify({status:'approved', approved_by:CB_CURRENT_USER, approved_at:new Date().toISOString(), updated_at:new Date().toISOString()})
-    });
-
-    // 2. Create campaign
-    var brief = (typeof CB_ALL_BRIEFS !== 'undefined' ? CB_ALL_BRIEFS : []).find(function(b){return b.id===window._lastSavedBriefId;}) || {};
-    var cr = await fetch(base+'/campaigns', {
-      method:'POST',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
-      body:JSON.stringify([{
-        title: window._lastSavedBriefTitle || 'Campaign',
-        brief_id: window._lastSavedBriefId,
-        scope: brief.scope||'brand',
-        brand_id: brief.brand_id||null,
-        site_id: brief.site_id||null,
-        status: 'active',
-        current_stage: 1,
-        confirmed_channels: brief.confirmed_channels||brief.channels||[],
-        created_by: CB_CURRENT_USER||'system'
-      }])
-    });
-    if (!cr.ok) throw new Error(await cr.text());
-    var camp = (await cr.json())[0];
-
-    // 3. Create tasks from template
-    var tmpl = await fetch(base+'/campaign_task_templates?select=*&order=stage,task_order',{
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon}
-    }).then(function(r){return r.json();});
-
-    if (Array.isArray(tmpl)&&tmpl.length) {
-      var rows = tmpl.map(function(t){
-        return {campaign_id:camp.id,stage:t.stage,task_order:t.task_order,task_name:t.task_name,department:t.department,assigned_to:t.default_assignee,approver_scope:t.approver_scope,is_blocker:t.is_blocker,channel:t.channel,completed:false,approved:false,rejected:false,notes:''};
-      });
-      await fetch(base+'/campaign_tasks',{method:'POST',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(rows)});
-    }
-
-    // 4. Mark as campaigned
-    await fetch(base+'/briefs?id=eq.'+window._lastSavedBriefId,{
-      method:'PATCH',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify({status:'campaigned',updated_at:new Date().toISOString()})
-    });
-
-    loadBriefs();
-    setTimeout(mtLoad, 500);
-    bbShowPostSave(window._lastSavedBriefId, 'campaigned');
-
-    // Show success banner
-    var banner = document.createElement('div');
-    banner.style.cssText = 'position:fixed;top:80px;right:24px;background:linear-gradient(135deg,#059669,#10b981);color:#fff;padding:16px 24px;border-radius:8px;font-size:15px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(5,150,105,0.4)';
-    banner.textContent = '\uD83C\uDF89 Campaign launched! Tasks are now live for the team.';
-    document.body.appendChild(banner);
-    setTimeout(function(){banner.remove();}, 5000);
-
-  } catch(e) { alert('Error launching campaign: ' + e.message); }
-}
-
-
-/* ==== BRIEF CAMPAIGN SECTION (Phase 3) ==== */
-async function bbRenderCampaignSection(briefData) {
-  var el = document.getElementById('bb-campaign-section');
-  if (!el) return;
-  if (!briefData || !briefData.id) { el.style.display='none'; return; }
-
-  // Ensure user is detected before rendering
-  await swEnsureUser();
-
-  var brief = briefData;
-  var perms = CB_PERMS[CB_CURRENT_USER] || {};
-  var canLaunch = perms.can_approve_all || perms.can_approve_digital;
-  var me = CB_TEAM[CB_CURRENT_USER] || {};
-  var firstName = me.name ? me.name.split(' ')[0] : '';
-
-  // Check if campaign already exists
-  var anon = SUPABASE_ANON_KEY;
-  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
-  var camps = await fetch(base+'/campaigns?brief_id=eq.'+brief.id+'&select=id,title,status,current_stage',{headers:hdrs}).then(function(r){return r.json();});
-  var existingCamp = Array.isArray(camps) && camps.length ? camps[0] : null;
-
-  el.style.display = 'block';
-
-  if (existingCamp) {
-    // Campaign already launched - show status
-    el.innerHTML = '<div style="background:linear-gradient(135deg,#059669,#047857);border-radius:8px;padding:24px;text-align:center;color:#fff">'
-      + '<div style="font-size:22px;margin-bottom:8px">\uD83D\uDE80</div>'
-      + '<div style="font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:6px">Campaign is live!</div>'
-      + '<div style="font-size:14px;opacity:0.9;margin-bottom:16px">Stage '+(existingCamp.current_stage||1)+' of 6 \u2014 '+['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'][(existingCamp.current_stage||1)-1]+'</div>'
-      + '<button onclick="bbViewCampaign(\''+existingCamp.id+'\')" style="background:#fff;color:#059669;border:none;padding:10px 28px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-m)">View campaign tasks \u2192</button>'
-      + '</div>';
-    return;
-  }
-
-  if (brief.status === 'draft') {
-    // Draft state is handled entirely by bbShowPostSave — campaign section hidden
-    el.style.display = 'none';
-    return;
-  }
-
-  if (brief.status === 'submitted') {
-    el.style.display = 'block';
-    if (canLaunch) {
-      el.innerHTML = '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:24px;margin-top:1.5rem">'
-        + '<div style="font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px">Ready to launch</div>'
-        + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px">' + firstName + ', this brief is waiting for you.</div>'
-        + '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">Approve it and the team will get their tasks automatically.</div>'
-        + '<button onclick="bbApproveThenShowLaunch()" style="width:100%;padding:15px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:17px;font-weight:800;font-family:var(--font-d);letter-spacing:-0.01em;box-shadow:0 4px 16px rgba(200,16,46,0.25);transition:opacity .15s" onmouseover="this.style.opacity=&apos;0.9&apos;" onmouseout="this.style.opacity=&apos;1&apos;">'
-        + '\uD83D\uDE80\u2002LAUNCH CAMPAIGN'
-        + '</button>'
-        + '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--ink-faint)">Creates all 58 campaign tasks and assigns them to the team</div>'
-        + '</div>';
-    } else {
-      el.innerHTML = '<div style="background:var(--white);border:1.5px solid #FCD34D;border-radius:10px;padding:20px 24px;margin-top:1.5rem;display:flex;align-items:flex-start;gap:14px">'
-        + '<div style="width:36px;height:36px;background:#FEF3C7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">&#9203;</div>'
-        + '<div><div style="font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">Brief submitted, ' + firstName + '!</div>'
-        + '<div style="font-size:13px;color:var(--ink-soft)">Anna, Marcus or Beth will review it. You\'ll get your tasks as soon as it goes live.</div></div>'
-        + '</div>';
-    }
-    return;
-  }
-
-  if (brief.status === 'approved') {
-    el.style.display = 'block';
-    var safeTitle = brief.title ? brief.title.replace(/'/g,'').replace(/"/g,'') : '';
-    el.innerHTML = '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:24px;margin-top:1.5rem">'
-      + '<div style="font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px">Brief approved</div>'
-      + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px">' + (firstName ? 'Go for it, ' + firstName + '.' : 'Ready to launch.') + '</div>'
-      + '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">This brief has been approved. Hit the button to create the campaign and assign all tasks to the team.</div>'
-      + '<button onclick="bbLaunchCampaignFromBrief(\'' + brief.id + '\',\'' + safeTitle + '\')" style="width:100%;padding:15px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:17px;font-weight:800;font-family:var(--font-d);letter-spacing:-0.01em;box-shadow:0 4px 16px rgba(200,16,46,0.25);transition:opacity .15s" onmouseover="this.style.opacity=&apos;0.9&apos;" onmouseout="this.style.opacity=&apos;1&apos;">'
-      + '\uD83D\uDE80\u2002LAUNCH CAMPAIGN'
-      + '</button>'
-      + '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--ink-faint)">Creates all 58 campaign tasks and assigns them to the team</div>'
-      + '</div>';
-  }
-}
-
-async function bbApproveBriefAndLaunch() {
   if (!CB_CURRENT_USER) { alert('Select your name in My Tasks first'); return; }
   var perms = CB_PERMS[CB_CURRENT_USER] || {};
   if (!perms.can_approve_all && !perms.can_approve_digital) { alert('You do not have permission to approve briefs'); return; }
@@ -7427,6 +7254,71 @@ function bbViewCampaign(campaignId) {
 
 
 /* ==== PHASE 3: BRIEF CAMPAIGN SECTION ==== */
+
+async function bbRenderCampaignSection(briefData) {
+  var el = document.getElementById('bb-campaign-section');
+  if (!el) return;
+  if (!briefData || !briefData.id) { el.style.display='none'; return; }
+  await swEnsureUser();
+  var brief = briefData;
+  var perms = CB_PERMS[CB_CURRENT_USER] || {};
+  var canLaunch = perms.can_approve_all || perms.can_approve_digital;
+  var me = CB_TEAM[CB_CURRENT_USER] || {};
+  var firstName = me.name ? me.name.split(' ')[0] : '';
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+  var camps = await fetch(base+'/campaigns?brief_id=eq.'+brief.id+'&select=id,title,status,current_stage',{headers:hdrs}).then(function(r){return r.json();});
+  var existingCamp = Array.isArray(camps) && camps.length ? camps[0] : null;
+  el.style.display = 'block';
+  if (existingCamp || brief.status === 'campaigned') {
+    var camp = existingCamp || {};
+    var stageNames = ['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'];
+    el.innerHTML = '<div style="background:linear-gradient(135deg,#059669,#047857);border-radius:10px;padding:24px;text-align:center;color:#fff;margin-top:1.5rem">'
+      + '<div style="font-size:22px;margin-bottom:8px">\uD83D\uDE80</div>'
+      + '<div style="font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:6px">Campaign is live!</div>'
+      + '<div style="font-size:14px;opacity:0.9;margin-bottom:16px">Stage '+(camp.current_stage||1)+' of 6 \u2014 '+(stageNames[(camp.current_stage||1)-1]||'')+'</div>'
+      + '<button onclick="bbViewCampaign(\''+(camp.id||'')+'\',\''+brief.id+'\')" style="background:#fff;color:#059669;border:none;padding:10px 28px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-m)">View campaign tasks \u2192</button>'
+      + '</div>';
+    if (camp.id) bbRenderStages(el, camp, brief.id);
+    return;
+  }
+  if (brief.status === 'draft') { el.style.display = 'none'; return; }
+  if (brief.status === 'submitted') {
+    if (canLaunch) {
+      el.innerHTML = '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:24px;margin-top:1.5rem">'
+        + '<div style="font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px">Ready to launch</div>'
+        + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px">' + (firstName ? firstName + ', this brief is waiting for you.' : 'This brief is waiting for approval.') + '</div>'
+        + '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">Approve it and the team will get their tasks automatically.</div>'
+        + '<button onclick="bbApproveBriefAndLaunch()" style="width:100%;padding:15px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:17px;font-weight:800;font-family:var(--font-d);letter-spacing:-0.01em;box-shadow:0 4px 16px rgba(200,16,46,0.25)">'
+        + '\uD83D\uDE80\u2002LAUNCH CAMPAIGN'
+        + '</button>'
+        + '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--ink-faint)">Creates all 58 campaign tasks and assigns them to the team</div>'
+        + '</div>';
+    } else {
+      el.innerHTML = '<div style="background:var(--white);border:1.5px solid #FCD34D;border-radius:10px;padding:20px 24px;margin-top:1.5rem;display:flex;align-items:flex-start;gap:14px">'
+        + '<div style="width:36px;height:36px;background:#FEF3C7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">&#9203;</div>'
+        + '<div><div style="font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">Brief submitted' + (firstName ? ', '+firstName : '') + '!</div>'
+        + '<div style="font-size:13px;color:var(--ink-soft)">Anna, Marcus or Beth will review it. You\'ll get your tasks as soon as it goes live.</div></div>'
+        + '</div>';
+    }
+    return;
+  }
+  if (brief.status === 'approved') {
+    var safeTitle = brief.title ? brief.title.replace(/'/g,'').replace(/"/g,'') : '';
+    el.innerHTML = '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:24px;margin-top:1.5rem">'
+      + '<div style="font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px">Brief approved</div>'
+      + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px">' + (firstName ? 'Go for it, '+firstName+'.' : 'Ready to launch.') + '</div>'
+      + '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">Approved and ready. Hit the button to create the campaign and assign all tasks to the team.</div>'
+      + '<button onclick="bbLaunchCampaignFromBrief(\''+brief.id+'\',\''+safeTitle+'\')" style="width:100%;padding:15px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:17px;font-weight:800;font-family:var(--font-d);letter-spacing:-0.01em;box-shadow:0 4px 16px rgba(200,16,46,0.25)">'
+      + '\uD83D\uDE80\u2002LAUNCH CAMPAIGN'
+      + '</button>'
+      + '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--ink-faint)">Creates all 58 campaign tasks and assigns them to the team</div>'
+      + '</div>';
+  }
+}
+
+
 
 async function bbApproveThenShowLaunch() {
   await swEnsureUser();
