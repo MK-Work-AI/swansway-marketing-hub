@@ -7012,33 +7012,24 @@ async function bbLaunchCampaign() {
 var MT_OPEN = false;
 
 async function mtLoad() {
-  if (!CB_CURRENT_USER && window.SB_USER && SB_USER.email) {
-    if (!Object.keys(CB_TEAM).length) {
-      var anon = SUPABASE_ANON_KEY;
-      var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-      var t = await fetch(base+'/campaign_team?select=*&active=eq.true',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
-      (Array.isArray(t)?t:[]).forEach(function(m){CB_TEAM[m.id]=m;});
-      var p = await fetch(base+'/campaign_permissions?select=*',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
-      (Array.isArray(p)?p:[]).forEach(function(x){CB_PERMS[x.team_member_id]=x;});
-    }
-    var match = Object.values(CB_TEAM).find(function(m){return m.email&&m.email.toLowerCase()===SB_USER.email.toLowerCase();});
-    if (match) CB_CURRENT_USER = match.id;
-  }
-  if (!CB_CURRENT_USER) { mtRender([]); return; }
-
+  await swEnsureUser();
+  if (!CB_CURRENT_USER) { mtRender([], []); return; }
   var anon = SUPABASE_ANON_KEY;
   var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
   var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
   try {
-    var tasks = await fetch(
-      base+'/campaign_tasks?select=id,task_name,stage,campaign_id,campaigns(id,title,current_stage,brief_id)&assigned_to=eq.'+CB_CURRENT_USER+'&completed=eq.false&approved=eq.false&rejected=eq.false',
-      {headers:hdrs}
-    ).then(function(r){return r.json();});
-    if (!Array.isArray(tasks)) tasks = [];
-    var active = tasks.filter(function(t){
+    var results = await Promise.all([
+      fetch(base+'/campaign_tasks?select=id,task_name,stage,campaign_id,campaigns(id,title,current_stage,brief_id)&assigned_to=eq.'+CB_CURRENT_USER+'&completed=eq.false&approved=eq.false&rejected=eq.false',{headers:hdrs}).then(function(r){return r.json();}),
+      fetch(base+'/campaigns?status=eq.active&select=*&order=created_at.desc',{headers:hdrs}).then(function(r){return r.json();})
+    ]);
+    var allTasks = Array.isArray(results[0]) ? results[0] : [];
+    var allCamps = Array.isArray(results[1]) ? results[1] : [];
+    CB_CAMPAIGNS = allCamps;
+    var active = allTasks.filter(function(t){
       var c = t.campaigns; return c && t.stage === c.current_stage;
     });
-    mtRender(active);
+    mtRender(active, allCamps);
+    loadActiveCampaignsBanner(allCamps, active);
   } catch(e) { console.warn('mtLoad:', e); }
 }
 
