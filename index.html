@@ -7033,7 +7033,7 @@ async function mtLoad() {
   } catch(e) { console.warn('mtLoad:', e); }
 }
 
-function mtRender(tasks) {
+function mtRender(tasks, campaigns) {
   var badge = document.getElementById('mt-badge');
   var header = document.getElementById('mt-header');
   var list = document.getElementById('mt-list');
@@ -7042,36 +7042,60 @@ function mtRender(tasks) {
   var me = CB_TEAM[CB_CURRENT_USER] || {};
   var first = me.name ? me.name.split(' ')[0] : 'there';
   var count = tasks.length;
+  // Badge = task count
   if (badge) { badge.style.display = count > 0 ? 'flex' : 'none'; badge.textContent = count; }
   if (header) header.textContent = count > 0
-    ? 'Hi ' + first + ' \u2014 ' + count + ' task' + (count !== 1 ? 's' : '') + ' waiting for you \uD83D\uDC4B'
-    : 'Hi ' + first + ' \u2014 nothing to do right now \uD83D\uDE4C';
+    ? 'Hi ' + first + ' — ' + count + ' task' + (count !== 1 ? 's' : '') + ' waiting for you ??'
+    : 'Hi ' + first + ' — all caught up ??';
   list.innerHTML = '';
-  if (!count) {
-    list.innerHTML = '<div style="padding:20px 18px;text-align:center;color:var(--ink-soft);font-size:14px">You are all caught up \u2014 nice work! \uD83C\uDF89</div>';
-  } else {
-    tasks.forEach(function(t) {
-      var c = t.campaigns || {};
+  var SN = ['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'];
+  // Show campaigns section first
+  if (campaigns && campaigns.length) {
+    campaigns.forEach(function(camp) {
+      var campTasks = tasks.filter(function(t){ return t.campaign_id === camp.id; });
       var row = document.createElement('div');
-      row.style.cssText = 'padding:12px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s';
-      row.onmouseenter = function(){this.style.background='var(--surface)';};
-      row.onmouseleave = function(){this.style.background='';};
-      row.innerHTML = '<div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:3px">'+t.task_name+'</div>'
-        + '<div style="font-size:12px;color:var(--ink-soft)">'+(c.title||'Campaign')+'</div>';
-      row.dataset.briefId = c.brief_id || '';
-      row.onclick = function(){
-        MT_OPEN = false;
-        var dd = document.getElementById('mt-dropdown');
-        if (dd) dd.style.display = 'none';
-        if (this.dataset.briefId) {
-          switchView('brief', document.querySelector('[data-view="brief"]'));
-          setTimeout(function(){if(typeof cbEditBrief==='function')cbEditBrief(row.dataset.briefId);}, 400);
-        }
-      };
+      row.style.cssText = 'padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;background:var(--surface)';
+      row.onmouseenter = function(){this.style.background='#e8e8e8';};
+      row.onmouseleave = function(){this.style.background='var(--surface)';};
+      var stage = camp.current_stage||1;
+      row.innerHTML = '<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:3px">'+camp.title+'</div>'
+        + '<div style="display:flex;align-items:center;gap:6px">'
+        + '<span style="font-size:11px;background:#DBEAFE;color:#2563EB;padding:1px 7px;border-radius:8px;font-weight:600">Stage '+stage+': '+(SN[stage-1]||'')+'</span>'
+        + (campTasks.length>0
+          ? '<span style="font-size:11px;color:#92400E;background:#FEF3C7;padding:1px 7px;border-radius:8px;font-weight:600">'+campTasks.length+' task'+(campTasks.length!==1?'s':'')+' for you</span>'
+          : '<span style="font-size:11px;color:#059669">✓ Your tasks done</span>')
+        + '<span style="font-size:11px;color:var(--ink-faint);margin-left:auto">Open →</span>'
+        + '</div>';
+      (function(cid,bid){
+        row.onclick = function(){
+          MT_OPEN=false;
+          var dd=document.getElementById('mt-dropdown'); if(dd) dd.style.display='none';
+          openCampaignFromBanner(cid, bid);
+        };
+      })(camp.id, camp.brief_id||'');
       list.appendChild(row);
     });
+  } else if (!count) {
+    list.innerHTML = '<div style="padding:20px 18px;text-align:center;color:var(--ink-soft);font-size:14px">Nothing right now — nice work! ??</div>';
   }
-  if (footer) footer.textContent = count > 0 ? 'Click a task to jump straight to it' : '';
+  // Individual tasks below campaigns
+  tasks.forEach(function(t) {
+    var c = t.campaigns || {};
+    var row = document.createElement('div');
+    row.style.cssText = 'padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;padding-left:24px';
+    row.onmouseenter = function(){this.style.background='var(--surface)';};
+    row.onmouseleave = function(){this.style.background='';};
+    row.innerHTML = '<div style="font-size:12px;color:var(--ink-soft);margin-bottom:1px">→ '+(c.title||'Campaign')+'</div>'
+      + '<div style="font-size:13px;font-weight:600;color:var(--ink)">'+t.task_name+'</div>';
+    var _bid = c.brief_id||'';
+    row.onclick = function(){
+      MT_OPEN=false;
+      var dd=document.getElementById('mt-dropdown'); if(dd) dd.style.display='none';
+      if(_bid) openCampaignFromBanner(null, _bid);
+    };
+    list.appendChild(row);
+  });
+  if (footer) footer.textContent = 'Click to jump straight in';
 }
 
 function mtToggle(e) {
