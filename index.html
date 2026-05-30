@@ -654,6 +654,9 @@ td strong{font-weight:600}
      GROUP OVERVIEW
 ============================================================ -->
 <div class="view active" id="view-group">
+  
+  <div id="active-campaigns-banner" style="display:none;margin-bottom:1.5rem"></div>
+
   <div class="page-strip">
     <div class="page-strip-left"></div>
     <div class="action-row">
@@ -8090,6 +8093,59 @@ async function swEnsureUser() {
     return CB_CURRENT_USER;
   })();
   return SW_INIT_PROMISE;
+}
+
+
+/* ═══ ACTIVE CAMPAIGNS ═══ */
+function loadActiveCampaignsBanner(campaigns, myTasks) {
+  var banner = document.getElementById('active-campaigns-banner');
+  if (!banner) return;
+  if (!campaigns || !campaigns.length) { banner.style.display = 'none'; return; }
+  banner.style.display = 'block';
+  var me = CB_TEAM[CB_CURRENT_USER] || {};
+  var first = me.name ? me.name.split(' ')[0] : '';
+  var SN = ['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'];
+  var html = '<div style="margin-bottom:10px;display:flex;align-items:center;gap:12px">'
+    + '<div style="font-family:var(--font-d);font-size:17px;font-weight:700;color:var(--ink)">\uD83D\uDE80 Active Campaigns</div>'
+    + (first ? '<div style="font-size:13px;color:var(--ink-soft)">Hi ' + first + '! Here is where things are at</div>' : '')
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px" id="sw-camp-grid"></div>';
+  banner.innerHTML = html;
+  var grid = document.getElementById('sw-camp-grid');
+  campaigns.forEach(function(camp) {
+    var stage = camp.current_stage || 1;
+    var stageName = SN[stage-1] || 'Stage '+stage;
+    var campTasks = (myTasks||[]).filter(function(t){return t.campaign_id===camp.id;});
+    var card = document.createElement('div');
+    card.style.cssText = 'background:var(--white);border:1px solid var(--border);border-radius:8px;padding:14px 16px;cursor:pointer;border-left:4px solid var(--swansway);transition:box-shadow .15s';
+    card.innerHTML = '<div style="font-family:var(--font-d);font-size:14px;font-weight:700;color:var(--ink);margin-bottom:6px">'+camp.title+'</div>'
+      + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+      + '<span style="font-size:11px;background:#DBEAFE;color:#2563EB;padding:2px 8px;border-radius:8px;font-weight:600">Stage '+stage+': '+stageName+'</span>'
+      + (campTasks.length > 0
+        ? '<span style="font-size:11px;background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:8px;font-weight:600">'+campTasks.length+' task'+(campTasks.length!==1?'s':'')+' waiting for you</span>'
+        : '<span style="font-size:11px;color:#059669;font-weight:600">\u2713 Your tasks done</span>')
+      + '<span style="font-size:11px;color:var(--ink-faint);margin-left:auto">Open \u2192</span>'
+      + '</div>';
+    card.onmouseenter = function(){this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)';};
+    card.onmouseleave = function(){this.style.boxShadow='';};
+    (function(cid,bid){
+      card.onclick = function(){ openCampaignFromBanner(cid, bid); };
+    })(camp.id, camp.brief_id||'');
+    grid.appendChild(card);
+  });
+}
+
+async function openCampaignFromBanner(campId, briefId) {
+  if (!briefId) return;
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  var brief = await fetch(base+'/briefs?id=eq.'+briefId+'&select=*',{
+    headers:{'apikey':anon,'Authorization':'Bearer '+anon}
+  }).then(function(r){return r.json();}).then(function(d){return d[0];});
+  if (!brief) return;
+  if (!window.SB_BRIEFS_CACHE) window.SB_BRIEFS_CACHE = [];
+  if (!SB_BRIEFS_CACHE.find(function(b){return b.id===brief.id;})) SB_BRIEFS_CACHE.push(brief);
+  bbLoadBrief(brief.id);
 }
 
 const QPLAN_CACHE = {};
