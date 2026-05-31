@@ -2954,44 +2954,9 @@ function applyAdminConfig(cfg) {
 // ── 4. UPDATE CHANNELS — disabled, now driven by brand_channels table ──
   // GROUP_CHANNELS is now built by updateGroupChannelsFromBrands() from brand_channels Supabase data
 
-// ── 5. UPDATE CAMPAIGN CALENDAR ──────────────────────────────
-  if (cfg.calendar && cfg.calendar.length) {
-    // Convert admin quarterly calendar format to hub month-bar format
-    var brandColorMap = {
-      'Audi':'#BB0A21','VW':'#001E50','Volkswagen':'#001E50',
-      'VW Commercial':'#1B4F72','VWCV':'#1B4F72',
-      'SEAT':'#E2231A','CUPRA':'#C8920A',
-      'Land Rover':'#1D4E1D','Jaguar':'#1B2631',
-      'Honda':'#CC0000','Peugeot':'#1B3A6B',
-      'BYD':'#0066CC','OMODA':'#6B21A8','OMODA/JAECOO':'#6B21A8',
-      'Motor Match':'#374151','All brands':'#374151',
-    };
-    var qMonthMap = {0:[0,1,2], 1:[3,4,5], 2:[6,7,8], 3:[9,10,11]};
-    var converted = [];
-    cfg.calendar.forEach(function(quarter, qi) {
-      var months = qMonthMap[qi] || [];
-      (quarter.events || []).forEach(function(ev) {
-        var brand = ev.brand.replace('🔴 ','').trim();
-        var color = ev.color || brandColorMap[brand] || '#374151';
-        converted.push({
-          brand: brand === 'ALL BRANDS' ? 'All brands' : brand,
-          color: color,
-          name: ev.label,
-          start: months[0],
-          end: months[months.length-1]
-        });
-      });
-    });
-    if (converted.length > 0) {
-      BUILT_IN_CAMPAIGNS = converted;
-      // Re-render calendar if it's currently visible
-      if (typeof renderCrossCalendar === 'function') renderCrossCalendar();
-      console.log('Campaign calendar updated from admin config: ' + converted.length + ' campaigns');
-    }
-  } else {
-    // Use fallback if no admin calendar data
-    if (BUILT_IN_CAMPAIGNS.length === 0) BUILT_IN_CAMPAIGNS = FALLBACK_CAMPAIGNS;
-  }
+  // ── 5. CAMPAIGN CALENDAR — now fed from Supabase, not admin config ──
+  // calLoadFromSupabase() handles this when calendar view opens.
+  if (BUILT_IN_CAMPAIGNS.length === 0) BUILT_IN_CAMPAIGNS = FALLBACK_CAMPAIGNS;
 
   console.log('Admin config fully applied to hub');
 }
@@ -3940,7 +3905,9 @@ async function calLoadFromSupabase() {
       var startM = r.start_date ? new Date(r.start_date + 'T00:00:00').getMonth() : 0;
       var endM   = r.end_date   ? new Date(r.end_date   + 'T00:00:00').getMonth() : startM;
       var brandId = r.brand_id || 'audi';
-      return { id:r.id, brand:brandNameMap[brandId]||brandId, brand_id:brandId, color:brandColorMap[brandId]||'#374151', name:r.title||'Untitled', start:startM, end:endM, status:r.status||'planned', start_date:r.start_date||'', end_date:r.end_date||'', ctype:r.campaign_type||'', budget:r.planned_budget||0, sites:r.planned_sites||[], objective:r.planned_objective||'', scope:r.scope||'brand' };
+      var rawSites = r.planned_sites;
+      var parsedSites = Array.isArray(rawSites) ? rawSites : (typeof rawSites === 'string' && rawSites.startsWith('{')) ? rawSites.slice(1,-1).split(',').filter(Boolean) : [];
+      return { id:r.id, brand:brandNameMap[brandId]||brandId, brand_id:brandId, color:brandColorMap[brandId]||'#374151', name:r.title||'Untitled', start:startM, end:endM, status:r.status||'planned', start_date:r.start_date||'', end_date:r.end_date||'', ctype:r.campaign_type||'', budget:r.planned_budget||0, sites:parsedSites, objective:r.planned_objective||'', scope:r.scope||'brand' };
     });
     var dbKeys = fromDB.map(function(x){ return x.brand+'|'+x.name; });
     var fallbackOnly = FALLBACK_CAMPAIGNS.filter(function(f){ return dbKeys.indexOf(f.brand+'|'+f.name)===-1; });
@@ -5024,7 +4991,9 @@ function calAddEvent() {
 }
 
 function calShowCampaign(cJson) {
-  var c = JSON.parse(cJson);
+  var c;
+  try { c = typeof cJson === 'string' ? JSON.parse(cJson) : cJson; } catch(e) { console.warn('calShowCampaign parse error:', e); return; }
+  if (!c) return;
   var existing = document.getElementById('cal-modal');
   if (existing) existing.remove();
   var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
