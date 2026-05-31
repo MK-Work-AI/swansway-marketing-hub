@@ -3897,7 +3897,7 @@ async function calLoadFromSupabase() {
   var brandColorMap = {'audi':'#BB0A21','vw':'#001E50','vwcv':'#1B4F72','seat':'#E2231A','cupra':'#C8920A','landrover':'#1D4E1D','jaguar':'#1B2631','honda':'#CC0000','peugeot':'#1B3A6B','byd':'#0066CC','omoda':'#6B21A8','motormatch':'#374151'};
   var brandNameMap = {'audi':'Audi','vw':'Volkswagen','vwcv':'VW Commercial','seat':'SEAT','cupra':'CUPRA','landrover':'Land Rover','jaguar':'Jaguar','honda':'Honda','peugeot':'Peugeot','byd':'BYD','omoda':'OMODA/JAECOO','motormatch':'Motor Match'};
   try {
-    var rows = await fetch(base + '/campaigns?select=id,title,brand_id,status,start_date,end_date,campaign_type,planned_budget,planned_sites,planned_objective,scope,created_by&order=start_date', {
+    var rows = await fetch(base + '/campaigns?select=id,title,brand_id,status,start_date,end_date,campaign_type,planned_budget,planned_sites,planned_objective,scope,created_by,brief_id&order=start_date', {
       headers: {'apikey':anon,'Authorization':'Bearer '+anon}
     }).then(function(r){ return r.json(); });
     if (!Array.isArray(rows)) return;
@@ -3907,12 +3907,39 @@ async function calLoadFromSupabase() {
       var brandId = r.brand_id || 'audi';
       var rawSites = r.planned_sites;
       var parsedSites = Array.isArray(rawSites) ? rawSites : (typeof rawSites === 'string' && rawSites.startsWith('{')) ? rawSites.slice(1,-1).split(',').filter(Boolean) : [];
-      return { id:r.id, brand:brandNameMap[brandId]||brandId, brand_id:brandId, color:brandColorMap[brandId]||'#374151', name:r.title||'Untitled', start:startM, end:endM, status:r.status||'planned', start_date:r.start_date||'', end_date:r.end_date||'', ctype:r.campaign_type||'', budget:r.planned_budget||0, sites:parsedSites, objective:r.planned_objective||'', scope:r.scope||'brand', created_by:r.created_by||'' };
+      return { id:r.id, brand:brandNameMap[brandId]||brandId, brand_id:brandId, color:brandColorMap[brandId]||'#374151', name:r.title||'Untitled', start:startM, end:endM, status:r.status||'planned', start_date:r.start_date||'', end_date:r.end_date||'', ctype:r.campaign_type||'', budget:r.planned_budget||0, sites:parsedSites, objective:r.planned_objective||'', scope:r.scope||'brand', created_by:r.created_by||'', brief_id:r.brief_id||'' };
     });
-    var dbKeys = fromDB.map(function(x){ return x.brand+'|'+x.name; });
-    var fallbackOnly = FALLBACK_CAMPAIGNS.filter(function(f){ return dbKeys.indexOf(f.brand+'|'+f.name)===-1; });
-    BUILT_IN_CAMPAIGNS = fromDB.concat(fallbackOnly);
-    console.log('Calendar: ' + fromDB.length + ' from DB, ' + fallbackOnly.length + ' fallback');
+    // For campaigns with brief_id but missing start/end date, fetch from briefs
+    var needDates = fromDB.filter(function(r){ return r.id && !r.start_date && r.brief_id; });
+    if (needDates.length > 0) {
+      try {
+        var briefIds = needDates.map(function(r){ return r.brief_id; }).join(',');
+        var briefRows = await fetch(base + '/briefs?id=in.(' + briefIds + ')&select=id,start_date,end_date', {
+          headers: {'apikey':anon,'Authorization':'Bearer '+anon}
+        }).then(function(r){ return r.json(); });
+        if (Array.isArray(briefRows)) {
+          briefRows.forEach(function(br) {
+            fromDB.forEach(function(camp) {
+              if (camp.brief_id === br.id && !camp.start_date && br.start_date) {
+                camp.start_date = br.start_date;
+                camp.end_date   = br.end_date || br.start_date;
+                camp.start = new Date(br.start_date + 'T00:00:00').getMonth();
+                camp.end   = br.end_date ? new Date(br.end_date + 'T00:00:00').getMonth() : camp.start;
+              }
+            });
+          });
+        }
+      } catch(e) { console.warn('Brief date fetch:', e); }
+    }
+
+    // If DB has any rows, use ONLY DB rows — no fallback mixing
+    if (fromDB.length > 0) {
+      BUILT_IN_CAMPAIGNS = fromDB;
+      console.log('Calendar: ' + fromDB.length + ' campaigns from DB');
+    } else {
+      BUILT_IN_CAMPAIGNS = FALLBACK_CAMPAIGNS;
+      console.log('Calendar: 0 from DB, using ' + FALLBACK_CAMPAIGNS.length + ' fallback campaigns');
+    }
   } catch(e) {
     console.warn('calLoadFromSupabase:', e);
     if (BUILT_IN_CAMPAIGNS.length === 0) BUILT_IN_CAMPAIGNS = FALLBACK_CAMPAIGNS;
@@ -4010,14 +4037,15 @@ function renderCrossCalendar() {
   html += '</div>';
   el.innerHTML = html;
 
-  el.querySelectorAll('[data-cal-pill]').forEach(function(pill) {
-    pill.addEventListener('click', function() {
-      var idx = parseInt(this.getAttribute('data-cal-idx'), 10);
-      var camp = window._calCamps[idx];
-      if (camp) calShowCampaign(camp);
-      else console.warn('calShowCampaign: no camp at idx', idx);
-    });
-  });
+  // Use event delegation — survives re-renders and quarter switches
+  el.onclick = function(e) {
+    var pill = e.target.closest('[data-cal-pill]');
+    if (!pill) return;
+    var idx = parseInt(pill.getAttribute('data-cal-idx'), 10);
+    var camp = window._calCamps[idx];
+    if (camp) calShowCampaign(camp);
+    else console.warn('calShowCampaign: no camp at idx', idx, '_calCamps len:', window._calCamps.length);
+  };
 
   if (legendEl) {
     var seen = {};
