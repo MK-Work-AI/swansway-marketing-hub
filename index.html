@@ -4026,7 +4026,7 @@ function renderCrossCalendar() {
         var sColor = camp.status==='active' ? '#059669' : camp.status==='briefed' ? '#D97706' : camp.status==='completed' ? '#6B7280' : camp.color;
         var sDot   = camp.status==='active' ? '● ' : camp.status==='briefed' ? '◐ ' : '○ ';
         var safeName = camp.name.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-        html += '<div data-cal-idx="' + idx + '" data-cal-pill="1" title="' + safeName + ' (' + (camp.status||'planned') + ')" style="border-radius:3px;padding:5px 8px;font-size:11px;color:#fff;font-weight:500;line-height:1.3;cursor:pointer;background:' + sColor + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + sDot + safeName + '</div>';
+        html += '<div onclick="calShowCampaign(window._calCamps[' + idx + '])" title="' + safeName + ' (' + (camp.status||'planned') + ')" style="border-radius:3px;padding:5px 8px;font-size:11px;color:#fff;font-weight:500;line-height:1.3;cursor:pointer;background:' + sColor + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;user-select:none">' + sDot + safeName + '</div>';
       });
       if (!camps.length) html += '<span style="color:var(--ink-faint);font-size:11px;padding:4px 0">—</span>';
       html += '</div>';
@@ -4037,15 +4037,7 @@ function renderCrossCalendar() {
   html += '</div>';
   el.innerHTML = html;
 
-  // Use event delegation — survives re-renders and quarter switches
-  el.onclick = function(e) {
-    var pill = e.target.closest('[data-cal-pill]');
-    if (!pill) return;
-    var idx = parseInt(pill.getAttribute('data-cal-idx'), 10);
-    var camp = window._calCamps[idx];
-    if (camp) calShowCampaign(camp);
-    else console.warn('calShowCampaign: no camp at idx', idx, '_calCamps len:', window._calCamps.length);
-  };
+  // Pills use direct onclick — window._calCamps[idx]
 
   if (legendEl) {
     var seen = {};
