@@ -947,12 +947,12 @@ td strong{font-weight:600}
   transition:color 0.3s;
 }
 .bb-brief-row { padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.07); }
-.bb-brief-label {
+.bb-brief-label { color:rgba(255,255,255,0.55) !important; font-size:10px; font-family:var(--font-m); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:2px; /*
   font-family:var(--font-m); font-size:10px; letter-spacing:0.06em;
   text-transform:uppercase; color:rgba(255,255,255,0.4); margin-bottom:3px;
 }
 .bb-brief-val { font-size:12px; color:#fff; line-height:1.4; }
-.bb-brief-empty { font-size:12px; color:rgba(255,255,255,0.2); font-style:italic; }
+.bb-brief-empty { font-size:12px; color:rgba(255,255,255,0.35); font-style:italic; }
 
 .bb-completeness { margin-top:auto; padding-top:1.25rem; }
 .bb-comp-score {
@@ -1229,6 +1229,10 @@ td strong{font-weight:600}
   background:var(--ink); color:#fff; padding:2.5rem 2.5rem 2rem;
   position:relative; overflow:hidden;
 }
+.bb-out-brand { color:#fff !important; }
+.bb-out-type { color:rgba(255,255,255,0.75); }
+.bb-out-meta-label { color:rgba(255,255,255,0.55) !important; }
+.bb-out-meta-val { color:#fff !important; font-weight:600; }
 .bb-out-hero::after {
   content:''; position:absolute; top:0; right:0; bottom:0; width:35%;
   background:linear-gradient(to left, rgba(200,16,46,0.08), transparent);
@@ -1325,6 +1329,8 @@ td strong{font-weight:600}
   <aside id="bb-left">
     <div class="bb-panel-eyebrow">Live brief</div>
     <div class="bb-panel-brand" id="bbp-brand">SELECT BRAND</div>
+    <div class="bb-brief-row"><div class="bb-brief-label">Dates</div><div id="bbp-dates" class="bb-brief-empty">—</div></div>
+    <div class="bb-brief-row"><div class="bb-brief-label">Site</div><div id="bbp-site" class="bb-brief-empty">All sites</div></div>
     <div class="bb-brief-row"><div class="bb-brief-label">Campaign type</div><div id="bbp-type" class="bb-brief-empty">—</div></div>
     <div class="bb-brief-row"><div class="bb-brief-label">Budget</div><div id="bbp-budget" class="bb-brief-empty">—</div></div>
     <div class="bb-brief-row"><div class="bb-brief-label">Duration</div><div id="bbp-duration" class="bb-brief-empty">—</div></div>
@@ -3258,7 +3264,12 @@ function bbSetScope(scope, el) {
 function bbRenderSiteGrid() {
   var el = document.getElementById('bb-site-grid');
   if (!el) return;
-  var sites = HUB_SITES ? HUB_SITES.filter(function(s){ return s.brand_id === (BB.brand && BB.brand.id); }) : [];
+  var brandId = BB.brand && BB.brand.id;
+  if (!brandId) { el.innerHTML = '<div style="font-size:12px;color:var(--ink-soft);padding:8px">Select a brand first</div>'; return; }
+  var sites = (typeof HUB_SITES !== 'undefined' && Array.isArray(HUB_SITES))
+    ? HUB_SITES.filter(function(s){ return s.brand_id === brandId; })
+    : [];
+  if (!sites.length) { el.innerHTML = '<div style="font-size:12px;color:var(--ink-soft);padding:8px">No sites found for this brand</div>'; return; }
   el.innerHTML = '';
   sites.forEach(function(s) {
     var d = document.createElement('div');
@@ -3650,6 +3661,22 @@ function bbUpdateBrief() {
   const pan = document.getElementById('bbp-brand');
   if(pan && BB.brand) { pan.textContent=BB.brand.name.toUpperCase(); pan.style.color=BB.brand.color; }
   else if(pan) { pan.textContent='SELECT BRAND'; pan.style.color='rgba(255,255,255,0.2)'; }
+  // Dates
+  if (BB.start_date && BB.end_date) {
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var sd = new Date(BB.start_date + 'T00:00:00'), ed = new Date(BB.end_date + 'T00:00:00');
+    var dStr = sd.getDate() + ' ' + months[sd.getMonth()] + ' – ' + ed.getDate() + ' ' + months[ed.getMonth()] + ' ' + ed.getFullYear();
+    setVal('bbp-dates', dStr, false);
+  } else {
+    setVal('bbp-dates', '—', true);
+  }
+  // Site
+  if (BB.scope === 'site' && BB.site_id) {
+    var siteObj = (typeof HUB_SITES !== 'undefined') ? HUB_SITES.find(function(s){ return s.site_id === BB.site_id; }) : null;
+    setVal('bbp-site', siteObj ? siteObj.site_name : BB.site_id, false);
+  } else {
+    setVal('bbp-site', BB.brand ? BB.brand.name + ' (all sites)' : 'All sites', !BB.brand);
+  }
   setVal('bbp-type', BB.ctype?BB.ctype.name:'—', !BB.ctype);
   setVal('bbp-budget', BB.budget?`£${BB.budget.toLocaleString()}${BB.duration?' over '+BB.duration.weeks+' weeks':''}`:' —', !BB.budget);
   setVal('bbp-duration', BB.duration?`${BB.duration.weeks} weeks (${BB.duration.label})`:'—', !BB.duration);
@@ -3742,8 +3769,8 @@ function bbGenerateBrief() {
       <div class="bb-out-meta">
         <div><div class="bb-out-meta-label">Budget</div><div class="bb-out-meta-val">£${BB.budget.toLocaleString()}</div></div>
         <div><div class="bb-out-meta-label">Duration</div><div class="bb-out-meta-val">${week} weeks</div></div>
-        <div><div class="bb-out-meta-label">Dates</div><div class="bb-out-meta-val" style="font-size:13px;font-weight:500">${fmt(now)} – ${fmt(end)}</div></div>
-        <div><div class="bb-out-meta-label">Sites</div><div class="bb-out-meta-val" style="font-size:13px;font-weight:500">${BB.brand?.locations?.join(', ')||'TBC'}</div></div>
+        <div><div class="bb-out-meta-label">Dates</div><div class="bb-out-meta-val" style="font-size:13px;font-weight:500">${BB.start_date ? (()=>{ const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; const sd=new Date(BB.start_date+'T00:00:00'),ed=new Date((BB.end_date||BB.start_date)+'T00:00:00'); return sd.getDate()+' '+months[sd.getMonth()]+' – '+ed.getDate()+' '+months[ed.getMonth()]+' '+ed.getFullYear(); })() : fmt(now)+' – '+fmt(end)}</div></div>
+        <div><div class="bb-out-meta-label">Sites</div><div class="bb-out-meta-val" style="font-size:13px;font-weight:500">${BB.scope==='site'&&BB.site_id ? (HUB_SITES.find(s=>s.site_id===BB.site_id)?.site_name||BB.site_id) : (BB.brand?.locations?.join(', ')||'All sites')}</div></div>
       </div>
     </div>
 
@@ -7002,7 +7029,11 @@ async function bbLaunchCampaignFromBrief(briefId, briefTitle) {
     if (typeof CB_CAMPAIGNS !== 'undefined') CB_CAMPAIGNS.unshift(camp);
     if (typeof CB_ALL_BRIEFS !== 'undefined') CB_ALL_BRIEFS = CB_ALL_BRIEFS.map(function(b){return b.id===briefId?Object.assign({},b,{status:'campaigned'}):b;});
 
-    // Show success
+    // Clear save card and feedback, show success state only
+    var _sc2 = document.getElementById('bb-save-bar');
+    var _sf2 = document.getElementById('bb-save-feedback');
+    if (_sc2) _sc2.style.display = 'none';
+    if (_sf2) { _sf2.style.display = 'none'; _sf2.innerHTML = ''; }
     bbRenderCampaignSection({id:briefId,title:briefTitle,status:'campaigned'});
     // Refresh My Tasks badge
     setTimeout(mtLoad, 500);
@@ -7048,9 +7079,13 @@ async function bbRenderCampaignSection(briefData) {
     return;
   }
   if (brief.status === 'draft') { el.style.display = 'none'; return; }
-  // Hide save card for non-draft states — only campaign section shows
+  // Single source of truth: hide save card and feedback for all non-draft states
   var saveCard = document.getElementById('bb-save-bar');
-  if (saveCard && brief.status !== 'draft') saveCard.style.display = 'none';
+  var saveFb   = document.getElementById('bb-save-feedback');
+  if (brief.status !== 'draft') {
+    if (saveCard) saveCard.style.display = 'none';
+    if (saveFb)   { saveFb.style.display = 'none'; saveFb.innerHTML = ''; }
+  }
 
   if (brief.status === 'submitted') {
     if (canLaunch) {
@@ -8790,6 +8825,29 @@ function bbLoadBrief(id) {
       });
       document.getElementById('bb-btn-3-next').disabled = false;
     }
+    // Restore dates
+    BB.start_date = brief.start_date || '';
+    BB.end_date   = brief.end_date   || '';
+    BB.site_id    = brief.site_id    || '';
+    BB.scope      = brief.scope      || 'brand';
+    var _sdInp = document.getElementById('bb-start-date');
+    var _edInp = document.getElementById('bb-end-date');
+    if (_sdInp) _sdInp.value = BB.start_date;
+    if (_edInp) _edInp.value = BB.end_date;
+    // Show scope/dates sections
+    var _spSec = document.getElementById('bb-scope-section');
+    var _dpSec = document.getElementById('bb-dates-section');
+    if (_spSec) _spSec.style.display = 'block';
+    if (_dpSec) _dpSec.style.display = 'block';
+    // Restore scope UI
+    if (BB.scope === 'site' && BB.site_id) {
+      var _ssSiteBtn = document.getElementById('scope-site');
+      var _sbBrandBtn = document.getElementById('scope-brand');
+      if (_ssSiteBtn) _ssSiteBtn.classList.add('bb-selected');
+      if (_sbBrandBtn) _sbBrandBtn.classList.remove('bb-selected');
+      var _pickr = document.getElementById('bb-site-picker');
+      if (_pickr) { _pickr.style.display = 'block'; setTimeout(bbRenderSiteGrid, 100); }
+    }
     bbOnBudget(BB.budget);
     bbUpdateBrief();
 
@@ -8807,8 +8865,9 @@ function bbLoadBrief(id) {
       document.querySelectorAll('.bb-step').forEach(function(p){p.classList.remove('bb-active');});
       var s6 = document.getElementById('bb-step-6');
       if (s6) s6.classList.add('bb-active');
+      // For non-draft briefs: hide save card, show campaign section only
       var saveBar = document.getElementById('bb-save-bar');
-      if (saveBar) saveBar.style.display = 'block';
+      if (saveBar) saveBar.style.display = 'none';
       var titleEl = document.getElementById('bb-brief-title');
       if (titleEl) titleEl.value = brief.title;
       var saveBtn = document.getElementById('bb-save-btn');
