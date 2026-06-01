@@ -312,6 +312,23 @@ td strong{font-weight:600}
 .brief-card-btn:hover{background:var(--surface-2);color:var(--ink)}
 .brief-card-btn.danger:hover{background:#FEE2E2;color:var(--accent);border-color:var(--accent)}
 
+/* ── Brand context + budget intel cards ── */
+.bb-context-card{background:var(--white);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1rem}
+.bb-context-header{padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--surface)}
+.bb-context-emoji{font-size:16px;flex-shrink:0}
+.bb-context-title{font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft)}
+.bb-context-body{padding:14px 16px}
+.bb-context-headline{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px;line-height:1.4}
+.bb-context-sub{font-size:12px;color:var(--ink-soft);line-height:1.6}
+.bb-context-sub strong{color:var(--ink);font-weight:700}
+.bb-context-sub a{color:var(--accent);text-decoration:none;cursor:pointer;font-weight:600}
+.bb-intel-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.bb-intel-stat{background:var(--surface);border-radius:6px;padding:10px 12px}
+.bb-intel-stat-val{font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--ink);line-height:1;margin-bottom:3px}
+.bb-intel-stat-label{font-size:10px;font-family:var(--font-m);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft)}
+.bb-context-bar-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:8px}
+.bb-context-bar-fill{height:6px;border-radius:3px;transition:width .4s}
+.bb-context-bar-labels{display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--ink-faint)}
 /* ── Step 6 unified save card ── */
 .bb-s6-label{font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
 .bb-s6-row{display:flex;gap:8px;align-items:center}
@@ -3168,6 +3185,7 @@ function bbInit() {
 /* ── STEP NAVIGATION ── */
 function bbGoStep(n) {
   if(n > BB.step && !bbCanGoTo(n)) return;
+  if (n === 3) setTimeout(bbRenderBudgetIntel, 100);
   document.querySelectorAll('.bb-step').forEach(s=>s.classList.remove('bb-active'));
   const target = document.getElementById('bb-step-'+n);
   if(target) target.classList.add('bb-active');
@@ -3244,6 +3262,7 @@ function bbSelectBrand(id) {
   if (_sc) _sc.style.display = 'block';
   if (_dt) _dt.style.display = 'block';
   bbLoadHeadroom();
+  bbRenderBrandContext();
 }
 
 function bbSetScope(scope, el) {
@@ -3463,6 +3482,7 @@ function bbOnBudget(v) {
   bbUpdateBrief();
   const btn3 = document.getElementById('bb-btn-3-next');
   if(btn3 && BB.duration) btn3.disabled = false;
+  bbRenderBudgetIntel();
 }
 
 function bbUpdateScienceBox() {
@@ -8676,6 +8696,141 @@ async function bbSaveBudgetCommitments(briefId, briefTitle) {
   } catch(e) { console.warn('bbSaveBudgetCommitments:', e); }
 }
 
+
+/* ── BRAND CONTEXT CARD (Step 1) ── */
+async function bbRenderBrandContext() {
+  var el = document.getElementById('bb-brand-context');
+  if (!el || !BB.brand) { if(el) el.style.display='none'; return; }
+  el.style.display = 'block';
+  var b = BB.brand;
+
+  // ── Budget health ──
+  var totalPlanned = 0, totalCommitted = 0;
+  if (typeof HUB_SITES !== 'undefined') {
+    HUB_SITES.filter(function(s){ return s.brand_id === b.id; }).forEach(function(site) {
+      var d = SITE_BUDGETS[site.site_id] || {};
+      for (var i = 0; i < 12; i++) totalPlanned += d['m'+i+'_planned'] || 0;
+      var cm = BRIEF_COMMITMENTS[site.site_id] || {};
+      Object.values(cm).forEach(function(v){ totalCommitted += v; });
+    });
+  }
+  var headroom = totalPlanned - totalCommitted;
+  var pct = totalPlanned > 0 ? Math.round(totalCommitted / totalPlanned * 100) : 0;
+  var budgetColour = pct > 80 ? '#DC2626' : pct > 50 ? '#D97706' : '#059669';
+  var budgetEmoji  = pct > 80 ? '🔴' : pct > 50 ? '🟡' : '🟢';
+  var budgetMsg;
+  if (totalPlanned === 0) {
+    budgetMsg = "No budget plan set up yet for " + b.name + ". Head to <strong>Budget</strong> to get that sorted — you'll thank yourself later.";
+  } else if (pct > 80) {
+    budgetMsg = "<strong>Tight one.</strong> " + b.name + " has used " + pct + "% of its annual plan. <strong>£" + headroom.toLocaleString() + "</strong> left in the pot. Go lean, or have a word with Marcus first.";
+  } else {
+    budgetMsg = "<strong>£" + headroom.toLocaleString() + "</strong> headroom remaining across " + b.name + " sites. " + (pct < 30 ? "Plenty to work with. Don't get too comfortable. 😉" : "Getting there. Make it count.");
+  }
+
+  // ── Active campaigns ──
+  var activeCamps = (CB_CAMPAIGNS || []).filter(function(camp) {
+    return camp.brand_id === b.id && camp.status === 'active';
+  });
+  var conflictHtml = '';
+  if (activeCamps.length > 0) {
+    conflictHtml = '<div class="bb-context-card" style="border-color:#FCD34D">'
+      + '<div class="bb-context-header"><span class="bb-context-emoji">⚠️</span><span class="bb-context-title">Active right now</span></div>'
+      + '<div class="bb-context-body"><div class="bb-context-sub">'
+      + activeCamps.map(function(camp){
+          return '<strong>' + camp.title + '</strong> is live (Stage ' + (camp.current_stage||1) + ' of 6). Check your dates don\'t clash — the team\'s already busy.';
+        }).join('<br>')
+      + '</div></div></div>';
+  }
+
+  // ── Brand KPI pulse ──
+  var kpi = BRAND_KPIS_DATA[b.id] || {};
+  var kpiHtml = '';
+  if (kpi.ev_target || kpi.lead_target || kpi.coop_available) {
+    var kpiLines = [];
+    if (kpi.ev_target) kpiLines.push('EV% target: <strong>' + kpi.ev_target + '%</strong>');
+    if (kpi.lead_target) kpiLines.push('Lead target: <strong>' + kpi.lead_target.toLocaleString() + '/month</strong>');
+    if (kpi.coop_available) kpiLines.push('Co-op available: <strong>£' + Number(kpi.coop_available).toLocaleString() + '</strong> — ask Marcus');
+    kpiHtml = '<div class="bb-context-card">'
+      + '<div class="bb-context-header"><span class="bb-context-emoji">📊</span><span class="bb-context-title">Brand targets this quarter</span></div>'
+      + '<div class="bb-context-body"><div class="bb-context-sub">' + kpiLines.join(' · ') + '</div></div>'
+      + '</div>';
+  }
+
+  // ── CPL benchmarks ──
+  var cplHtml = '<div class="bb-context-card">'
+    + '<div class="bb-context-header"><span class="bb-context-emoji">🎯</span><span class="bb-context-title">' + b.name + ' CPL benchmarks</span></div>'
+    + '<div class="bb-context-body">'
+    + '<div class="bb-intel-grid">'
+    + '<div class="bb-intel-stat"><div class="bb-intel-stat-val">£' + b.cpl.google + '</div><div class="bb-intel-stat-label">Google Search</div></div>'
+    + '<div class="bb-intel-stat"><div class="bb-intel-stat-val">£' + b.cpl.meta + '</div><div class="bb-intel-stat-label">Meta Social</div></div>'
+    + (b.cpl.autotrader ? '<div class="bb-intel-stat"><div class="bb-intel-stat-val">£' + b.cpl.autotrader + '</div><div class="bb-intel-stat-label">AutoTrader</div></div>' : '')
+    + '</div>'
+    + '<div class="bb-context-sub" style="margin-top:8px">Based on Swansway group benchmarks. Your actual CPL will vary by campaign type, season and how much your proposition actually makes people want the car. 🤷</div>'
+    + '</div></div>';
+
+  // ── Tone & models ──
+  var toneHtml = '<div class="bb-context-card">'
+    + '<div class="bb-context-header"><span class="bb-context-emoji">🎨</span><span class="bb-context-title">Brand voice &amp; key models</span></div>'
+    + '<div class="bb-context-body">'
+    + '<div class="bb-context-sub" style="margin-bottom:8px"><em>"' + b.tagline + '"</em> — ' + b.tone.slice(0,3).join(', ') + '. Keep it consistent.</div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:5px">'
+    + b.models.map(function(m){ return '<span style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:11px;font-weight:500">' + m + '</span>'; }).join('')
+    + '</div>'
+    + '</div></div>';
+
+  // ── No autopsy nudge ──
+  var autopsyHtml = '<div class="bb-context-card" style="border-style:dashed">'
+    + '<div class="bb-context-header"><span class="bb-context-emoji">🔬</span><span class="bb-context-title">Post-campaign data</span></div>'
+    + '<div class="bb-context-body"><div class="bb-context-sub">No campaign autopsies for ' + b.name + ' yet. Run a campaign, wrap it up, then <a onclick="switchView(\'autopsy\', document.querySelector(\'[data-view=autopsy]\'))">add a post-mortem</a>. Future you will be grateful.</div></div>'
+    + '</div>';
+
+  // ── Budget bar ──
+  var budgetCardHtml = '<div class="bb-context-card" style="border-color:' + budgetColour + '20">'
+    + '<div class="bb-context-header"><span class="bb-context-emoji">' + budgetEmoji + '</span><span class="bb-context-title">Annual budget health — ' + b.name + '</span></div>'
+    + '<div class="bb-context-body">'
+    + '<div class="bb-context-sub">' + budgetMsg + '</div>'
+    + (totalPlanned > 0 ? '<div class="bb-context-bar-track"><div class="bb-context-bar-fill" style="width:' + Math.min(100,pct) + '%;background:' + budgetColour + '"></div></div><div class="bb-context-bar-labels"><span>£' + totalCommitted.toLocaleString() + ' committed</span><span>£' + totalPlanned.toLocaleString() + ' planned</span></div>' : '')
+    + '</div></div>';
+
+  el.innerHTML = budgetCardHtml + conflictHtml + kpiHtml + cplHtml + toneHtml + autopsyHtml;
+}
+
+/* ── BUDGET INTELLIGENCE CARD (Step 3) ── */
+function bbRenderBudgetIntel() {
+  var el = document.getElementById('bb-budget-intel');
+  if (!el || !BB.brand) { if(el) el.style.display='none'; return; }
+  el.style.display = 'block';
+  var b = BB.brand;
+  var budget = BB.budget || 5000;
+  var weeks  = BB.duration ? BB.duration.weeks : 4;
+  var cpl    = b.cpl.google || 48;
+  var estLeads = Math.round(budget / cpl);
+  var weekly  = Math.round(budget / weeks);
+  var coop    = BB.coop_available || 0;
+  var totalBudget = budget + coop;
+
+  var leadsTake;
+  if (estLeads > 200) leadsTake = "That's a lot of leads. Make sure the team can handle the calls. ☎️";
+  else if (estLeads > 80) leadsTake = "Solid volume. Enough to keep the phones warm without burning anyone out.";
+  else if (estLeads > 30) leadsTake = "Decent for a focused campaign. Quality over quantity — make each one count.";
+  else leadsTake = "Tight budget, tight funnel. CPL discipline is everything here.";
+
+  var coopLine = coop > 0
+    ? '<div class="bb-context-sub" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">💰 <strong>Co-op available:</strong> £' + coop.toLocaleString() + ' manufacturer contribution brings total to <strong>£' + totalBudget.toLocaleString() + '</strong>. Don\'t leave it on the table.</div>'
+    : '';
+
+  el.innerHTML = '<div class="bb-context-card">'
+    + '<div class="bb-context-header"><span class="bb-context-emoji">🧠</span><span class="bb-context-title">What does £' + budget.toLocaleString() + ' actually buy you?</span></div>'
+    + '<div class="bb-context-body">'
+    + '<div class="bb-intel-grid">'
+    + '<div class="bb-intel-stat"><div class="bb-intel-stat-val">~' + estLeads + '</div><div class="bb-intel-stat-label">Est. leads (Google CPL £' + cpl + ')</div></div>'
+    + '<div class="bb-intel-stat"><div class="bb-intel-stat-val">£' + weekly.toLocaleString() + '</div><div class="bb-intel-stat-label">Per week over ' + weeks + ' weeks</div></div>'
+    + '</div>'
+    + '<div class="bb-context-sub" style="margin-top:10px">' + leadsTake + '</div>'
+    + coopLine
+    + '</div></div>';
+}
+
 /* ── BRIEFS PANEL ── */
 function openBriefsPanel() {
   document.getElementById('briefs-panel').classList.add('open');
@@ -8845,6 +9000,7 @@ function bbLoadBrief(id) {
     }
     bbOnBudget(BB.budget);
     bbUpdateBrief();
+    setTimeout(bbRenderBrandContext, 200);
 
     // Go to step 6 to show the full brief
     bbGoStep(6);
