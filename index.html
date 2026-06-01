@@ -7104,7 +7104,11 @@ async function bbCreateCampaign(briefId, briefTitle) {
         status: 'active',
         current_stage: 1,
         confirmed_channels: brief.confirmed_channels||brief.channels||[],
-        created_by: CB_CURRENT_USER||'system'
+        created_by: CB_CURRENT_USER||'system',
+        start_date: brief.start_date||null,
+        end_date: brief.end_date||null,
+        campaign_type: brief.campaign_type||null,
+        planned_budget: brief.budget||null
       }])
     });
     if (!cr.ok) throw new Error(await cr.text());
