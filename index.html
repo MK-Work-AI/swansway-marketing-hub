@@ -1350,6 +1350,35 @@ td strong{font-weight:600}
       <div class="bb-desc">Every brand in the Swansway portfolio has a distinct voice, audience and competitive context. The brief adapts dynamically to your selection — CPL benchmarks, tone, models and audience segments all update automatically.</div>
       <div class="bb-section-label">Select brand</div>
       <div class="bb-brand-grid" id="bb-brand-grid"></div>
+
+      <div id="bb-scope-section" style="display:none;margin-top:1.5rem">
+        <div class="bb-section-label">Campaign scope</div>
+        <div style="display:flex;gap:8px;margin-bottom:1rem">
+          <button class="bb-scope-btn bb-selected" id="scope-brand" onclick="bbSetScope('brand',this)">Brand-wide</button>
+          <button class="bb-scope-btn" id="scope-site" onclick="bbSetScope('site',this)">Specific site</button>
+        </div>
+        <div id="bb-site-picker" style="display:none">
+          <div class="bb-section-label" style="margin-top:0">Select site</div>
+          <div id="bb-site-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px"></div>
+        </div>
+      </div>
+
+      <div id="bb-dates-section" style="display:none;margin-top:1.5rem">
+        <div class="bb-section-label">Campaign dates</div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <div>
+            <div style="font-size:10px;font-family:var(--font-m);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px">Start date</div>
+            <input type="date" id="bb-start-date" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:13px;color:var(--ink);background:var(--white);outline:none" onchange="bbOnDateChange()">
+          </div>
+          <div>
+            <div style="font-size:10px;font-family:var(--font-m);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px">End date</div>
+            <input type="date" id="bb-end-date" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:13px;color:var(--ink);background:var(--white);outline:none" onchange="bbOnDateChange()">
+          </div>
+          <div id="bb-date-duration" style="font-size:12px;color:var(--ink-soft);margin-top:18px"></div>
+        </div>
+        <div id="bb-headroom-bar" style="display:none;margin-top:12px"></div>
+      </div>
+
       <div class="bb-nav-btns">
         <button class="bb-btn-next" id="bb-btn-1-next" onclick="bbGoStep(2)" disabled>Next: Campaign type →</button>
       </div>
