@@ -4037,17 +4037,19 @@ function renderCrossCalendar() {
   html += '</div>';
   el.innerHTML = html;
 
-  // Attach body-level delegate once (idempotent)
-  if (!document.body._calClickBound) {
-    document.body._calClickBound = true;
-    document.body.addEventListener('click', function(e) {
-      var pill = e.target.closest('[data-cal-idx]');
-      if (!pill) return;
-      var idx = parseInt(pill.getAttribute('data-cal-idx'), 10);
-      var camp = window._calCamps && window._calCamps[idx];
-      if (camp) calShowCampaign(camp);
-    });
-  }
+  // Attach click handler directly to el (freshly set each render)
+  el.onclick = null;
+  el.onclick = function(e) {
+    var pill = e.target;
+    while (pill && pill !== el) {
+      if (pill.hasAttribute && pill.hasAttribute('data-cal-idx')) break;
+      pill = pill.parentNode;
+    }
+    if (!pill || pill === el) return;
+    var idx = parseInt(pill.getAttribute('data-cal-idx'), 10);
+    var camp = window._calCamps && window._calCamps[idx];
+    if (camp) { calShowCampaign(camp); }
+  };
 
   if (legendEl) {
     var seen = {};
