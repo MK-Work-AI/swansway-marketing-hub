@@ -313,23 +313,27 @@ td strong{font-weight:600}
 .brief-card-btn.danger:hover{background:#FEE2E2;color:var(--accent);border-color:var(--accent)}
 
 /* ── Step 6 unified save card ── */
-.bb-save-card{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:22px 24px;margin-bottom:1.5rem;display:none}
-.bb-save-card-label{font-family:var(--font-m);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px}
-.bb-save-row{display:flex;align-items:center;gap:10px}
-.bb-save-input{flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:14px;color:var(--ink);background:var(--white);outline:none;transition:border-color .15s}
-.bb-save-input::placeholder{color:var(--ink-faint)}
-.bb-save-input:focus{border-color:var(--swansway)}
-.bb-save-input:disabled{background:var(--surface);color:var(--ink);border-color:var(--border);opacity:1}
-.bb-save-btn{padding:11px 22px;background:var(--swansway);color:#fff;border:none;border-radius:6px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;transition:background .2s,opacity .2s;white-space:nowrap}
-.bb-save-btn:hover:not(:disabled){background:var(--accent)}
-.bb-save-btn:disabled{cursor:default}
-/* Post-save feedback row */
-.bb-saved-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
-.bb-saved-check{width:26px;height:26px;border-radius:50%;background:#D1FAE5;color:#065F46;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
-.bb-saved-text{flex:1;font-size:13px;color:var(--ink);line-height:1.4}
-.bb-saved-text strong{font-weight:700}
-.bb-saved-submit{padding:10px 20px;background:var(--ink);color:#fff;border:none;border-radius:6px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;white-space:nowrap;flex-shrink:0}
-.bb-saved-submit:hover{opacity:0.85}
+.bb-s6-label{font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.bb-s6-row{display:flex;gap:8px;align-items:center}
+.bb-s6-input{flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:14px;color:var(--ink);background:var(--white);outline:none;transition:border-color .15s}
+.bb-s6-input::placeholder{color:var(--ink-faint)}
+.bb-s6-input:focus{border-color:var(--swansway)}
+.bb-s6-input:disabled{background:transparent;color:var(--ink);border-color:transparent;cursor:default;padding-left:0;font-weight:600}
+.bb-s6-btn{padding:11px 22px;background:var(--swansway);color:#fff;border:none;border-radius:6px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s}
+.bb-s6-btn:hover:not(:disabled){background:var(--accent)}
+.bb-s6-btn:disabled{background:#059669;cursor:default}
+.bb-s6-confirm{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap}
+.bb-s6-tick{width:24px;height:24px;border-radius:50%;background:#D1FAE5;color:#059669;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.bb-s6-msg{flex:1;font-size:13px;color:var(--ink);line-height:1.5}
+.bb-s6-submit-btn{padding:9px 18px;background:var(--ink);color:#fff;border:none;border-radius:6px;font-family:var(--font-b);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.bb-s6-submit-btn:hover{opacity:0.85}
+.bb-s6-card{padding:24px;border-radius:8px;background:var(--white);border:1.5px solid var(--border)}
+.bb-s6-card-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--font-m);text-transform:uppercase;letter-spacing:0.06em;color:#fff;margin-bottom:12px}
+.bb-s6-card-title{font-family:var(--font-d);font-size:20px;font-weight:700;color:var(--ink);margin-bottom:4px;letter-spacing:-0.01em;line-height:1.2}
+.bb-s6-card-sub{font-size:13px;color:var(--ink-soft);margin-bottom:20px;line-height:1.5}
+.bb-s6-launch{width:100%;padding:15px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:16px;font-weight:800;font-family:var(--font-d);letter-spacing:-0.01em;box-shadow:0 4px 16px rgba(200,16,46,0.2);transition:opacity .15s}
+.bb-s6-launch:hover{opacity:0.9}
+.bb-s6-launch-hint{text-align:center;margin-top:6px;font-size:11px;color:var(--ink-faint)}
 
 /* Overlay for briefs panel */
 .panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:399;display:none}
@@ -946,13 +950,10 @@ td strong{font-weight:600}
   letter-spacing:-0.01em; line-height:1; margin-bottom:1.25rem;
   transition:color 0.3s;
 }
-.bb-brief-row { padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.07); }
-.bb-brief-label { color:rgba(255,255,255,0.55) !important; font-size:10px; font-family:var(--font-m); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:2px; /*
-  font-family:var(--font-m); font-size:10px; letter-spacing:0.06em;
-  text-transform:uppercase; color:rgba(255,255,255,0.4); margin-bottom:3px;
-}
-.bb-brief-val { font-size:12px; color:#fff; line-height:1.4; }
-.bb-brief-empty { font-size:12px; color:rgba(255,255,255,0.35); font-style:italic; }
+.bb-brief-row { padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.08); }
+.bb-brief-label { font-family:var(--font-m); font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:3px; }
+.bb-brief-val { font-size:13px; color:#fff; line-height:1.4; font-weight:500; }
+.bb-brief-empty { font-size:13px; color:rgba(255,255,255,0.28); font-style:italic; }
 
 .bb-completeness { margin-top:auto; padding-top:1.25rem; }
 .bb-comp-score {
@@ -1475,16 +1476,15 @@ td strong{font-weight:600}
 
     <!-- Step 6: Output -->
     <div class="bb-step" id="bb-step-6">
-      <!-- Step 6: unified save + submit card -->
-      <div class="bb-save-card" id="bb-save-bar">
-        <div class="bb-save-card-label">Save this brief</div>
-        <div class="bb-save-row">
-          <input class="bb-save-input" id="bb-brief-title" placeholder="Give this brief a title — e.g. Audi Plate Change May 2026" maxlength="80">
-          <button class="bb-save-btn" id="bb-save-btn" onclick="bbSaveBrief()">Save brief</button>
+      <div id="bb-save-bar" style="display:none;margin-bottom:1.5rem">
+        <div class="bb-s6-label">Give this brief a title</div>
+        <div class="bb-s6-row">
+          <input class="bb-s6-input" id="bb-brief-title" placeholder="e.g. Volkswagen Plate Change June 2026" maxlength="80">
+          <button class="bb-s6-btn" id="bb-save-btn" onclick="bbSaveBrief()">Save brief</button>
         </div>
-        <div id="bb-save-feedback" style="display:none;margin-top:14px"></div>
+        <div id="bb-save-feedback" style="display:none;margin-top:12px"></div>
       </div>
-      <div id="bb-campaign-section" style="display:none"></div>
+      <div id="bb-campaign-section" style="display:none;margin-bottom:1.5rem"></div>
       <div id="bb-output"></div>
     </div>
 
@@ -3269,7 +3269,13 @@ function bbRenderSiteGrid() {
   var sites = (typeof HUB_SITES !== 'undefined' && Array.isArray(HUB_SITES))
     ? HUB_SITES.filter(function(s){ return s.brand_id === brandId; })
     : [];
-  if (!sites.length) { el.innerHTML = '<div style="font-size:12px;color:var(--ink-soft);padding:8px">No sites found for this brand</div>'; return; }
+  if (!sites.length) {
+    if (typeof HUB_SITES === 'undefined' || !HUB_SITES.length) {
+      el.innerHTML = '<div style="font-size:12px;color:var(--ink-soft);padding:8px">Loading…</div>';
+      setTimeout(bbRenderSiteGrid, 600); return;
+    }
+    el.innerHTML = '<div style="font-size:12px;color:var(--ink-soft);padding:8px">No sites for ' + (BB.brand ? BB.brand.name : 'this brand') + '</div>'; return;
+  }
   el.innerHTML = '';
   sites.forEach(function(s) {
     var d = document.createElement('div');
@@ -6911,25 +6917,18 @@ function bbShowPostSave(briefId, status) {
   var titleInput = document.getElementById('bb-brief-title');
   var saveBtn = document.getElementById('bb-save-btn');
   if (titleInput) titleInput.disabled = true;
-  if (saveBtn) { saveBtn.textContent = '\u2713 Saved'; saveBtn.style.background = '#059669'; saveBtn.disabled = true; }
+  if (saveBtn) { saveBtn.textContent = '\u2713 Saved'; saveBtn.disabled = true; }
 
   fb.style.display = 'block';
   fb.style.color = '';
 
   if (status === 'draft') {
-
-    fb.innerHTML = '<hr style="border:none;border-top:1.5px solid var(--border);margin:4px 0 16px">'
-
-      + '<div class="bb-saved-row">'
-
-      + '<div class="bb-saved-check">\u2713</div>'
-
-      + '<div class="bb-saved-text"><strong>Brief saved, ' + firstName + '.</strong> When you\'re ready, submit it for approval and the team will get started.</div>'
-
-      + '<button class="bb-saved-submit" onclick="bbSubmitBrief()">Submit for approval \u2192</button>'
-
+    fb.style.display = 'block';
+    fb.innerHTML = '<div class="bb-s6-confirm">'
+      + '<div class="bb-s6-tick">✓</div>'
+      + '<div class="bb-s6-msg"><strong>Saved, ' + firstName + '.</strong> When ready, submit for approval.</div>'
+      + '<button class="bb-s6-submit-btn" onclick="bbSubmitBrief()">Submit →</button>'
       + '</div>';
-
   } else {
 
     // submitted/approved/campaigned — bbRenderCampaignSection handles the UI, hide feedback
@@ -7089,34 +7088,30 @@ async function bbRenderCampaignSection(briefData) {
 
   if (brief.status === 'submitted') {
     if (canLaunch) {
-      el.innerHTML = '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:24px">'
-        + '<div style="font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px">Ready to launch</div>'
-        + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px">' + (firstName ? firstName + ', this brief is waiting for you.' : 'This brief is waiting for approval.') + '</div>'
-        + '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">Approve it and the team will get their tasks automatically.</div>'
-        + '<button onclick="bbApproveBriefAndLaunch()" style="width:100%;padding:15px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:17px;font-weight:800;font-family:var(--font-d);letter-spacing:-0.01em;box-shadow:0 4px 16px rgba(200,16,46,0.25)">'
-        + '\uD83D\uDE80\u2002LAUNCH CAMPAIGN'
-        + '</button>'
-        + '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--ink-faint)">Creates all 58 campaign tasks and assigns them to the team</div>'
+      el.innerHTML = '<div class="bb-s6-card">'
+        + '<div class="bb-s6-card-pill" style="background:var(--accent)">Ready to launch</div>'
+        + '<div class="bb-s6-card-title">' + (firstName ? firstName + ', this brief is waiting for you.' : 'Ready to launch.') + '</div>'
+        + '<div class="bb-s6-card-sub">Approve it and the team will get their tasks automatically.</div>'
+        + '<button class="bb-s6-launch" onclick="bbApproveBriefAndLaunch()">??  LAUNCH CAMPAIGN</button>'
+        + '<div class="bb-s6-launch-hint">Creates all 58 tasks and assigns them to the team</div>'
         + '</div>';
     } else {
-      el.innerHTML = '<div style="background:var(--white);border:1.5px solid #FCD34D;border-radius:10px;padding:20px 24px;display:flex;align-items:flex-start;gap:14px">'
-        + '<div style="width:36px;height:36px;background:#FEF3C7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">&#9203;</div>'
-        + '<div><div style="font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">Brief submitted' + (firstName ? ', '+firstName : '') + '!</div>'
-        + '<div style="font-size:13px;color:var(--ink-soft)">Anna, Marcus or Beth will review it. You\'ll get your tasks as soon as it goes live.</div></div>'
+      el.innerHTML = '<div class="bb-s6-card" style="border-color:#FCD34D;background:#FFFBEB;display:flex;gap:14px">'
+        + '<div style="width:34px;height:34px;background:#FEF3C7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">&#9203;</div>'
+        + '<div><div class="bb-s6-card-title" style="font-size:16px;margin-bottom:4px">Brief submitted' + (firstName ? ', '+firstName : '') + '!</div>'
+        + '<div class="bb-s6-card-sub" style="margin-bottom:0">Anna, Marcus or Beth will review it. You\'ll get your tasks as soon as it goes live.</div></div>'
         + '</div>';
     }
     return;
   }
   if (brief.status === 'approved') {
     var safeTitle = brief.title ? brief.title.replace(/'/g,'').replace(/"/g,'') : '';
-    el.innerHTML = '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:24px">'
-      + '<div style="font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px">Brief approved</div>'
-      + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px">' + (firstName ? 'Go for it, '+firstName+'.' : 'Ready to launch.') + '</div>'
-      + '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">Approved and ready. Hit the button to create the campaign and assign all tasks to the team.</div>'
-      + '<button onclick="bbLaunchCampaignFromBrief(\''+brief.id+'\',\''+safeTitle+'\')" style="width:100%;padding:15px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:17px;font-weight:800;font-family:var(--font-d);letter-spacing:-0.01em;box-shadow:0 4px 16px rgba(200,16,46,0.25)">'
-      + '\uD83D\uDE80\u2002LAUNCH CAMPAIGN'
-      + '</button>'
-      + '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--ink-faint)">Creates all 58 campaign tasks and assigns them to the team</div>'
+    el.innerHTML = '<div class="bb-s6-card">'
+      + '<div class="bb-s6-card-pill" style="background:#059669">Brief approved</div>'
+      + '<div class="bb-s6-card-title">' + (firstName ? 'Go for it, '+firstName+'.' : 'Ready to launch.') + '</div>'
+      + '<div class="bb-s6-card-sub">Approved and ready. Create the campaign and assign all tasks to the team.</div>'
+      + '<button class="bb-s6-launch" onclick="bbLaunchCampaignFromBrief(\'' + brief.id + '\',\'' + safeTitle + '\')">??  LAUNCH CAMPAIGN</button>'
+      + '<div class="bb-s6-launch-hint">Creates all 58 tasks and assigns them to the team</div>'
       + '</div>';
   }
 }
