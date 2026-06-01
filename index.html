@@ -3897,7 +3897,7 @@ async function calLoadFromSupabase() {
   var brandColorMap = {'audi':'#BB0A21','vw':'#001E50','vwcv':'#1B4F72','seat':'#E2231A','cupra':'#C8920A','landrover':'#1D4E1D','jaguar':'#1B2631','honda':'#CC0000','peugeot':'#1B3A6B','byd':'#0066CC','omoda':'#6B21A8','motormatch':'#374151'};
   var brandNameMap = {'audi':'Audi','vw':'Volkswagen','vwcv':'VW Commercial','seat':'SEAT','cupra':'CUPRA','landrover':'Land Rover','jaguar':'Jaguar','honda':'Honda','peugeot':'Peugeot','byd':'BYD','omoda':'OMODA/JAECOO','motormatch':'Motor Match'};
   try {
-    var rows = await fetch(base + '/campaigns?select=id,title,brand_id,status,start_date,end_date,campaign_type,planned_budget,planned_sites,planned_objective,scope,created_by&order=start_date', {
+    var rows = await fetch(base + '/campaigns?select=id,title,brand_id,status,start_date,end_date,campaign_type,planned_budget,planned_sites,planned_objective,scope,created_by,brief_id&order=start_date', {
       headers: {'apikey':anon,'Authorization':'Bearer '+anon}
     }).then(function(r){ return r.json(); });
     if (!Array.isArray(rows)) return;
@@ -3907,8 +3907,35 @@ async function calLoadFromSupabase() {
       var brandId = r.brand_id || 'audi';
       var rawSites = r.planned_sites;
       var parsedSites = Array.isArray(rawSites) ? rawSites : (typeof rawSites === 'string' && rawSites.startsWith('{')) ? rawSites.slice(1,-1).split(',').filter(Boolean) : [];
-      return { id:r.id, brand:brandNameMap[brandId]||brandId, brand_id:brandId, color:brandColorMap[brandId]||'#374151', name:r.title||'Untitled', start:startM, end:endM, status:r.status||'planned', start_date:r.start_date||'', end_date:r.end_date||'', ctype:r.campaign_type||'', budget:r.planned_budget||0, sites:parsedSites, objective:r.planned_objective||'', scope:r.scope||'brand', created_by:r.created_by||'' };
+      return { id:r.id, brand:brandNameMap[brandId]||brandId, brand_id:brandId, color:brandColorMap[brandId]||'#374151', name:r.title||'Untitled', start:startM, end:endM, status:r.status||'planned', start_date:r.start_date||'', end_date:r.end_date||'', ctype:r.campaign_type||'', budget:r.planned_budget||0, sites:parsedSites, objective:r.planned_objective||'', scope:r.scope||'brand', created_by:r.created_by||'', brief_id:r.brief_id||'' };
     });
+    // Backfill start/end dates from briefs for active campaigns missing dates
+    var noDate = fromDB.filter(function(r){ return !r.start_date && r.brief_id; });
+    if (noDate.length > 0) {
+      try {
+        var ids = noDate.map(function(r){ return r.brief_id; }).join(',');
+        var briefs = await fetch(base + '/briefs?id=in.(' + ids + ')&select=id,start_date,end_date,campaign_type,budget', {
+          headers: {'apikey':anon,'Authorization':'Bearer '+anon}
+        }).then(function(r){ return r.json(); });
+        if (Array.isArray(briefs)) {
+          briefs.forEach(function(br) {
+            noDate.forEach(function(camp) {
+              if (camp.brief_id === br.id) {
+                if (br.start_date) {
+                  camp.start_date = br.start_date;
+                  camp.end_date   = br.end_date || br.start_date;
+                  camp.start = new Date(br.start_date + 'T00:00:00').getMonth();
+                  camp.end   = br.end_date ? new Date(br.end_date + 'T00:00:00').getMonth() : camp.start;
+                }
+                if (!camp.ctype && br.campaign_type)  camp.ctype  = br.campaign_type;
+                if (!camp.budget && br.budget)         camp.budget = br.budget;
+              }
+            });
+          });
+        }
+      } catch(e) { console.warn('Brief backfill:', e); }
+    }
+
     // If DB has any rows, use ONLY DB rows — no fallback mixing
     if (fromDB.length > 0) {
       BUILT_IN_CAMPAIGNS = fromDB;
