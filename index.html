@@ -2985,7 +2985,6 @@ function applyAdminConfig(cfg) {
 
   // ── 5. CAMPAIGN CALENDAR — now fed from Supabase, not admin config ──
   // calLoadFromSupabase() handles this when calendar view opens.
-  if (BUILT_IN_CAMPAIGNS.length === 0) BUILT_IN_CAMPAIGNS = FALLBACK_CAMPAIGNS;
 
   console.log('Admin config fully applied to hub');
 }
@@ -3895,20 +3894,7 @@ const CAL_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct',
 var BUILT_IN_CAMPAIGNS = [];
 
 // Fallback campaigns used only if admin config not loaded
-var FALLBACK_CAMPAIGNS = [
-  {brand:'All brands',color:'#374151',name:'March Plate Change',start:2,end:2},
-  {brand:'All brands',color:'#374151',name:'September Plate Change',start:8,end:8},
-  {brand:'All brands',color:'#374151',name:'Black Friday',start:10,end:10},
-  {brand:'Audi',color:'#BB0A21',name:'A6 e-tron Launch',start:3,end:5},
-  {brand:'BYD',color:'#0066CC',name:'Seal Awareness',start:4,end:7},
-  {brand:'CUPRA',color:'#C8920A',name:'Born EV Summer',start:4,end:7},
-  {brand:'Land Rover',color:'#1D4E1D',name:'Defender Adventure Camp',start:5,end:7},
-  {brand:'SEAT',color:'#E2231A',name:'Ibiza Summer Social',start:4,end:7},
-  {brand:'Honda',color:'#CC0000',name:'e:HEV Summer',start:4,end:8},
-  {brand:'Peugeot',color:'#1B3A6B',name:'E-308 Lease Push',start:3,end:5},
-  {brand:'VW',color:'#001E50',name:'ID. Electric Summer',start:4,end:6},
-  {brand:'Jaguar',color:'#1B2631',name:'Brand Relaunch',start:0,end:11},
-];
+var FALLBACK_CAMPAIGNS = []
 const CAL_BRAND_ORDER = ['All brands','Audi','Volkswagen','VW Commercial','SEAT','CUPRA','Land Rover','Jaguar','Honda','Peugeot','BYD','OMODA/JAECOO','Motor Match'];
 
 var CAL_CURRENT_QUARTER = 0;
@@ -3966,17 +3952,11 @@ async function calLoadFromSupabase() {
       } catch(e) { console.warn('Brief backfill:', e); }
     }
 
-    // If DB has any rows, use ONLY DB rows — no fallback mixing
-    if (fromDB.length > 0) {
-      BUILT_IN_CAMPAIGNS = fromDB;
-      console.log('Calendar: ' + fromDB.length + ' campaigns from DB');
-    } else {
-      BUILT_IN_CAMPAIGNS = FALLBACK_CAMPAIGNS;
-      console.log('Calendar: 0 from DB, using ' + FALLBACK_CAMPAIGNS.length + ' fallback campaigns');
-    }
+    // Always use DB — empty DB means empty calendar
+    BUILT_IN_CAMPAIGNS = fromDB;
+    console.log('Calendar: ' + fromDB.length + ' campaigns from DB');
   } catch(e) {
     console.warn('calLoadFromSupabase:', e);
-    if (BUILT_IN_CAMPAIGNS.length === 0) BUILT_IN_CAMPAIGNS = FALLBACK_CAMPAIGNS;
   }
 }
 function calSetQuarter(q) { CAL_CURRENT_QUARTER = q; renderCrossCalendar(); }
@@ -3994,7 +3974,6 @@ function renderCrossCalendar() {
     if (tab) tab.className = 'cal-q-tab' + (qi === CAL_CURRENT_QUARTER ? ' active' : '');
   }
 
-  if (BUILT_IN_CAMPAIGNS.length === 0) BUILT_IN_CAMPAIGNS = FALLBACK_CAMPAIGNS;
 
   var q = CAL_CURRENT_QUARTER;
   var QM = [[0,1,2],[3,4,5],[6,7,8],[9,10,11]];
@@ -4026,7 +4005,7 @@ function renderCrossCalendar() {
   });
 
   if (!active.length) {
-    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint);font-size:13px">No campaigns this quarter — add them in Admin → Campaign Calendar.</div>';
+    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint);font-size:13px">No campaigns this quarter. Click <strong>+ Add campaign</strong> to get started.</div>';
     if (legendEl) legendEl.innerHTML = '';
     return;
   }
