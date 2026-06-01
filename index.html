@@ -3932,7 +3932,7 @@ async function calLoadFromSupabase() {
     if (!Array.isArray(rows)) return;
     var fromDB = rows.map(function(r) {
       var startM = r.start_date ? new Date(r.start_date + 'T00:00:00').getMonth() : 0;
-      var endM   = r.end_date   ? new Date(r.end_date   + 'T00:00:00').getMonth() : startM;
+      var endM   = r.end_date   ? new Date(r.end_date   + 'T00:00:00').getMonth() : (r.start_date ? startM : 11);
       var brandId = r.brand_id || 'audi';
       var rawSites = r.planned_sites;
       var parsedSites = Array.isArray(rawSites) ? rawSites : (typeof rawSites === 'string' && rawSites.startsWith('{')) ? rawSites.slice(1,-1).split(',').filter(Boolean) : [];
@@ -3942,7 +3942,8 @@ async function calLoadFromSupabase() {
     var noDate = fromDB.filter(function(r){ return !r.start_date && r.brief_id; });
     if (noDate.length > 0) {
       try {
-        var ids = noDate.map(function(r){ return r.brief_id; }).join(',');
+        var ids = noDate.map(function(r){ return r.brief_id; }).filter(Boolean).join(',');
+        if (!ids) throw new Error('no brief ids to fetch');
         var briefs = await fetch(base + '/briefs?id=in.(' + ids + ')&select=id,start_date,end_date,campaign_type,budget', {
           headers: {'apikey':anon,'Authorization':'Bearer '+anon}
         }).then(function(r){ return r.json(); });
