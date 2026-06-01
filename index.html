@@ -6911,37 +6911,27 @@ function bbShowPostSave(briefId, status) {
   fb.style.color = '';
 
   if (status === 'draft') {
+
     fb.innerHTML = '<hr style="border:none;border-top:1.5px solid var(--border);margin:4px 0 16px">'
+
       + '<div class="bb-saved-row">'
+
       + '<div class="bb-saved-check">\u2713</div>'
+
       + '<div class="bb-saved-text"><strong>Brief saved, ' + firstName + '.</strong> When you\'re ready, submit it for approval and the team will get started.</div>'
+
       + '<button class="bb-saved-submit" onclick="bbSubmitBrief()">Submit for approval \u2192</button>'
+
       + '</div>';
-  } else if (status === 'submitted') {
-    if (canLaunch) {
-      fb.innerHTML = '<hr style="border:none;border-top:1.5px solid var(--border);margin:4px 0 16px">'
-        + '<div style="margin-bottom:14px">'
-        + '<div style="font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px">Ready to launch, ' + firstName + '.</div>'
-        + '<div style="font-size:13px;color:var(--ink-soft)">This brief is approved and waiting for you. Hit the button to create campaign tasks for the whole team.</div>'
-        + '</div>'
-        + '<button onclick="bbApproveBriefAndLaunch()" style="width:100%;padding:16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:17px;font-weight:800;font-family:var(--font-d);letter-spacing:-0.01em;box-shadow:0 4px 16px rgba(200,16,46,0.3);transition:opacity .15s" onmouseover="this.style.opacity=\'0.9\'" onmouseout="this.style.opacity=\'1\'">'
-        + '\uD83D\uDE80\u2002LAUNCH CAMPAIGN'
-        + '</button>'
-        + '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--ink-faint)">Creates all 58 campaign tasks and assigns them to the team</div>';
-    } else {
-      fb.innerHTML = '<hr style="border:none;border-top:1.5px solid var(--border);margin:4px 0 16px">'
-        + '<div class="bb-saved-row">'
-        + '<div class="bb-saved-check" style="background:#FEF3C7;font-size:15px">&#9203;</div>'
-        + '<div class="bb-saved-text"><strong>Brief submitted, ' + firstName + '!</strong> Anna, Marcus or Beth will review it. You\'ll get your tasks as soon as it goes live.</div>'
-        + '</div>';
-    }
-  } else if (status === 'approved' || status === 'campaigned') {
-    fb.innerHTML = '<hr style="border:none;border-top:1.5px solid var(--border);margin:4px 0 16px">'
-      + '<div class="bb-saved-row">'
-      + '<div class="bb-saved-check" style="font-size:15px">&#127881;</div>'
-      + '<div class="bb-saved-text"><strong>Campaign is live!</strong> Scroll down to see the campaign stages and your tasks.</div>'
-      + '</div>';
+
+  } else {
+
+    // submitted/approved/campaigned — bbRenderCampaignSection handles the UI, hide feedback
+
+    fb.style.display = 'none';
+
   }
+
 }
 
 async function bbSubmitBrief() {
