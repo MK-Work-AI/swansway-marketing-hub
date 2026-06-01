@@ -1478,7 +1478,7 @@ td strong{font-weight:600}
         </div>
         <div id="bb-save-feedback" style="display:none;margin-top:14px"></div>
       </div>
-      <div id="bb-campaign-section" style="display:none;margin-top:0"></div>
+      <div id="bb-campaign-section" style="display:none"></div>
       <div id="bb-output"></div>
     </div>
 
@@ -7048,9 +7048,13 @@ async function bbRenderCampaignSection(briefData) {
     return;
   }
   if (brief.status === 'draft') { el.style.display = 'none'; return; }
+  // Hide save card for non-draft states — only campaign section shows
+  var saveCard = document.getElementById('bb-save-bar');
+  if (saveCard && brief.status !== 'draft') saveCard.style.display = 'none';
+
   if (brief.status === 'submitted') {
     if (canLaunch) {
-      el.innerHTML = '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:24px;margin-top:1.5rem">'
+      el.innerHTML = '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:24px">'
         + '<div style="font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px">Ready to launch</div>'
         + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px">' + (firstName ? firstName + ', this brief is waiting for you.' : 'This brief is waiting for approval.') + '</div>'
         + '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">Approve it and the team will get their tasks automatically.</div>'
@@ -7060,7 +7064,7 @@ async function bbRenderCampaignSection(briefData) {
         + '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--ink-faint)">Creates all 58 campaign tasks and assigns them to the team</div>'
         + '</div>';
     } else {
-      el.innerHTML = '<div style="background:var(--white);border:1.5px solid #FCD34D;border-radius:10px;padding:20px 24px;margin-top:1.5rem;display:flex;align-items:flex-start;gap:14px">'
+      el.innerHTML = '<div style="background:var(--white);border:1.5px solid #FCD34D;border-radius:10px;padding:20px 24px;display:flex;align-items:flex-start;gap:14px">'
         + '<div style="width:36px;height:36px;background:#FEF3C7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">&#9203;</div>'
         + '<div><div style="font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">Brief submitted' + (firstName ? ', '+firstName : '') + '!</div>'
         + '<div style="font-size:13px;color:var(--ink-soft)">Anna, Marcus or Beth will review it. You\'ll get your tasks as soon as it goes live.</div></div>'
@@ -7070,7 +7074,7 @@ async function bbRenderCampaignSection(briefData) {
   }
   if (brief.status === 'approved') {
     var safeTitle = brief.title ? brief.title.replace(/'/g,'').replace(/"/g,'') : '';
-    el.innerHTML = '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:24px;margin-top:1.5rem">'
+    el.innerHTML = '<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:24px">'
       + '<div style="font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px">Brief approved</div>'
       + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px">' + (firstName ? 'Go for it, '+firstName+'.' : 'Ready to launch.') + '</div>'
       + '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">Approved and ready. Hit the button to create the campaign and assign all tasks to the team.</div>'
