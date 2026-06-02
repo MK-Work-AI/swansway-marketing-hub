@@ -3326,6 +3326,8 @@ function bbGoStep(n) {
 }
 
 function bbCanGoTo(n) {
+  // If brief is already saved/loaded, allow free navigation through all steps
+  if (window._lastSavedBriefId) return true;
   if(n===2) return !!BB.brand;
   if(n===3) return !!(BB.brand && BB.ctype && BB.objective);
   if(n===4) return !!(BB.duration);
@@ -9193,11 +9195,23 @@ function bbNewBrief() {
   });
   var canvas = document.getElementById('bb-campaign-canvas');
   if (canvas) canvas.style.display = 'none';
+  var campSec = document.getElementById('bb-campaign-section');
+  if (campSec) { campSec.style.display = 'none'; campSec.innerHTML = ''; }
+  var output = document.getElementById('bb-output');
+  if (output) output.innerHTML = '';
+  // Reset all step display:none set by campaign mode
+  document.querySelectorAll('.bb-step').forEach(function(s){ s.style.display = ''; s.classList.remove('bb-active'); });
+  // Show step indicator and progress
+  var ind = document.getElementById('bb-step-indicator');
+  var prog = document.getElementById('bb-progress-track');
+  if (ind) ind.style.display = '';
+  if (prog) prog.style.display = '';
   bbInit();
+  BB.step = 6; // allow all steps
   bbGoStep(1);
   bbUpdateBrief();
   closeBriefsPanel();
-  showToast('Fresh brief started ??', 'success');
+  showToast('Fresh brief started 🚀', 'success');
 }
 
 function bbSetUrlBrief(briefId) {
