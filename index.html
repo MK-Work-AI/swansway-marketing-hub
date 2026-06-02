@@ -6885,8 +6885,8 @@ async function bbApproveBriefAndLaunch() {
   } catch(e) { alert('Error: '+e.message); }
 }
 
-async function bbLaunchCampaignFromBrief(briefId, briefTitle) {
-  var btn = event.currentTarget;
+async function bbLaunchCampaignFromBrief(briefId, briefTitle, btnEl) {
+  var btn = btnEl || (typeof event !== 'undefined' && event.currentTarget) || document.querySelector('.bb-s6-launch');
   btn.textContent = 'Creating campaign...';
   btn.disabled = true;
   var anon = SUPABASE_ANON_KEY;
@@ -6944,7 +6944,11 @@ async function bbLaunchCampaignFromBrief(briefId, briefTitle) {
     setTimeout(mtLoad, 500);
     loadBriefs();
 
-  } catch(e) { alert('Error launching campaign: '+e.message); btn.textContent='\uD83D\uDE80 LAUNCH CAMPAIGN'; btn.disabled=false; }
+  } catch(e) {
+    showToast('Launch failed: ' + e.message, 'error');
+    console.error('bbLaunchCampaignFromBrief:', e);
+    if (btn) { btn.textContent = '🚀 LAUNCH CAMPAIGN'; btn.disabled = false; }
+  }
 }
 
 async function bbViewCampaign(campaignId) {
@@ -7013,7 +7017,7 @@ async function bbRenderCampaignSection(briefData) {
       + '<div class="bb-s6-card-pill" style="background:#059669">Brief approved</div>'
       + '<div class="bb-s6-card-title">' + (firstName ? 'Go for it, '+firstName+'.' : 'Ready to launch.') + '</div>'
       + '<div class="bb-s6-card-sub">Approved and ready. Create the campaign and assign all tasks to the team.</div>'
-      + '<button class="bb-s6-launch" onclick="bbLaunchCampaignFromBrief(\'' + brief.id + '\',\'' + safeTitle + '\')">🚀 LAUNCH CAMPAIGN</button>'
+      + '<button class="bb-s6-launch" onclick="bbLaunchCampaignFromBrief(\'' + brief.id + '\',\'' + safeTitle + '\', this)">🚀 LAUNCH CAMPAIGN</button>'
       + '<div class="bb-s6-launch-hint">Creates all 58 tasks and assigns them to the team</div>'
       + '</div>';
   }
