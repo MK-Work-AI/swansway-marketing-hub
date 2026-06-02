@@ -8280,13 +8280,15 @@ async function bbSaveBrief() {
   let data, error;
   if (window._lastSavedBriefId) {
     record.updated_at = new Date().toISOString();
+    // Don't reset status on update — remove it so existing status is preserved
+    delete record.status;
     const res = await SB.from('briefs').update(record).eq('id', window._lastSavedBriefId).select().single();
     data = res.data; error = res.error;
   } else {
     const res = await SB.from('briefs').insert([record]).select().single();
     data = res.data; error = res.error;
   }
-  btn.disabled = false; btn.textContent = 'Save brief';
+  btn.disabled = false; btn.textContent = window._lastSavedBriefId ? 'Update brief' : 'Save brief';
 
   if(error) {
     feedback.style.display='block';
@@ -8322,8 +8324,15 @@ async function bbSaveBrief() {
         var _match2 = Object.values(CB_TEAM).find(function(m){return m.email&&m.email.toLowerCase()===SB_USER.email.toLowerCase();});
         if (_match2) CB_CURRENT_USER = _match2.id;
       }
-      // Show post-save state
-      bbShowPostSave(data ? data.id : null, 'draft');
+      // Show feedback based on brief status
+      var _savedStatus = data ? data.status : 'draft';
+      if (_savedStatus === 'campaigned') {
+        showToast('Brief updated ✓ Refreshing campaign view…', 'success');
+        setTimeout(function() { bbEnterCampaignMode(data); }, 800);
+      } else {
+        bbShowPostSave(data ? data.id : null, _savedStatus);
+        showToast('Brief updated ✓', 'success');
+      }
     });
   }
 }
