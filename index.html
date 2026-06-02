@@ -725,6 +725,28 @@ td strong{font-weight:600}
 .cal-q-tab.active{background:var(--swansway);color:#fff;border-color:var(--swansway)}
 .cal-q-tab.active span{color:rgba(255,255,255,0.65)}
 .cal-q-tab:hover:not(.active){border-color:var(--swansway);color:var(--swansway)}
+.bb-out-hero{background:var(--hero-color,var(--swansway));color:#fff;border-radius:8px;overflow:hidden;margin-bottom:1.5rem}
+.bb-out-hero-top{padding:28px 28px 20px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.bb-out-hero-brand{display:inline-block;font-family:var(--font-m);font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#fff;padding:3px 10px;border-radius:4px;margin-bottom:12px;background:rgba(255,255,255,0.15)}
+.bb-out-hero-type{font-family:var(--font-m);font-size:11px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px}
+.bb-out-hero-title{font-family:var(--font-d);font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.02em;line-height:1.15}
+.bb-out-meta{display:flex;flex-wrap:wrap}
+.bb-out-meta-item{flex:1;min-width:110px;padding:14px 24px;border-right:1px solid rgba(255,255,255,0.08)}
+.bb-out-meta-item:last-child{border-right:none}
+.bb-out-meta-label{font-family:var(--font-m);font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:4px}
+.bb-out-meta-val{font-family:var(--font-d);font-size:17px;font-weight:700;color:#fff;line-height:1.2}
+.bb-out-body{padding:2rem 2.5rem}
+.bb-out-section{margin-bottom:2rem}
+.bb-out-section-title{font-family:var(--font-b);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.bb-out-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.bb-out-field{padding:12px 14px;background:var(--surface);border-radius:4px}
+.bb-out-field-label{font-family:var(--font-m);font-size:9px;color:var(--ink-soft);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px}
+.bb-out-field-val{font-size:13px;color:var(--ink);line-height:1.5}
+.bb-out-peso{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.bb-out-peso-q{padding:12px;border-radius:4px}
+.bb-out-peso-q.P{background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.2)}
+.bb-out-peso-q.E{background:rgba(78,205,196,0.08);border:1px solid rgba(78,205,196,0.2)}
+
 </style>
 </head>
 <body>
@@ -1418,67 +1440,6 @@ td strong{font-weight:600}
 #bb-output {
   background:var(--white); margin:-2rem -2.5rem; padding:0; min-height:500px;
 }
-.bb-out-hero {
-  background:var(--hero-color, var(--swansway)); color:#fff; padding:2.5rem 2.5rem 2rem;
-  position:relative; overflow:hidden;
-}
-.bb-out-brand { color:#fff !important; }
-.bb-out-type { color:rgba(255,255,255,0.75); }
-.bb-out-meta-label { color:rgba(255,255,255,0.55) !important; }
-.bb-out-meta-val { color:#fff !important; font-weight:600; }
-.bb-out-hero::after {
-  content:''; position:absolute; top:0; right:0; bottom:0; width:35%;
-  background:linear-gradient(to left, rgba(200,16,46,0.08), transparent);
-  pointer-events:none;
-}
-.bb-out-brand {
-  font-family:var(--font-d); font-size:clamp(24px,4vw,40px); font-weight:700;
-  letter-spacing:-0.02em; line-height:1.1; margin-bottom:6px;
-}
-.bb-out-type { font-family:var(--font-m); font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,0.45); margin-bottom:1.5rem; }
-.bb-out-meta { display:flex; gap:2rem; flex-wrap:wrap; }
-.bb-out-meta-label { font-family:var(--font-m); font-size:9px; color:rgba(255,255,255,0.4); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:3px; }
-.bb-out-meta-val { font-family:var(--font-d); font-size:15px; font-weight:600; }
-.bb-out-body { padding:2rem 2.5rem; }
-.bb-out-section { margin-bottom:2rem; }
-.bb-out-section-title {
-  font-family:var(--font-b); font-size:11px; font-weight:600;
-  letter-spacing:0.06em; text-transform:uppercase; color:var(--accent);
-  margin-bottom:1rem; padding-bottom:6px; border-bottom:1px solid var(--border);
-}
-.bb-out-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:1rem; }
-.bb-out-field { padding:12px 14px; background:var(--surface); border-radius:3px; }
-.bb-out-field-label { font-family:var(--font-m); font-size:9px; color:var(--ink-soft); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:4px; }
-.bb-out-field-val { font-size:13px; color:var(--ink); line-height:1.5; }
-.bb-out-peso { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
-.bb-out-peso-q { padding:12px; border-radius:3px; }
-.bb-out-peso-q.P { background:rgba(255,107,53,0.08); border:1px solid rgba(255,107,53,0.2); }
-.bb-out-peso-q.E { background:rgba(78,205,196,0.08); border:1px solid rgba(78,205,196,0.2); }
-.bb-out-peso-q.S { background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.2); }
-.bb-out-peso-q.O { background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); }
-.bb-out-peso-letter { font-family:var(--font-d); font-size:18px; font-weight:700; line-height:1; margin-bottom:4px; }
-.bb-out-peso-name { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; color:var(--ink); }
-.bb-out-peso-items { font-size:11px; color:var(--ink-soft); line-height:1.8; }
-.bb-out-kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-.bb-out-kpi { padding:12px; background:var(--surface); border-radius:3px; border-left:3px solid var(--accent); }
-.bb-out-kpi-label { font-size:10px; color:var(--ink-soft); margin-bottom:3px; }
-.bb-out-kpi-val { font-family:var(--font-d); font-size:15px; font-weight:600; color:var(--ink); }
-.bb-out-tl { display:grid; grid-template-columns:70px 1fr; gap:10px; row-gap:8px; }
-.bb-out-tl-label { font-family:var(--font-m); font-size:9px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.08em; padding-top:4px; }
-.bb-out-tl-pills { display:flex; gap:6px; flex-wrap:wrap; }
-.bb-out-tl-pill { font-size:11px; padding:4px 10px; border-radius:2px; background:var(--surface); border:1px solid var(--border); color:var(--ink); }
-.bb-print-btn{display:inline-flex;align-items:center;gap:6px;padding:0 14px;height:44px;background:var(--surface);color:var(--ink-soft);border:1px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;flex-shrink:0}
-
-
-
-
-
-.bb-print-btn:hover{background:var(--surface-2);color:var(--ink);border-color:var(--ink-soft)}
-
-@media(max-width:900px) {
-  #bb-layout { grid-template-columns:1fr; }
-  #bb-left { position:static; height:auto; }
-  .bb-brand-grid { grid-template-columns:repeat(3,1fr); }
   .bb-ctype-grid { grid-template-columns:repeat(2,1fr); }
   .bb-peso-grid { grid-template-columns:1fr; }
   .bb-out-grid { grid-template-columns:1fr; }
@@ -3947,16 +3908,18 @@ function bbGenerateBrief() {
   document.getElementById('bb-output').style.setProperty('--hero-color', _heroColor);
   document.getElementById('bb-output').innerHTML = `
     <div class="bb-out-hero">
-      <div class="bb-out-brand" style="color:${BB.brand?.color||'#fff'}">${BB.brand?.name?.toUpperCase()||'BRAND'}</div>
-      <div class="bb-out-type">${BB.ctype?.icon||'📋'} ${BB.ctype?.name||'Campaign Brief'} · ${BB.brand?.segment}</div>
+      <div class="bb-out-hero-top">
+        <div class="bb-out-hero-brand" style="background:${BB.brand?.color||'var(--swansway)'}">${BB.brand?.name?.toUpperCase()||'BRAND'}</div>
+        <div class="bb-out-hero-type">${BB.ctype?.name||'Campaign Brief'} &middot; ${BB.brand?.segment||''}</div>
+        <div class="bb-out-hero-title">${title}</div>
+      </div>
       <div class="bb-out-meta">
-        <div><div class="bb-out-meta-label">Budget</div><div class="bb-out-meta-val">£${BB.budget.toLocaleString()}</div></div>
-        <div><div class="bb-out-meta-label">Duration</div><div class="bb-out-meta-val">${week} weeks</div></div>
-        <div><div class="bb-out-meta-label">Dates</div><div class="bb-out-meta-val" style="font-size:13px;font-weight:500">${BB.start_date ? (()=>{ const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; const sd=new Date(BB.start_date+'T00:00:00'),ed=new Date((BB.end_date||BB.start_date)+'T00:00:00'); return sd.getDate()+' '+months[sd.getMonth()]+' – '+ed.getDate()+' '+months[ed.getMonth()]+' '+ed.getFullYear(); })() : fmt(now)+' – '+fmt(end)}</div></div>
-        <div><div class="bb-out-meta-label">Sites</div><div class="bb-out-meta-val" style="font-size:13px;font-weight:500">${BB.scope==='site'&&BB.site_id ? (HUB_SITES.find(s=>s.site_id===BB.site_id)?.site_name||BB.site_id) : (BB.brand?.locations?.join(', ')||'All sites')}</div></div>
+        <div class="bb-out-meta-item"><div class="bb-out-meta-label">Budget</div><div class="bb-out-meta-val">&pound;${BB.budget.toLocaleString()}</div></div>
+        <div class="bb-out-meta-item"><div class="bb-out-meta-label">Duration</div><div class="bb-out-meta-val">${week} weeks</div></div>
+        <div class="bb-out-meta-item"><div class="bb-out-meta-label">Dates</div><div class="bb-out-meta-val" style="font-size:13px;font-weight:500">${BB.start_date ? (()=>{ const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; const sd=new Date(BB.start_date+'T00:00:00'),ed=new Date((BB.end_date||BB.start_date)+'T00:00:00'); return sd.getDate()+' '+months[sd.getMonth()]+' – '+ed.getDate()+' '+months[ed.getMonth()]+' '+ed.getFullYear(); })() : fmt(now)+' – '+fmt(end)}</div></div>
+        <div class="bb-out-meta-item"><div class="bb-out-meta-label">Sites</div><div class="bb-out-meta-val" style="font-size:13px;font-weight:500">${BB.scope==='site'&&BB.site_id ? (HUB_SITES.find(s=>s.site_id===BB.site_id)?.site_name||BB.site_id) : (BB.brand?.locations?.join(', ')||'All sites')}</div></div>
       </div>
     </div>
-
     <div class="bb-out-body">
       <div class="bb-out-section">
         <div class="bb-out-section-title">Campaign objective</div>
