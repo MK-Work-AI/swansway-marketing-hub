@@ -753,7 +753,7 @@ td strong{font-weight:600}
 <div class="briefs-panel" id="briefs-panel">
   <div class="briefs-panel-header">
     <div class="briefs-panel-title">📋 Saved Briefs</div>
-    <button class="briefs-panel-close" onclick="closeBriefsPanel()">×</button>
+    <div style="display:flex;gap:8px;align-items:center"><button onclick="bbNewBrief()" style="font-family:var(--font-b);font-size:11px;font-weight:700;padding:5px 12px;background:var(--accent);border:none;border-radius:4px;color:#fff;cursor:pointer">+ New brief</button><button class="briefs-panel-close" onclick="closeBriefsPanel()">×</button></div>
   </div>
   <div class="briefs-panel-body">
     <div class="brief-filters" id="brief-filters">
@@ -1520,7 +1520,7 @@ td strong{font-weight:600}
 
   <!-- LEFT: Live brief preview -->
   <aside id="bb-left">
-    <div class="bb-panel-eyebrow">Live brief</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div class="bb-panel-eyebrow" style="margin-bottom:0">Live brief</div><button onclick="bbNewBrief()" style="font-family:var(--font-b);font-size:10px;font-weight:700;padding:3px 9px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:rgba(255,255,255,0.8);cursor:pointer">+ New</button></div>
     <div class="bb-panel-brand" id="bbp-brand">SELECT BRAND</div>
     <div class="bb-brief-row"><div class="bb-brief-label">Dates</div><div id="bbp-dates" class="bb-brief-empty">—</div></div>
     <div class="bb-brief-row"><div class="bb-brief-label">Site</div><div id="bbp-site" class="bb-brief-empty">All sites</div></div>
@@ -3163,6 +3163,7 @@ function applyAdminConfig(cfg) {
 document.addEventListener('DOMContentLoaded',()=>{
   loadAdminConfig();
   loadSiteBudgets();
+  bbCheckUrlOnLoad();
   loadSiteKPIs();
   loadSiteContacts();
   setTimeout(mtLoad, 3000);
@@ -8293,6 +8294,7 @@ async function bbSaveBrief() {
     feedback.style.display = 'none';
     window._lastSavedBriefId = data ? data.id : null;
     window._lastSavedBriefTitle = title;
+    if (data && data.id) bbSetUrlBrief(data.id);
     loadBriefs();
     if (data && data.id && BB.start_date && BB.end_date && BB.budget > 0) { bbSaveBudgetCommitments(data.id, title); }
     if (data && data.id && BB._calCampaignId) {
@@ -9112,6 +9114,59 @@ var BB_COPY = {
   ]
 };
 
+
+/* ════════════════════════════════════════════════════════════════
+   NEW BRIEF + URL STATE
+════════════════════════════════════════════════════════════════ */
+
+function bbNewBrief() {
+  if (window._bbCampModeActive) bbExitCampaignMode();
+  BB.brand = null; BB.ctype = null; BB.budget = 5000; BB.duration = null;
+  BB.audiences = []; BB.channels = []; BB.objective = null;
+  BB.proposition = ''; BB.start_date = ''; BB.end_date = '';
+  BB.site_id = ''; BB.scope = 'brand'; BB.step = 1;
+  BB._calCampaignId = null;
+  window._lastSavedBriefId = null;
+  window._lastSavedBriefTitle = null;
+  history.replaceState(null, '', window.location.pathname + '?view=brief');
+  var titleEl = document.getElementById('bb-brief-title');
+  if (titleEl) titleEl.value = '';
+  var feedback = document.getElementById('bb-save-feedback');
+  if (feedback) { feedback.style.display = 'none'; feedback.innerHTML = ''; }
+  var saveBtn = document.getElementById('bb-save-btn');
+  if (saveBtn) { saveBtn.textContent = 'Save brief'; saveBtn.disabled = false; saveBtn.style.background = ''; }
+  var saveBar = document.getElementById('bb-save-bar');
+  if (saveBar) saveBar.style.display = 'none';
+  ['bb-brand-context','bb-step2-context','bb-budget-intel','bb-step4-context','bb-step5-context'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) { el.innerHTML = ''; el.style.display = 'none'; }
+  });
+  var canvas = document.getElementById('bb-campaign-canvas');
+  if (canvas) canvas.style.display = 'none';
+  bbInit();
+  bbGoStep(1);
+  bbUpdateBrief();
+  closeBriefsPanel();
+  showToast('Fresh brief started ??', 'success');
+}
+
+function bbSetUrlBrief(briefId) {
+  if (!briefId) return;
+  history.replaceState({briefId: briefId}, '', window.location.pathname + '?view=brief&brief=' + briefId);
+}
+
+function bbCheckUrlOnLoad() {
+  var params = new URLSearchParams(window.location.search);
+  var view   = params.get('view');
+  var briefId = params.get('brief');
+  if (view === 'brief') {
+    setTimeout(function() {
+      switchView('brief', document.querySelector('[data-view="brief"]'));
+      if (briefId) setTimeout(function() { bbLoadBrief(briefId); }, 400);
+    }, 900);
+  }
+}
+
 /* ── BRIEFS PANEL ── */
 function openBriefsPanel() {
   document.getElementById('briefs-panel').classList.add('open');
@@ -9302,6 +9357,7 @@ async function bbLoadBrief(id) {
     // Launched: enter campaign mode immediately — no delay to avoid flash
     window._lastSavedBriefId = brief.id;
     window._lastSavedBriefTitle = brief.title;
+    bbSetUrlBrief(brief.id);
     // Hide step 6 output first so nothing flashes
     var _s6 = document.getElementById('bb-step-6');
     if (_s6) _s6.style.display = 'none';
