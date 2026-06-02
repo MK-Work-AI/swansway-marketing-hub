@@ -559,6 +559,124 @@ td strong{font-weight:600}
 .quiz-score-bar{height:8px;border-radius:4px;background:#fff;transition:width 1s}
 
 
+
+/* ══════════════════════════════════════════
+   SWANSWAY DESIGN SYSTEM — SHARED TOKENS
+   ══════════════════════════════════════════ */
+
+/* Shared card */
+.sw-card{background:var(--white);border:1.5px solid var(--border);border-radius:6px;overflow:hidden}
+
+/* Label — used everywhere */
+.sw-label{font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft)}
+
+/* Pills */
+.sw-pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;font-family:var(--font-m);white-space:nowrap}
+.sw-pill-muted{background:var(--surface);color:var(--ink-soft)}
+
+/* Notices */
+.sw-notice{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:6px;font-size:13px;margin-bottom:16px}
+.sw-notice-amber{background:#FFFBEB;border:1.5px solid #FCD34D;color:#92400E}
+.sw-notice-green{background:#ECFDF5;border:1.5px solid #6EE7B7;color:#065F46}
+
+/* Avatars */
+.sw-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;background:var(--swansway);font-family:var(--font-m);flex-shrink:0}
+.sw-avatar-sm{width:26px;height:26px;font-size:10px}
+.sw-avatar-lg{width:36px;height:36px;font-size:13px}
+
+/* Blocker + dept tags */
+.sw-blocker-tag{font-size:10px;background:#FEF3C7;color:#92400E;padding:2px 7px;border-radius:10px;font-family:var(--font-m);font-weight:700;letter-spacing:0.04em}
+.sw-dept-tag{font-size:10px;background:var(--surface);color:var(--ink-soft);padding:2px 7px;border-radius:10px;font-family:var(--font-m)}
+
+/* Filter buttons */
+.sw-filter-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--ink-soft);font-size:12px;font-family:var(--font-m);cursor:pointer;transition:all .15s;font-weight:500}
+.sw-filter-btn:hover{border-color:var(--swansway);color:var(--swansway)}
+.sw-filter-btn.active{background:var(--swansway);color:#fff;border-color:var(--swansway)}
+
+/* ══════════════════════════════════════════
+   CAMPAIGN BUILDER — SLACK-STYLE
+   ══════════════════════════════════════════ */
+
+/* Back button */
+.sw-back-btn{background:none;border:none;cursor:pointer;font-size:13px;color:var(--ink-soft);padding:0;margin-bottom:16px;display:inline-flex;align-items:center;gap:6px;font-family:var(--font-m);transition:color .15s}
+.sw-back-btn:hover{color:var(--ink)}
+
+/* Campaign header */
+.sw-campaign-header{background:var(--white);border:1.5px solid var(--border);border-radius:8px;margin-bottom:20px;overflow:hidden}
+.sw-ch-top{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 22px;gap:16px}
+.sw-ch-meta{flex:1}
+.sw-ch-title{font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-0.01em;margin:6px 0 8px}
+.sw-ch-pills{display:flex;gap:6px;flex-wrap:wrap}
+.sw-ch-actions{display:flex;gap:8px;flex-shrink:0;align-items:flex-start;padding-top:4px}
+.sw-advance-btn{font-weight:700}
+
+/* Progress bar */
+.sw-ch-progress{padding:0 22px 14px}
+.sw-ch-prog-bar{height:5px;background:var(--surface-2);border-radius:3px;overflow:hidden;margin-bottom:6px}
+.sw-ch-prog-fill{height:5px;background:var(--accent);border-radius:3px;transition:width .5s cubic-bezier(.16,1,.3,1)}
+.sw-ch-prog-labels{display:flex;justify-content:space-between;font-size:10px;font-family:var(--font-m);color:var(--ink-soft)}
+
+/* Stage pip strip */
+.sw-ch-stages{display:flex;border-top:1px solid var(--border)}
+.sw-stage-pip{flex:1;text-align:center;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;border-right:1px solid rgba(255,255,255,0.08)}
+.sw-stage-pip:last-child{border-right:none}
+.sw-stage-pip-icon{font-size:14px}
+.sw-stage-pip-name{font-size:9px;font-family:var(--font-m);font-weight:700;letter-spacing:0.04em}
+
+/* My tasks spotlight */
+.sw-spotlight{background:rgba(26,46,74,0.04);border:1.5px solid rgba(26,46,74,0.12);border-radius:8px;padding:16px 18px;margin-bottom:20px}
+.sw-spotlight-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.sw-spotlight-title{font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink)}
+.sw-spotlight-sub{font-size:12px;color:var(--ink-soft);margin-top:2px}
+.sw-spotlight-tasks{display:flex;flex-direction:column;gap:6px}
+.sw-spotlight-task{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink)}
+.sw-spotlight-task-done{color:var(--ink-soft);text-decoration:line-through}
+.sw-spotlight-tick{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+
+/* Stage divider — Slack channel style */
+.sw-stage-section{margin-bottom:8px}
+.sw-stage-future{opacity:0.4;pointer-events:none}
+.sw-stage-divider{display:flex;align-items:center;gap:10px;padding:16px 0 10px}
+.sw-stage-divider-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.sw-stage-divider-name{font-family:var(--font-d);font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap}
+.sw-stage-divider-line{flex:1;height:1px;background:var(--border)}
+.sw-empty-tasks{padding:12px 14px;font-size:12px;color:var(--ink-faint);font-style:italic}
+
+/* Task rows — Slack message style */
+.sw-task-row{display:grid;grid-template-columns:24px 28px 1fr auto;gap:10px;align-items:start;padding:11px 14px;border-radius:6px;margin-bottom:2px;transition:background .15s}
+.sw-task-row:hover{background:var(--white)}
+.sw-task-approved{background:rgba(5,150,105,0.04)}
+.sw-task-rejected{background:rgba(220,38,38,0.04)}
+.sw-task-pending{background:rgba(217,119,6,0.04)}
+.sw-task-todo{background:transparent}
+.sw-task-status-icon{font-size:16px;text-align:center;padding-top:2px}
+.sw-task-body{min-width:0}
+.sw-task-name-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.sw-task-name{font-size:13px;font-weight:500;color:var(--ink);line-height:1.3}
+.sw-task-blocker{font-weight:700}
+.sw-task-meta{font-size:11px;color:var(--ink-soft);line-height:1.5}
+.sw-task-assignee{color:var(--ink)}
+.sw-task-note{margin-top:6px;font-size:11px;color:var(--ink-soft);background:rgba(0,0,0,0.03);padding:5px 9px;border-radius:4px;font-style:italic}
+.sw-task-actions{display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;min-width:80px}
+
+/* Task action buttons */
+.sw-btn-complete,.sw-btn-approve,.sw-btn-reject,.sw-btn-note{font-size:11px;font-family:var(--font-m);font-weight:600;padding:5px 12px;border-radius:4px;cursor:pointer;border:none;white-space:nowrap;transition:opacity .15s}
+.sw-btn-complete{background:var(--swansway);color:#fff}
+.sw-btn-approve{background:#059669;color:#fff}
+.sw-btn-reject{background:none;color:#DC2626;border:1px solid #DC2626}
+.sw-btn-note{background:none;color:var(--ink-soft);border:1px solid var(--border)}
+.sw-btn-complete:hover,.sw-btn-approve:hover{opacity:0.85}
+.sw-btn-reject:hover{background:#FEE2E2}
+.sw-btn-note:hover{border-color:var(--ink-soft);color:var(--ink)}
+
+/* Brief list cards — cleaner */
+.brief-card{background:var(--white);border:1.5px solid var(--border);border-radius:6px;padding:16px;margin-bottom:8px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.brief-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px;background:var(--card-color,#ccc)}
+.brief-card:hover{box-shadow:0 2px 12px rgba(0,0,0,0.08);transform:translateY(-1px)}
+
+/* Steps 2-5 context placeholders */
+#bb-step2-context,#bb-step4-context,#bb-step5-context{margin-bottom:1.5rem}
+
 .cal-q-tab{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:4px;background:var(--white);cursor:pointer;font-family:var(--font-b);font-size:12px;font-weight:600;color:var(--ink-soft);transition:all .2s;text-align:center;display:block}
 .cal-q-tab span{display:block;font-size:10px;font-weight:400;color:var(--ink-faint);margin-top:2px;font-family:var(--font-m)}
 .cal-q-tab.active{background:var(--swansway);color:#fff;border-color:var(--swansway)}
@@ -1417,6 +1535,7 @@ td strong{font-weight:600}
       <div class="bb-ctype-grid" id="bb-ctype-grid"></div>
       <div class="bb-section-label">Primary objective</div>
       <div class="bb-obj-grid" id="bb-obj-grid"></div>
+      <div id="bb-step2-context" style="display:none"></div>
       <div class="bb-nav-btns">
         <button class="bb-btn-back" onclick="bbGoStep(1)">← Back</button>
         <button class="bb-btn-next" id="bb-btn-2-next" onclick="bbGoStep(3)" disabled>Next: Budget →</button>
@@ -1452,6 +1571,7 @@ td strong{font-weight:600}
       <div class="bb-eyebrow">Step 04 of 06 — Who</div>
       <div class="bb-headline">Audience <em>architecture</em>,<br>not spray & pray</div>
       <div class="bb-desc">Select up to 3 audience segments. Each brings different channel logic, creative requirements and CPL expectations. CPL estimates are based on Swansway brand benchmarks from the playbook.</div>
+      <div id="bb-step4-context" style="display:none"></div>
       <div class="bb-science">
         <div class="bb-science-eyebrow">⚗ Byron Sharp — How Brands Grow</div>
         <div class="bb-science-text"><strong>95% of your market is not buying right now.</strong> Focusing only on in-market buyers leaves 95% of future revenue untouched. Build mental availability across all three funnel stages — the brand recalled at the moment of purchase wins.</div>
@@ -1469,6 +1589,7 @@ td strong{font-weight:600}
       <div class="bb-eyebrow">Step 05 of 06 — How</div>
       <div class="bb-headline">PESO channels<br>& <em>proposition</em></div>
       <div class="bb-desc">The PESO model treats media as a system, not a list. Channels are pre-recommended by campaign type and brand — toggle to customise. Then write the one thing you want the audience to think, feel or do.</div>
+      <div id="bb-step5-context" style="display:none"></div>
       <div class="bb-maturity" id="bb-maturity-box">
         <div class="bb-maturity-label"><span>PESO maturity level</span><span id="bb-maturity-level-label">—</span></div>
         <div class="bb-maturity-pips" id="bb-maturity-pips"></div>
@@ -1529,11 +1650,11 @@ td strong{font-weight:600}
     </div>
     <div style="width:1px;height:20px;background:var(--border);flex-shrink:0"></div>
     <div style="display:flex;flex-direction:row;gap:5px;flex-wrap:wrap;align-items:center">
-      <button id="cbf-all" onclick="cbSetFilter('all',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--swansway);background:var(--swansway);color:#fff;font-size:12px;font-family:var(--font-m);font-weight:600;cursor:pointer">All</button>
-      <button id="cbf-draft" onclick="cbSetFilter('draft',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--ink-soft);font-size:12px;font-family:var(--font-m);cursor:pointer">Draft</button>
-      <button id="cbf-submitted" onclick="cbSetFilter('submitted',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--ink-soft);font-size:12px;font-family:var(--font-m);cursor:pointer">Submitted</button>
-      <button id="cbf-approved" onclick="cbSetFilter('approved',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--ink-soft);font-size:12px;font-family:var(--font-m);cursor:pointer">Approved</button>
-      <button id="cbf-campaigned" onclick="cbSetFilter('campaigned',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--ink-soft);font-size:12px;font-family:var(--font-m);cursor:pointer">Live</button>
+      <button id="cbf-all" onclick="cbSetFilter('all',this)" class="sw-filter-btn active">All</button>
+      <button id="cbf-draft" onclick="cbSetFilter('draft',this)" class="sw-filter-btn">Draft</button>
+      <button id="cbf-submitted" onclick="cbSetFilter('submitted',this)" class="sw-filter-btn">Submitted</button>
+      <button id="cbf-approved" onclick="cbSetFilter('approved',this)" class="sw-filter-btn">Approved</button>
+      <button id="cbf-campaigned" onclick="cbSetFilter('campaigned',this)" class="sw-filter-btn">Live</button>
     </div>
     <div style="margin-left:auto">
       <button class="btn" id="cb-mytasks-btn" onclick="cbToggleMyTasksFilter()" style="font-size:12px">&#128100; My tasks only</button>
@@ -3186,6 +3307,7 @@ function bbInit() {
 function bbGoStep(n) {
   if(n > BB.step && !bbCanGoTo(n)) return;
   if (n === 3) setTimeout(bbRenderBudgetIntel, 100);
+  if (n === 5) setTimeout(bbRenderStep5Context, 100);
   document.querySelectorAll('.bb-step').forEach(s=>s.classList.remove('bb-active'));
   const target = document.getElementById('bb-step-'+n);
   if(target) target.classList.add('bb-active');
@@ -6262,7 +6384,6 @@ function cbRenderCampaignDetail(c) {
   if (listEl) listEl.style.display = 'none';
   detailEl.style.display = 'block';
   detailEl.innerHTML = '';
-  // Scroll to top of campaigns view
   var vcEl = document.getElementById('view-campaigns');
   if (vcEl) vcEl.scrollIntoView({behavior:'smooth', block:'start'});
   window.scrollTo({top:0, behavior:'smooth'});
@@ -6276,71 +6397,102 @@ function cbRenderCampaignDetail(c) {
   var canAdvance = !!perms.can_advance_stage;
   var canComplete = !!perms.can_complete_tasks;
 
-  // Group tasks by stage
   var byStage = {};
   for (var s = 1; s <= 6; s++) byStage[s] = [];
   tasks.forEach(function(t) { if (byStage[t.stage]) byStage[t.stage].push(t); });
 
   var statusColors = {active:'#059669',paused:'#D97706',complete:'#2563EB',cancelled:'#DC2626'};
   var statusColor = statusColors[c.status] || '#6B7280';
-  var scopeVal = c.site_id || (c.brand_id ? (window.BRAND_NAMES && BRAND_NAMES[c.brand_id] || c.brand_id) : 'Group');
+  var brandColor = (BB_BRANDS && BB_BRANDS.find(function(b){return b.id===c.brand_id;})||{}).color || 'var(--swansway)';
 
-  // ── BACK BUTTON ──
+  // ── BACK ──
   var backBtn = document.createElement('button');
-  backBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:13px;color:var(--ink-soft);padding:0;margin-bottom:16px;display:inline-flex;align-items:center;gap:6px;font-family:var(--font-m)';
+  backBtn.className = 'sw-back-btn';
   backBtn.innerHTML = '\u2190 All campaigns';
   backBtn.onclick = cbBackToDashboard;
   detailEl.appendChild(backBtn);
 
-  // ── CAMPAIGN HEADER CARD ──
-  var headerCard = document.createElement('div');
-  headerCard.style.cssText = 'background:var(--white);border:1px solid var(--border);border-radius:8px;margin-bottom:24px;overflow:hidden';
+  // ── HEADER ──
+  var header = document.createElement('div');
+  header.className = 'sw-campaign-header';
+  var totalTasks = tasks.length;
+  var doneTasks = tasks.filter(function(t){return t.approved;}).length;
+  var pct = totalTasks > 0 ? Math.round(doneTasks/totalTasks*100) : 0;
+  var scopeLabel = c.site_id ? 'Site: ' + c.site_id : c.brand_id ? (window.BRAND_NAMES && BRAND_NAMES[c.brand_id] || c.brand_id) : 'Group';
+  header.innerHTML =
+    '<div class="sw-ch-top" style="border-left:5px solid ' + brandColor + '">' +
+      '<div class="sw-ch-meta">' +
+        '<span class="sw-label">' + CB_STAGE_ICONS[stage-1] + ' Stage ' + stage + ' of 6 — ' + CB_STAGE_NAMES[stage-1] + '</span>' +
+        '<div class="sw-ch-title">' + c.title + '</div>' +
+        '<div class="sw-ch-pills">' +
+          '<span class="sw-pill" style="background:' + statusColor + '20;color:' + statusColor + '">' + c.status.charAt(0).toUpperCase() + c.status.slice(1) + '</span>' +
+          '<span class="sw-pill sw-pill-muted">' + scopeLabel + '</span>' +
+          (c.campaign_type ? '<span class="sw-pill sw-pill-muted">' + c.campaign_type + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="sw-ch-actions">' +
+        (canAdvance && stage < 6 && c.status === 'active' ? '<button class="btn btn-primary sw-advance-btn" data-cid="' + c.id + '" onclick="cbAdvanceStage(this.dataset.cid)">Advance to Stage ' + (stage+1) + ' \u2192</button>' : '') +
+        (canAdvance && stage > 1 ? '<button class="btn" data-cid="' + c.id + '" onclick="cbReopenStage(this.dataset.cid)">\u21a9 Reopen</button>' : '') +
+      '</div>' +
+    '</div>' +
+    '<div class="sw-ch-progress">' +
+      '<div class="sw-ch-prog-bar"><div class="sw-ch-prog-fill" style="width:' + pct + '%"></div></div>' +
+      '<div class="sw-ch-prog-labels">' +
+        '<span>' + doneTasks + ' of ' + totalTasks + ' tasks approved</span>' +
+        '<span>' + pct + '% complete</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="sw-ch-stages">' +
+      CB_STAGE_NAMES.map(function(sn,i){
+        var s2=i+1, done=s2<stage, active=s2===stage;
+        var col = done?'#059669':active?'var(--swansway)':'var(--border)';
+        var tc = (done||active)?'#fff':'var(--ink-faint)';
+        return '<div class="sw-stage-pip" style="background:' + col + ';color:' + tc + '">' +
+          '<span class="sw-stage-pip-icon">' + CB_STAGE_ICONS[i] + '</span>' +
+          '<span class="sw-stage-pip-name">' + sn.split(' ')[0] + '</span>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  detailEl.appendChild(header);
 
-  // Title strip
-  var titleStrip = document.createElement('div');
-  titleStrip.style.cssText = 'background:var(--swansway);padding:20px 24px;display:flex;justify-content:space-between;align-items:center';
-  titleStrip.innerHTML = '<div>'
-    + '<div style="font-family:var(--font-d);font-size:22px;font-weight:700;color:#fff;margin-bottom:4px">' + c.title + '</div>'
-    + '<div style="display:flex;gap:10px;align-items:center">'
-    + '<span style="font-size:12px;background:rgba(255,255,255,0.2);color:#fff;padding:2px 10px;border-radius:10px">' + (c.site_id ? 'Site' : c.brand_id ? 'Brand' : 'Group') + ': ' + scopeVal + '</span>'
-    + '<span style="font-size:12px;background:rgba(255,255,255,0.2);color:#fff;padding:2px 10px;border-radius:10px">' + c.status.charAt(0).toUpperCase() + c.status.slice(1) + '</span>'
-    + '</div></div>'
-    + '<div style="display:flex;gap:8px">'
-    + (canAdvance && stage < 6 && c.status === 'active' ? '<button class="btn" data-cid="' + c.id + '" onclick="cbAdvanceStage(this.dataset.cid)" style="background:#fff;color:var(--swansway);font-weight:700">Advance to Stage ' + (stage+1) + ' \u2192</button>' : '')
-    + (canAdvance && stage > 1 ? '<button class="btn" data-cid="' + c.id + '" onclick="cbReopenStage(this.dataset.cid)" style="background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.3)">\u21a9 Reopen Stage ' + (stage-1) + '</button>' : '')
-    + '</div>';
-  headerCard.appendChild(titleStrip);
-
-  // Stage pipeline
-  var pipeline = document.createElement('div');
-  pipeline.style.cssText = 'display:flex;border-top:1px solid var(--border)';
-  CB_STAGE_NAMES.forEach(function(sn, i) {
-    var s2 = i + 1;
-    var done = s2 < stage, active = s2 === stage;
-    var stageTasks2 = byStage[s2] || [];
-    var comp = stageTasks2.filter(function(t){return t.approved;}).length;
-    var tot = stageTasks2.filter(function(t){return t.is_blocker;}).length;
-    var col = done ? '#059669' : active ? 'var(--swansway)' : 'var(--surface-2)';
-    var tc = (done||active) ? '#fff' : 'var(--ink-faint)';
-    var div = document.createElement('div');
-    div.style.cssText = 'flex:1;text-align:center;padding:12px 6px;background:' + col + ';color:' + tc + ';border-right:1px solid rgba(255,255,255,0.1);cursor:default';
-    div.innerHTML = '<div style="font-size:16px;margin-bottom:2px">' + CB_STAGE_ICONS[i] + '</div>'
-      + '<div style="font-size:10px;font-weight:700;font-family:var(--font-m);margin-bottom:2px">' + sn + '</div>'
-      + (tot > 0 ? '<div style="font-size:10px;opacity:0.85">' + comp + '/' + tot + ' approved</div>' : '<div style="font-size:10px;opacity:0.6">No blockers</div>');
-    pipeline.appendChild(div);
-  });
-  headerCard.appendChild(pipeline);
-  detailEl.appendChild(headerCard);
-
-  // ── USER CONTEXT BAR ──
+  // ── NO USER WARNING ──
   if (!CB_CURRENT_USER) {
     var userBar = document.createElement('div');
-    userBar.style.cssText = 'background:#FEF3C7;border:1px solid #FCD34D;border-radius:6px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#92400E;display:flex;align-items:center;gap:10px';
-    userBar.innerHTML = '<span style="font-size:18px">\u26a0\uFE0F</span><strong>Select your name</strong> from the dropdown at the top to see your actions and approve tasks.';
+    userBar.className = 'sw-notice sw-notice-amber';
+    userBar.innerHTML = '<span style="font-size:18px">\u26a0\ufe0f</span><div><strong>Who are you?</strong> Select your name from the dropdown above to see your tasks and take actions. We promise we won\'t judge.</div>';
     detailEl.appendChild(userBar);
   }
 
-  // ── STAGE SECTIONS ──
+  // ── MY TASKS SPOTLIGHT ──
+  if (CB_CURRENT_USER) {
+    var myTasks = tasks.filter(function(t){ return t.assigned_to === CB_CURRENT_USER && t.stage === stage && !t.approved && !t.rejected; });
+    if (myTasks.length > 0) {
+      var spotlight = document.createElement('div');
+      spotlight.className = 'sw-spotlight';
+      var me = CB_TEAM[CB_CURRENT_USER] || {name: CB_CURRENT_USER};
+      var pending = myTasks.filter(function(t){return !t.completed;}).length;
+      var done2   = myTasks.filter(function(t){return t.completed;}).length;
+      spotlight.innerHTML =
+        '<div class="sw-spotlight-header">' +
+          '<div class="sw-avatar sw-avatar-lg">' + me.name.split(' ').map(function(n){return n[0];}).join('').substring(0,2).toUpperCase() + '</div>' +
+          '<div><div class="sw-spotlight-title">Your tasks this stage, ' + me.name.split(' ')[0] + '</div>' +
+            '<div class="sw-spotlight-sub">' + pending + ' to do &middot; ' + done2 + ' done &middot; awaiting approval</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="sw-spotlight-tasks">' +
+          myTasks.map(function(t){
+            var status = t.completed ? 'done' : 'todo';
+            return '<div class="sw-spotlight-task sw-spotlight-task-' + status + '">' +
+              '<span class="sw-spotlight-tick">' + (t.completed?'\u2713':'\u25cb') + '</span>' +
+              '<span>' + t.task_name + (t.is_blocker?' <span class="sw-blocker-tag">BLOCKER</span>':'') + '</span>' +
+            '</div>';
+          }).join('') +
+        '</div>';
+      detailEl.appendChild(spotlight);
+    }
+  }
+
+  // ── STAGE SECTIONS (Slack-style) ──
   for (var si = 1; si <= 6; si++) {
     var stageTasks = byStage[si];
     var isActive = si === stage;
@@ -6348,170 +6500,83 @@ function cbRenderCampaignDetail(c) {
     var isFuture = si > stage;
     var stageApproved = stageTasks.filter(function(t){return t.approved;}).length;
     var stageBlockers = stageTasks.filter(function(t){return t.is_blocker;}).length;
-    var stageComplete = stageBlockers > 0 && stageTasks.filter(function(t){return t.is_blocker && t.approved;}).length === stageBlockers;
 
     var section = document.createElement('div');
-    section.style.cssText = 'margin-bottom:20px' + (isFuture ? ';opacity:0.45;pointer-events:none' : '');
+    section.className = 'sw-stage-section' + (isFuture?' sw-stage-future':'');
 
-    // Stage header
-    var stageHead = document.createElement('div');
-    stageHead.style.cssText = 'display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:12px 16px;background:' + (isDone?'#F0FDF4':isActive?'rgba(200,16,46,0.04)':'var(--surface)') + ';border-radius:6px;border:1px solid ' + (isDone?'#BBF7D0':isActive?'rgba(200,16,46,0.15)':'var(--border)');
-    stageHead.innerHTML = '<div style="width:32px;height:32px;border-radius:50%;background:' + (isDone?'#059669':isActive?'var(--swansway)':'var(--surface-2)') + ';display:flex;align-items:center;justify-content:center;font-size:14px;color:' + (isDone||isActive?'#fff':'var(--ink-faint)') + ';font-weight:700;flex-shrink:0">' + (isDone?'\u2713':si) + '</div>'
-      + '<div style="flex:1">'
-      + '<div style="font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink)">' + CB_STAGE_ICONS[si-1] + ' Stage ' + si + ': ' + CB_STAGE_NAMES[si-1] + '</div>'
-      + '<div style="font-size:11px;color:var(--ink-soft);margin-top:2px">' + stageApproved + ' of ' + stageBlockers + ' blocker tasks approved' + (stageComplete?' \u2014 \u2705 Stage complete':'') + '</div>'
-      + '</div>'
-      + (isDone ? '<span style="font-size:11px;background:#D1FAE5;color:#059669;padding:3px 10px;border-radius:10px;font-weight:600">\u2713 Complete</span>' : '')
-      + (isActive ? '<span style="font-size:11px;background:rgba(200,16,46,0.1);color:var(--swansway);padding:3px 10px;border-radius:10px;font-weight:600">Active</span>' : '');
-    section.appendChild(stageHead);
+    // ── Stage divider (Slack-style channel header) ──
+    var divider = document.createElement('div');
+    divider.className = 'sw-stage-divider';
+    divider.innerHTML =
+      '<div class="sw-stage-divider-icon" style="background:' + (isDone?'#059669':isActive?'var(--swansway)':'var(--surface-2)') + ';color:' + (isDone||isActive?'#fff':'var(--ink-faint)') + '">' +
+        (isDone ? '\u2713' : CB_STAGE_ICONS[si-1]) +
+      '</div>' +
+      '<div class="sw-stage-divider-name">Stage ' + si + ' &mdash; ' + CB_STAGE_NAMES[si-1] + '</div>' +
+      '<div class="sw-stage-divider-line"></div>' +
+      (isDone ? '<span class="sw-pill" style="background:#D1FAE5;color:#059669">\u2713 Complete</span>' : '') +
+      (isActive ? '<span class="sw-pill" style="background:rgba(200,16,46,0.1);color:var(--accent)">Active</span>' : '') +
+      (stageBlockers > 0 ? '<span class="sw-pill sw-pill-muted">' + stageApproved + '/' + stageBlockers + ' approved</span>' : '');
+    section.appendChild(divider);
 
+    // ── Tasks ──
     if (!stageTasks.length) {
-      var empty = document.createElement('div');
-      empty.style.cssText = 'padding:16px;font-size:13px;color:var(--ink-faint);background:var(--surface);border-radius:6px;text-align:center';
-      empty.textContent = 'No tasks configured for this stage.';
-      section.appendChild(empty);
+      var empty2 = document.createElement('div');
+      empty2.className = 'sw-empty-tasks';
+      empty2.textContent = 'No tasks for this stage.';
+      section.appendChild(empty2);
     } else {
-      var taskWrap = document.createElement('div');
-      taskWrap.style.cssText = 'border:1px solid var(--border);border-radius:6px;overflow:hidden';
-
-      stageTasks.forEach(function(task, tidx) {
+      stageTasks.forEach(function(task) {
         var assignee = CB_TEAM[task.assigned_to] || {name: task.assigned_to || 'Unassigned'};
         var approvedByMember = task.approved_by ? CB_TEAM[task.approved_by] : null;
         var rejectedByMember = task.rejected_by ? CB_TEAM[task.rejected_by] : null;
         var isDigital = task.approver_scope === 'digital';
-
-        // Can this user take action?
         var isMyTask = CB_CURRENT_USER && CB_CURRENT_USER === task.assigned_to;
         var canUserComplete = isActive && canComplete && isMyTask && !task.completed && !task.rejected;
         var canUserApprove = isActive && (canApprove || (canApproveDigital && isDigital)) && task.completed && !task.approved && !task.rejected;
         var canUserReject = isActive && (canReject || canApprove) && task.completed && !task.approved;
         var canUserNote = isActive && CB_CURRENT_USER;
-
-        // Task status
         var taskStatus = task.approved ? 'approved' : task.rejected ? 'rejected' : task.completed ? 'pending' : 'todo';
-        var leftColors = {approved:'#059669', rejected:'#DC2626', pending:'#D97706', todo:'var(--border)'};
-        var bgColors = {approved:'#F0FDF4', rejected:'#FEF2F2', pending:'#FFFBEB', todo: tidx%2===0?'var(--white)':'var(--surface)'};
+        var accentColors = {approved:'#059669', rejected:'#DC2626', pending:'#D97706', todo:'transparent'};
 
         var row = document.createElement('div');
-        row.style.cssText = 'border-bottom:1px solid var(--border);border-left:4px solid ' + leftColors[taskStatus] + ';background:' + bgColors[taskStatus] + ';padding:14px 16px 14px 12px';
+        row.className = 'sw-task-row sw-task-' + taskStatus;
 
-        // Task name row
-        var nameRow = document.createElement('div');
-        nameRow.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px';
+        // Avatar
+        var avatarInitials = assignee.name.split(' ').map(function(n){return n[0];}).join('').substring(0,2).toUpperCase();
+        var avatarColor = assignee.color || 'var(--swansway)';
 
-        var nameLeft = document.createElement('div');
-        nameLeft.style.cssText = 'flex:1';
-        nameLeft.innerHTML = '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">'
-          + '<span style="font-size:14px;font-weight:' + (task.is_blocker?'700':'500') + ';color:var(--ink)">' + task.task_name + '</span>'
-          + (task.is_blocker ? '<span style="font-size:10px;background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:10px;font-family:var(--font-m);font-weight:600">BLOCKER</span>' : '<span style="font-size:10px;background:var(--surface);color:var(--ink-soft);padding:2px 8px;border-radius:10px;font-family:var(--font-m)">OPTIONAL</span>')
-          + '<span style="font-size:10px;background:var(--surface);color:var(--ink-soft);padding:2px 8px;border-radius:10px;font-family:var(--font-m)">' + (task.department||'General') + '</span>'
-          + '</div>';
+        // Status icon
+        var statusIcon = task.approved ? '\u2713' : task.rejected ? '\u2715' : task.completed ? '\u23f3' : '\u25cb';
+        var statusIconColor = {approved:'#059669', rejected:'#DC2626', pending:'#D97706', todo:'var(--ink-faint)'}[taskStatus];
 
-        // Assignee + approver info
-        var metaDiv = document.createElement('div');
-        metaDiv.style.cssText = 'display:flex;align-items:center;gap:16px;flex-wrap:wrap';
+        row.innerHTML =
+          '<div class="sw-task-status-icon" style="color:' + statusIconColor + '">' + statusIcon + '</div>' +
+          '<div class="sw-avatar sw-avatar-sm" style="background:' + avatarColor + ';flex-shrink:0">' + avatarInitials + '</div>' +
+          '<div class="sw-task-body">' +
+            '<div class="sw-task-name-row">' +
+              '<span class="sw-task-name' + (task.is_blocker?' sw-task-blocker':'') + '">' + task.task_name + '</span>' +
+              (task.is_blocker ? '<span class="sw-blocker-tag">BLOCKER</span>' : '') +
+              '<span class="sw-dept-tag">' + (task.department||'General') + '</span>' +
+            '</div>' +
+            '<div class="sw-task-meta">' +
+              '<span class="sw-task-assignee"><strong>' + assignee.name + '</strong></span>' +
+              (task.approved && approvedByMember ? ' &middot; <span style="color:#059669">\u2713 approved by ' + approvedByMember.name + (task.approved_at?' on '+new Date(task.approved_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'') + '</span>' : '') +
+              (task.rejected && rejectedByMember ? ' &middot; <span style="color:#DC2626">\u2715 rejected by ' + rejectedByMember.name + (task.rejection_reason?' &mdash; <em>' + task.rejection_reason + '</em>':'') + '</span>' : '') +
+              (task.completed && !task.approved && !task.rejected ? ' &middot; <span style="color:#D97706">waiting on ' + (isDigital?'Anna, Marcus or Beth':'Anna or Marcus') + '</span>' : '') +
+            '</div>' +
+            (task.notes ? '<div class="sw-task-note">\uD83D\uDCDD ' + task.notes + '</div>' : '') +
+          '</div>' +
+          '<div class="sw-task-actions">' +
+            (canUserComplete ? '<button class="sw-btn-complete" data-tid="' + task.id + '" onclick="cbCompleteTask(this.dataset.tid)">\u2713 Done</button>' : '') +
+            (canUserApprove  ? '<button class="sw-btn-approve" data-tid="' + task.id + '" onclick="cbApproveTask(this.dataset.tid)">\u2713 Approve</button>' : '') +
+            (canUserReject   ? '<button class="sw-btn-reject" data-tid="' + task.id + '" onclick="cbRejectTask(this.dataset.tid)">\u2715 Reject</button>' : '') +
+            (canUserNote     ? '<button class="sw-btn-note" data-tid="' + task.id + '" onclick="cbAddNote(this.dataset.tid)">\uD83D\uDCDD Note</button>' : '') +
+          '</div>';
 
-        // Assignee chip
-        var assigneeChip = document.createElement('div');
-        assigneeChip.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft)';
-        assigneeChip.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:var(--swansway);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">'
-          + assignee.name.split(' ').map(function(n){return n[0];}).join('').substring(0,2).toUpperCase()
-          + '</div><span><strong>' + assignee.name + '</strong> &nbsp;<span style="color:var(--ink-faint)">Owner</span></span>';
-        metaDiv.appendChild(assigneeChip);
-
-        // Approver info
-        if (task.approved && approvedByMember) {
-          var appChip = document.createElement('div');
-          appChip.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:#059669';
-          appChip.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:#059669;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">'
-            + approvedByMember.name.split(' ').map(function(n){return n[0];}).join('').substring(0,2)
-            + '</div><span>\u2713 Approved by <strong>' + approvedByMember.name + '</strong></span>'
-            + '<span style="font-size:10px;color:var(--ink-faint)">' + (task.approved_at ? new Date(task.approved_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '') + '</span>';
-          metaDiv.appendChild(appChip);
-        } else if (task.rejected && rejectedByMember) {
-          var rejChip = document.createElement('div');
-          rejChip.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:#DC2626';
-          rejChip.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:#DC2626;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">'
-            + rejectedByMember.name.split(' ').map(function(n){return n[0];}).join('').substring(0,2)
-            + '</div><span>\u2715 Rejected by <strong>' + rejectedByMember.name + '</strong>'
-            + (task.rejection_reason ? ' \u2014 <em>' + task.rejection_reason + '</em>' : '') + '</span>';
-          metaDiv.appendChild(rejChip);
-        } else if (task.completed && !task.approved) {
-          var pendChip = document.createElement('div');
-          pendChip.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:#D97706';
-          pendChip.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:#D97706;display:inline-block"></span><span>Awaiting approval from <strong>' + (isDigital ? 'Anna, Marcus or Beth Almond' : 'Anna or Marcus') + '</strong></span>';
-          metaDiv.appendChild(pendChip);
-        }
-
-        nameLeft.appendChild(metaDiv);
-
-        // Notes
-        if (task.notes) {
-          var noteDiv = document.createElement('div');
-          noteDiv.style.cssText = 'margin-top:8px;font-size:11px;color:var(--ink-soft);background:rgba(0,0,0,0.03);padding:6px 10px;border-radius:4px;font-style:italic';
-          noteDiv.textContent = '\uD83D\uDCDD ' + task.notes;
-          nameLeft.appendChild(noteDiv);
-        }
-
-        nameRow.appendChild(nameLeft);
-
-        // Action buttons
-        var actions = document.createElement('div');
-        actions.style.cssText = 'display:flex;flex-direction:column;gap:6px;flex-shrink:0;min-width:120px;align-items:flex-end';
-
-        if (canUserComplete) {
-          var btn = document.createElement('button');
-          btn.innerHTML = '\u2713 Mark as done';
-          btn.style.cssText = 'font-size:12px;padding:6px 14px;background:var(--swansway);color:#fff;border:none;border-radius:4px;cursor:pointer;font-family:var(--font-m);font-weight:600;white-space:nowrap';
-          btn.dataset.taskId = task.id;
-          btn.onclick = function(){cbCompleteTask(this.dataset.taskId);};
-          actions.appendChild(btn);
-        }
-        if (canUserApprove) {
-          var btn2 = document.createElement('button');
-          btn2.innerHTML = '\u2713 Approve';
-          btn2.style.cssText = 'font-size:12px;padding:6px 14px;background:#059669;color:#fff;border:none;border-radius:4px;cursor:pointer;font-family:var(--font-m);font-weight:600';
-          btn2.dataset.taskId = task.id;
-          btn2.onclick = function(){cbApproveTask(this.dataset.taskId);};
-          actions.appendChild(btn2);
-        }
-        if (canUserReject) {
-          var btn3 = document.createElement('button');
-          btn3.innerHTML = '\u2715 Reject';
-          btn3.style.cssText = 'font-size:12px;padding:6px 14px;background:none;color:#DC2626;border:1px solid #DC2626;border-radius:4px;cursor:pointer;font-family:var(--font-m);font-weight:600';
-          btn3.dataset.taskId = task.id;
-          btn3.onclick = function(){cbRejectTask(this.dataset.taskId);};
-          actions.appendChild(btn3);
-        }
-        if (canUserNote) {
-          var btn4 = document.createElement('button');
-          btn4.innerHTML = '\uD83D\uDCDD Note';
-          btn4.style.cssText = 'font-size:11px;padding:4px 10px;background:none;border:1px solid var(--border);border-radius:4px;cursor:pointer;color:var(--ink-soft);font-family:var(--font-m)';
-          btn4.dataset.taskId = task.id;
-          btn4.onclick = function(){cbAddNote(this.dataset.taskId);};
-          actions.appendChild(btn4);
-        }
-
-        // Status badge
-        var statusBadges = {
-          approved: '<span style="font-size:11px;background:#D1FAE5;color:#059669;padding:3px 10px;border-radius:10px;font-weight:600">\u2713 Approved</span>',
-          rejected: '<span style="font-size:11px;background:#FEE2E2;color:#DC2626;padding:3px 10px;border-radius:10px;font-weight:600">\u2715 Rejected</span>',
-          pending:  '<span style="font-size:11px;background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:10px;font-weight:600">\u23f3 Pending approval</span>',
-          todo:     isActive ? '<span style="font-size:11px;background:var(--surface);color:var(--ink-soft);padding:3px 10px;border-radius:10px">To do</span>' : ''
-        };
-        if (statusBadges[taskStatus]) {
-          var badge = document.createElement('div');
-          badge.innerHTML = statusBadges[taskStatus];
-          actions.appendChild(badge);
-        }
-
-        nameRow.appendChild(actions);
-        row.appendChild(nameRow);
-        taskWrap.appendChild(row);
+        section.appendChild(row);
       });
-
-      section.appendChild(taskWrap);
     }
+
     detailEl.appendChild(section);
   }
 }
@@ -8829,6 +8894,118 @@ function bbRenderBudgetIntel() {
     + '<div class="bb-context-sub" style="margin-top:10px">' + leadsTake + '</div>'
     + coopLine
     + '</div></div>';
+}
+
+
+/* ── STEP 2 CONTEXT — Campaign type intelligence ── */
+function bbRenderStep2Context() {
+  var el = document.getElementById('bb-step2-context');
+  if (!el || !BB.brand || !BB.ctype) { if(el) el.style.display='none'; return; }
+  el.style.display = 'block';
+  var ctype = BB.ctype;
+  var brand = BB.brand;
+
+  var typeInsights = {
+    'plate':     { emoji:'🔑', headline:'Plate changes — the bread and butter.', copy:'March and September are your golden windows. Competition is fierce, budgets spike, and CPL climbs by ~30%. Start creative early and lock your proposition down before it gets chaotic.' },
+    'awareness': { emoji:'📣', headline:'Awareness — playing the long game.', copy:'No one sees the ROI for 6 months and everyone panics. Stay calm. Ehrenberg-Bass says this is exactly when you\'re building the brand that wins future plate changes. Trust the model.' },
+    'ev':        { emoji:'⚡', headline:'EV campaigns — the future is now awkward.', copy:'Range anxiety is real. Price anchoring is real. But conquest from ICE owners is the biggest opportunity in automotive right now. Lead with total cost of ownership and make it human.' },
+    'finance':   { emoji:'💳', headline:'Finance offers — the numbers have to sing.', copy:'Your APR has to be competitive or the creative doesn\'t matter. Get Beth to sign off on the offer first, build creative second. Finance campaigns live or die in the first line of copy.' },
+    'conquest':  { emoji:'🏆', headline:'Conquest — going after their customers.', copy:'You need a compelling switch reason beyond "we\'re great too". PX value, service superiority, or a killer finance offer. Meta custom audiences of competitor owners are your best weapon here.' },
+  };
+
+  var key = ctype.id || '';
+  var insight = typeInsights[key] || {
+    emoji: '🎯',
+    headline: ctype.name + ' — let\'s make it count.',
+    copy: 'No historical data for this campaign type yet. Run it, wrap it up well, and add a post-mortem so future campaigns start smarter.'
+  };
+
+  el.innerHTML = '<div class="bb-context-card">' +
+    '<div class="bb-context-header">' +
+      '<span class="bb-context-emoji">' + insight.emoji + '</span>' +
+      '<span class="bb-context-title">What works for ' + ctype.name + '</span>' +
+    '</div>' +
+    '<div class="bb-context-body">' +
+      '<div class="bb-context-headline">' + insight.headline + '</div>' +
+      '<div class="bb-context-sub">' + insight.copy + '</div>' +
+    '</div>' +
+    '</div>';
+}
+
+/* ── STEP 4 CONTEXT — Audience intelligence ── */
+function bbRenderStep4Context() {
+  var el = document.getElementById('bb-step4-context');
+  if (!el) return;
+  el.style.display = 'block';
+  if (!BB.brand || !BB.audiences || !BB.audiences.length) {
+    el.innerHTML = '';
+    return;
+  }
+
+  var audienceInsights = {
+    'intender':   { warn:null, tip:'High intent = high CPL. These people are close to buying — don\'t waste them on brand awareness. Make every touchpoint a conversion opportunity.' },
+    'conquest':   { warn:'⚠️ Competitor conquest CPL is ~40% higher than your baseline.', tip:'Worth it if your switch reason is strong. Weak proposition here = expensive clicks and no cars.' },
+    'existing':   { warn:null, tip:'Your most efficient audience. They already trust you. Loyalty and service upsell campaigns convert at 2–3× the rate of cold audiences.' },
+    'ev-curious': { warn:'⚠️ EV-curious audiences are in research mode — long journey, low urgency.', tip:'Lead gen > direct conversion here. Get them on a test drive and let the car do the rest.' },
+    'lapsed':     { warn:null, tip:'They left for a reason. Find out why before you retarget. A discount-first approach rarely fixes a trust problem.' },
+  };
+
+  var html = '';
+  BB.audiences.forEach(function(aud) {
+    var insight = audienceInsights[aud.id] || { warn: null, tip: 'No specific benchmarks for this audience yet — watch your CPL carefully in the first week.' };
+    html += '<div class="bb-context-card">' +
+      '<div class="bb-context-header">' +
+        '<span class="bb-context-emoji">' + aud.icon + '</span>' +
+        '<span class="bb-context-title">' + aud.name + '</span>' +
+        '<span class="sw-pill sw-pill-muted" style="margin-left:auto">' + aud.size + '</span>' +
+      '</div>' +
+      '<div class="bb-context-body">' +
+        (insight.warn ? '<div class="bb-context-sub" style="color:#D97706;font-weight:600;margin-bottom:6px">' + insight.warn + '</div>' : '') +
+        '<div class="bb-context-sub">' + insight.tip + '</div>' +
+        '<div class="bb-intel-grid">' +
+          '<div class="bb-intel-stat"><div class="bb-intel-stat-val">×' + (aud.cpl_mult||1).toFixed(1) + '</div><div class="bb-intel-stat-label">CPL multiplier</div></div>' +
+          '<div class="bb-intel-stat"><div class="bb-intel-stat-val">' + aud.size + '</div><div class="bb-intel-stat-label">Market share</div></div>' +
+        '</div>' +
+      '</div>' +
+      '</div>';
+  });
+
+  el.innerHTML = html;
+}
+
+/* ── STEP 5 CONTEXT — PESO + AutoTrader intel ── */
+function bbRenderStep5Context() {
+  var el = document.getElementById('bb-step5-context');
+  if (!el || !BB.brand) { if(el) el.style.display='none'; return; }
+  el.style.display = 'block';
+
+  var brand = BB.brand;
+  var siteId = BB.site_id;
+  var atRank = null;
+  if (siteId && typeof SITE_KPIS !== 'undefined' && SITE_KPIS[siteId]) {
+    atRank = SITE_KPIS[siteId].autotrader_rank || null;
+  }
+
+  var channels = BB.channels || [];
+  var channelCount = channels.length;
+  var hasPaid = channels.some(function(ch){ return ch.category === 'P'; });
+  var hasSocial = channels.some(function(ch){ return ch.category === 'S'; });
+
+  var tips = [];
+  if (channelCount === 0) tips.push({ emoji:'💡', text:'No channels selected yet. Pick your PESO mix above and the brief will calculate your indicative spend split automatically.' });
+  if (channelCount > 6)  tips.push({ emoji:'⚠️', text:'You\'ve selected ' + channelCount + ' channels. Spreading budget across more than 5–6 channels at this budget level means nothing gets enough fuel to work. Be brutal.' });
+  if (hasPaid && !hasSocial) tips.push({ emoji:'📱', text:'No social in the mix. Even a small Meta retargeting budget improves Google conversion rates by warming audiences first. Consider adding it.' });
+  if (atRank) tips.push({ emoji:'🚗', text: (siteId || brand.name) + ' AutoTrader rank: <strong>#' + atRank + '</strong>. ' + (atRank <= 10 ? 'Strong position — your PPC budget is working. Keep digital channels prioritised.' : 'Room to climb. More budget into AutoTrader Promoted Listings could move this significantly.') });
+  if (!atRank && siteId) tips.push({ emoji:'🚗', text:'No AutoTrader rank data for this site yet. Add it in the KPI tracker so future briefs can factor it in.' });
+
+  if (!tips.length) tips.push({ emoji:'✅', text:'Good channel mix. ' + channelCount + ' channels across the PESO model. Make sure your proposition works hard across all of them — one message, many placements.' });
+
+  el.innerHTML = '<div class="bb-context-card">' +
+    '<div class="bb-context-header"><span class="bb-context-emoji">📡</span><span class="bb-context-title">Channel intelligence</span></div>' +
+    '<div class="bb-context-body">' +
+      tips.map(function(t){ return '<div class="bb-context-sub" style="display:flex;gap:8px;margin-bottom:8px"><span>' + t.emoji + '</span><span>' + t.text + '</span></div>'; }).join('') +
+    '</div>' +
+    '</div>';
 }
 
 /* ── BRIEFS PANEL ── */
