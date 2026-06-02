@@ -9007,13 +9007,6 @@ async function bbCampAdvance(campId, currentStage) {
 function bbExitCampaignMode() {
   window._bbCampModeActive = false;
 
-  // Restore left sidebar
-  var left = document.getElementById('bb-left');
-  if (left && left.dataset.origContent) {
-    left.innerHTML = left.dataset.origContent;
-    delete left.dataset.origContent;
-  }
-
   // Show step indicator + progress
   var indicator = document.getElementById('bb-step-indicator');
   var progress  = document.getElementById('bb-progress-track');
@@ -9024,14 +9017,44 @@ function bbExitCampaignMode() {
   var canvas = document.getElementById('bb-campaign-canvas');
   if (canvas) canvas.style.display = 'none';
 
-  // Go to step 1 so team can edit from the beginning
-  document.querySelectorAll('.bb-step').forEach(function(s){ s.style.display = 'none'; });
+  // Restore sidebar to brief panel state (not the origContent snapshot which was blank)
+  var left = document.getElementById('bb-left');
+  if (left) delete left.dataset.origContent;
+
+  // Go to step 1
   document.querySelectorAll('.bb-step').forEach(function(s){ s.classList.remove('bb-active'); });
   BB.step = 1;
   bbGoStep(1);
 
-  // Update brief context
-  bbUpdateBrief();
+  // Re-apply brand selection visually
+  setTimeout(function() {
+    if (BB.brand) {
+      // Mark the correct brand pill as selected
+      document.querySelectorAll('.bb-brand-pill').forEach(function(p) {
+        p.classList.toggle('selected', p.dataset.brand === BB.brand.id);
+      });
+      // Re-render brand context in sidebar
+      bbUpdateBrief();
+      bbRenderBrandContext();
+      // Show scope + dates sections
+      var scopeSec = document.getElementById('bb-scope-section');
+      var datesSec = document.getElementById('bb-dates-section');
+      if (scopeSec) scopeSec.style.display = 'block';
+      if (datesSec) datesSec.style.display = 'block';
+      // Restore site picker if site scope
+      if (BB.scope === 'site') {
+        var scopeSiteBtn = document.getElementById('scope-site');
+        var scopeBrandBtn = document.getElementById('scope-brand');
+        if (scopeSiteBtn) scopeSiteBtn.classList.add('bb-selected');
+        if (scopeBrandBtn) scopeBrandBtn.classList.remove('bb-selected');
+        var picker = document.getElementById('bb-site-picker');
+        if (picker) { picker.style.display = 'block'; setTimeout(bbRenderSiteGrid, 100); }
+      }
+      // Enable step 1 next button
+      var btn1 = document.getElementById('bb-btn-1-next');
+      if (btn1) btn1.disabled = false;
+    }
+  }, 100);
 }
 
 
@@ -9376,6 +9399,14 @@ async function bbLoadBrief(id) {
 
     // Go to step 6 to show the full brief
     bbGoStep(6);
+    // Re-apply brand selection visually (brand pill in step 1)
+    if (BB.brand) {
+      document.querySelectorAll('.bb-brand-pill').forEach(function(p) {
+        p.classList.toggle('selected', p.dataset.brand === BB.brand.id);
+      });
+      var btn1 = document.getElementById('bb-btn-1-next');
+      if (btn1) btn1.disabled = false;
+    }
     // Lock title for saved brief
     setTimeout(function() {
       var _titleEl = document.getElementById('bb-brief-title');
