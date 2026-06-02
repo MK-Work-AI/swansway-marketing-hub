@@ -325,6 +325,30 @@ td strong{font-weight:600}
 .brief-card-btn:hover{background:var(--surface-2);color:var(--ink)}
 .brief-card-btn.danger:hover{background:#FEE2E2;color:var(--accent);border-color:var(--accent)}
 
+/* ── Strategic Priorities ── */
+.sp-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:2rem}
+.sp-card{background:var(--white);border:1.5px solid var(--border);border-radius:8px;overflow:hidden;transition:box-shadow .2s}
+.sp-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.08)}
+.sp-card-top{background:var(--swansway);padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+.sp-card-num{font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.5)}
+.sp-card-actions{display:flex;gap:6px}
+.sp-card-edit{background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:var(--font-m);font-weight:600}
+.sp-card-edit:hover{background:rgba(255,255,255,0.25)}
+.sp-card-body{padding:18px}
+.sp-card-title{font-family:var(--font-d);font-size:17px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-0.01em;line-height:1.2}
+.sp-card-desc{font-size:13px;color:var(--ink-soft);line-height:1.7}
+.sp-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px}
+.sp-modal{background:var(--white);border-radius:8px;width:100%;max-width:540px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.sp-modal-header{background:var(--swansway);padding:18px 22px;display:flex;justify-content:space-between;align-items:center}
+.sp-modal-title{font-family:var(--font-d);font-size:18px;font-weight:700;color:#fff}
+.sp-modal-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:18px}
+.sp-modal-body{padding:22px;display:flex;flex-direction:column;gap:14px}
+.sp-field-label{font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px}
+.sp-field-input{width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:13px;color:var(--ink);outline:none;transition:border-color .15s}
+.sp-field-input:focus{border-color:var(--swansway)}
+.sp-field-textarea{width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:13px;color:var(--ink);outline:none;resize:vertical;min-height:100px;line-height:1.6}
+.sp-field-textarea:focus{border-color:var(--swansway)}
+.sp-modal-footer{display:flex;gap:8px;padding:0 22px 22px}
 /* ── Brand context + budget intel cards ── */
 .bb-context-card{background:var(--white);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1rem}
 .bb-context-header{padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--surface)}
@@ -781,6 +805,7 @@ td strong{font-weight:600}
         <button class="nav-dd-item active" data-view="group" onclick="navGo('group',this)">Overview</button>
         <button class="nav-dd-item" data-view="channels" onclick="navGo('channels',this)">Channels</button>
         <button class="nav-dd-item" data-view="kpis" onclick="navGo('kpis',this)">KPIs</button>
+        <button class="nav-dd-item" data-view="priorities" onclick="navGo('priorities',this)">Priorities</button>
         <button class="nav-dd-item" data-view="competitor" onclick="navGo('competitor',this)">Competitors</button>
         <div class="nav-dd-sep"></div>
         <div class="nav-dd-section-label">Brand plans</div>
@@ -851,21 +876,17 @@ td strong{font-weight:600}
   <div class="sh"><div><div class="sh-title">All 11 Brands at a Glance</div><div class="sh-sub">Click any brand card to open its full marketing plan</div></div></div>
   <div class="brand-grid" id="group-brand-grid"></div>
 
-  <div class="sh"><div><div class="sh-title">2026 Strategic Priorities</div><div class="sh-sub">Group-wide themes that run through every brand plan</div></div></div>
-  <div class="pillars" style="--brand-color:#1A2E4A">
-    <div class="pillar"><div class="pillar-num">PRIORITY 01</div><div class="pillar-title">EV Transition Leadership</div><div class="pillar-desc">Drive electric adoption across BYD, CUPRA, VW, Peugeot and the new OMODA/JAECOO range. Education-first campaigns, home charger incentives, BIK savings calculators for fleet. Target conquest of Tesla and BMW i-series owners.</div></div>
-    <div class="pillar"><div class="pillar-num">PRIORITY 02</div><div class="pillar-title">Digital Lead Generation</div><div class="pillar-desc">Group-level PPC, AutoTrader prominence, social-first content strategy led by group social team. Target 2,400+ digital leads/month across all brands. Sub-£38 cost-per-lead across premium brands, sub-£22 mainstream.</div></div>
-    <div class="pillar"><div class="pillar-num">PRIORITY 03</div><div class="pillar-title">Fleet & B2B Growth</div><div class="pillar-desc">Leverage Swansway's Fleet Procure Dealer Group of the Year win. Cross-brand fleet proposition — VW Commercial, Audi, Land Rover and Peugeot fleet packages. LinkedIn B2B outreach, Chamber of Commerce partnerships, fleet drive days at Crewe HQ.</div></div>
-    <div class="pillar"><div class="pillar-num">PRIORITY 04</div><div class="pillar-title">Aftersales Revenue</div><div class="pillar-desc">Grow service retention to 70%+ across all brands via lifecycle CRM, service plan promotions and MOT reminder campaigns. Target lapsed customers 3+ years. Bodyshop at Crewe as additional revenue stream for all brands.</div></div>
-    <div class="pillar"><div class="pillar-num">PRIORITY 05</div><div class="pillar-title">Community & Family Values</div><div class="pillar-desc">Amplify the Swansway family story — Smyth family 55+ years. Partnerships with Cheshire, Staffordshire and Lancashire community foundations. Crewe Alexandra, CUPRA padel tennis. Local sponsorships as brand-building at each site.</div></div>
-    <div class="pillar"><div class="pillar-num">PRIORITY 06</div><div class="pillar-title">Approved Used at Scale</div><div class="pillar-desc">Motor Match 5 sites plus approved used at all 30 franchised dealerships. Daily stock pricing discipline, AutoTrader Top Value Dealer status maintenance. Finance-first messaging. Target conquest from CarGurus and Autotrader supermarkets.</div></div>
-  </div>
-
   <div class="sh"><div><div class="sh-title">Recommended Budget Split by Brand</div><div class="sh-sub">Weighted by site count, segment margin and EV priority</div></div></div>
   <div class="chart-wrap">
     <div class="chart-canvas-wrap"><canvas id="groupBudgetChart" role="img" aria-label="Group budget split by brand">Audi 19%, VW 14%, Land Rover 12%, SEAT/CUPRA 10%, Honda 9%, Peugeot 9%, VW Commercial 8%, Jaguar 7%, BYD 6%, OMODA/JAECOO 4%, Motor Match 2%.</canvas></div>
     <div class="chart-legend" id="groupBudgetLegend"></div>
   </div>
+</div>
+
+
+<div class="view" id="view-priorities">
+  <div class="page-strip"><div><div class="page-title">2026 Strategic Priorities</div><div class="page-subtitle">Group-wide themes that run through every campaign</div></div><div class="action-row"><button class="btn btn-accent" onclick="spOpenAdd()">+ Add priority</button></div></div>
+  <div id="sp-list" class="sp-list"></div>
 </div>
 
 <!-- ============================================================
@@ -2517,6 +2538,7 @@ function switchView(id, el) {
   // View-specific load hooks
   if (id === 'campaigns') { if(typeof cbLoad==='function') cbLoad(); }
   if (id === 'channels')  { updateGroupChannelsFromBrands(); setTimeout(renderGroupChannels, 200); }
+  if (id === 'priorities') { spLoad(); }
   navUpdateActive(id);
 }
 
@@ -9096,6 +9118,135 @@ function bbRenderStep5Context() {
       tips.map(function(t){ return '<div class="bb-context-sub" style="display:flex;gap:8px;margin-bottom:8px"><span>' + t.emoji + '</span><span>' + t.text + '</span></div>'; }).join('') +
     '</div>' +
     '</div>';
+}
+
+
+/* ════════════════════════════════════════════════════════
+   STRATEGIC PRIORITIES — Supabase-backed
+════════════════════════════════════════════════════════ */
+var SP_DATA = [];
+var SP_EDITING_ID = null;
+var SP_BASE = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+
+async function spLoad() {
+  var el = document.getElementById('sp-list');
+  if (!el) return;
+  el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint);font-size:13px">Loading priorities…</div>';
+  try {
+    var rows = await fetch(SP_BASE + '/strategic_priorities?select=*&order=sort_order', {
+      headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY}
+    }).then(function(r){ return r.json(); });
+    if (!Array.isArray(rows)) throw new Error('Bad response');
+    SP_DATA = rows.filter(function(r){ return r.active !== false; });
+    spRender();
+  } catch(e) {
+    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint)">Could not load priorities. Check your connection.</div>';
+    console.warn('spLoad:', e);
+  }
+}
+
+function spRender() {
+  var el = document.getElementById('sp-list');
+  if (!el) return;
+  if (!SP_DATA.length) {
+    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint);font-size:13px">No priorities yet. Hit <strong>+ Add priority</strong> to get started.</div>';
+    return;
+  }
+  el.innerHTML = SP_DATA.map(function(p) {
+    return '<div class="sp-card">'
+      + '<div class="sp-card-top">'
+        + '<span class="sp-card-num">PRIORITY ' + String(p.number).padStart(2,'0') + '</span>'
+        + '<div class="sp-card-actions">'
+          + '<button class="sp-card-edit" data-id="' + p.id + '" onclick="spOpenEdit(' + p.id + ')">Edit</button>'
+          + '<button class="sp-card-edit" data-id="' + p.id + '" onclick="spDelete(' + p.id + ')" style="background:rgba(200,16,46,0.4)">Delete</button>'
+        + '</div>'
+      + '</div>'
+      + '<div class="sp-card-body">'
+        + '<div class="sp-card-title">' + spEsc(p.title) + '</div>'
+        + '<div class="sp-card-desc">' + spEsc(p.description) + '</div>'
+      + '</div>'
+    + '</div>';
+  }).join('');
+}
+
+function spEsc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function spOpenAdd() {
+  SP_EDITING_ID = null;
+  spShowModal('Add priority', '', '', SP_DATA.length + 1, 'spSave()');
+}
+
+function spOpenEdit(id) {
+  var p = SP_DATA.find(function(x){ return x.id === id; });
+  if (!p) return;
+  SP_EDITING_ID = id;
+  spShowModal('Edit priority', p.title, p.description, p.number, 'spSave()');
+}
+
+function spShowModal(heading, title, desc, num, saveFn) {
+  var existing = document.getElementById('sp-modal');
+  if (existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.className = 'sp-modal-overlay';
+  overlay.id = 'sp-modal';
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  overlay.innerHTML = '<div class="sp-modal">'
+    + '<div class="sp-modal-header">'
+      + '<div class="sp-modal-title">' + heading + '</div>'
+      + '<button class="sp-modal-close" onclick="document.getElementById(\'sp-modal\').remove()">&times;</button>'
+    + '</div>'
+    + '<div class="sp-modal-body">'
+      + '<div><div class="sp-field-label">Priority number</div><input class="sp-field-input" id="sp-f-num" type="number" min="1" max="20" value="' + num + '"></div>'
+      + '<div><div class="sp-field-label">Title</div><input class="sp-field-input" id="sp-f-title" placeholder="e.g. EV Transition Leadership" value="' + spEsc(title) + '"></div>'
+      + '<div><div class="sp-field-label">Description</div><textarea class="sp-field-textarea" id="sp-f-desc" placeholder="What does this priority mean for every campaign this year?">' + spEsc(desc) + '</textarea></div>'
+    + '</div>'
+    + '<div class="sp-modal-footer">'
+      + '<button class="btn btn-primary" style="flex:1" onclick="' + saveFn + '">Save priority</button>'
+      + '<button class="btn" style="flex:1" onclick="document.getElementById(\'sp-modal\').remove()">Cancel</button>'
+    + '</div>'
+  + '</div>';
+  document.body.appendChild(overlay);
+}
+
+async function spSave() {
+  var num   = parseInt(document.getElementById('sp-f-num').value) || 1;
+  var title = document.getElementById('sp-f-title').value.trim();
+  var desc  = document.getElementById('sp-f-desc').value.trim();
+  if (!title) { alert('Please enter a title.'); return; }
+  if (!desc)  { alert('Please enter a description.'); return; }
+  var payload = { number: num, title: title, description: desc, year: 2026, sort_order: num, active: true, updated_at: new Date().toISOString() };
+  try {
+    if (SP_EDITING_ID) {
+      await fetch(SP_BASE + '/strategic_priorities?id=eq.' + SP_EDITING_ID, {
+        method: 'PATCH',
+        headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal'},
+        body: JSON.stringify(payload)
+      });
+    } else {
+      await fetch(SP_BASE + '/strategic_priorities', {
+        method: 'POST',
+        headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal'},
+        body: JSON.stringify(payload)
+      });
+    }
+    document.getElementById('sp-modal').remove();
+    spLoad();
+  } catch(e) { alert('Error saving: ' + e.message); }
+}
+
+async function spDelete(id) {
+  var p = SP_DATA.find(function(x){ return x.id === id; });
+  if (!p) return;
+  if (!confirm('Delete "' + p.title + '"? This cannot be undone.')) return;
+  try {
+    await fetch(SP_BASE + '/strategic_priorities?id=eq.' + id, {
+      method: 'DELETE',
+      headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY}
+    });
+    spLoad();
+  } catch(e) { alert('Error deleting: ' + e.message); }
 }
 
 /* ── BRIEFS PANEL ── */
