@@ -234,8 +234,6 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
     <button class="snav active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
     <button class="snav" onclick="showPage('group-settings',this)">⚙️ Group Settings</button>
     <button class="snav" onclick="showPage('channels',this)">📡 Channel Mix</button>
-    <button class="snav" onclick="showPage('group-kpis',this)">🎯 Group KPIs</button>
-    <button class="snav" onclick="showPage('calendar',this)">📅 Campaign Calendar</button>
   </div>
   <div class="sidebar-section">
     <div class="sidebar-label">Brand Plans</div>
@@ -352,10 +350,6 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
       </div>
     </div>
 
-    <div class="card mb2">
-      <div class="card-header"><div class="card-title">📌 Strategic priorities</div><div style="font-size:12px;color:var(--ink-soft)">Edit the 6 group-wide pillars shown in the plan</div></div>
-      <div class="card-body" id="priority-editor"></div>
-    </div>
 
     <div class="flex-row">
       <button class="btn btn-success" onclick="saveAll()">✓ Save all group settings</button>
@@ -401,33 +395,6 @@ body{font-family:var(--fb);background:var(--surface);color:var(--ink);font-size:
   </div>
 
   <!-- ══ GROUP KPIs ══ -->
-  <div class="page" id="page-group-kpis">
-    <div class="page-title">Group KPI Framework</div>
-    <div class="page-sub">Set targets, actuals and ownership for all group-level measures</div>
-    <div class="card">
-      <div class="card-header"><div class="card-title">🎯 KPI targets & tracking</div><button class="btn btn-sm" onclick="addGroupKPI()">+ Add KPI</button></div>
-      <div class="card-body" style="padding:0">
-        <table class="brand-table" style="width:100%">
-          <thead><tr><th>KPI</th><th>Target</th><th>Actual / Current</th><th>% of target</th><th>Status</th><th>Owner</th><th></th></tr></thead>
-          <tbody id="group-kpi-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-    <div style="margin-top:1rem"><button class="btn btn-success" onclick="saveAll()">✓ Save KPI settings</button></div>
-  </div>
-
-  <!-- ══ CALENDAR ══ -->
-  <div class="page" id="page-calendar">
-    <div class="page-title">Campaign Calendar</div>
-    <div class="page-sub">Manage group-wide campaign moments and key dates for 2026</div>
-    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
-      <button class="btn btn-primary" onclick="saveAll()" style="padding:8px 20px;font-size:13px">✓ Save all changes</button>
-    </div>
-    <div id="calendar-quarters"></div>
-    <div style="margin-top:1.5rem;display:flex;justify-content:flex-end">
-      <button class="btn btn-primary" onclick="saveAll()" style="padding:8px 20px;font-size:13px">✓ Save all changes</button>
-    </div>
-  </div>
 
   <!-- ══ BRAND PAGE (dynamic) ══ -->
   <div class="page" id="page-brand">
@@ -732,15 +699,7 @@ const BRAND_DEFAULTS = [
 const GROUP_DEFAULTS = {
   name:'Swansway Motor Group', year:'2026', desc:'11 brands · 30 dealerships · North West, Midlands & North Wales',
   fystart:'January', budget:0, evPct:38, digSplit:'70% digital / 30% traditional', coopPct:15,
-  units:0, leads:0, evSales:0, conv:0, retention:0, used:0, nps:0, cpl:0,
-  priorities:[
-    {title:'EV Transition Leadership',desc:'Drive electric adoption across BYD, CUPRA, VW, Peugeot and OMODA/JAECOO. Education-first campaigns, home charger incentives, BIK savings calculators for fleet.'},
-    {title:'Digital Lead Generation',desc:'Group-level PPC, AutoTrader prominence, social-first content strategy. Target 2,400+ digital leads/month across all brands. Sub-£38 CPL for premium, sub-£22 mainstream.'},
-    {title:'Fleet & B2B Growth',desc:'Leverage Fleet Procure Group of the Year win. Cross-brand fleet proposition — VW Commercial, Audi, Land Rover and Peugeot. LinkedIn B2B outreach, Chamber partnerships.'},
-    {title:'Aftersales Revenue',desc:'Grow service retention to 68%+ across all brands via lifecycle CRM, service plan promotions and MOT reminder campaigns. Target lapsed customers 3+ years.'},
-    {title:'Community & Family Values',desc:'Amplify the Swansway family story — Smyth family 55+ years. Partnerships with Cheshire, Staffordshire and Lancashire community foundations.'},
-    {title:'Approved Used at Scale',desc:'Motor Match 5 sites plus approved used at all 30 franchised dealerships. Daily stock pricing discipline, AutoTrader Top Value Dealer status maintenance.'},
-  ]
+  units:0, leads:0, evSales:0, conv:0, retention:0, used:0, nps:0, cpl:0
 };
 
 const CHANNEL_DEFAULTS = [
@@ -1214,17 +1173,6 @@ function onGroupBudgetChange() {
   renderChannelEditor();
 }
 
-function renderPriorityEditor() {
-  document.getElementById('priority-editor').innerHTML = STATE.group.priorities.map((p,i)=>`
-    <div style="border:1px solid var(--border);border-radius:3px;padding:14px;margin-bottom:10px;background:var(--surface)">
-      <div class="form-grid-2" style="margin-bottom:8px">
-        <div class="form-group"><label class="form-label">Priority ${i+1} title</label><input class="form-input" value="${p.title}" oninput="STATE.group.priorities[${i}].title=this.value;autoSave()"></div>
-        <div></div>
-      </div>
-      <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" oninput="STATE.group.priorities[${i}].desc=this.value;autoSave()">${p.desc}</textarea></div>
-    </div>
-  `).join('');
-}
 
 function resetGroupDefaults() {
   if(!confirm('Reset group settings to defaults?')) return;
@@ -1471,20 +1419,8 @@ function updateKPIRow(i) {
   if(el) { el.textContent=status; el.className='status-pill '+(status==='On track'?'status-green':status==='At risk'?'status-amber':status==='Off track'?'status-red':''); }
 }
 
-function addGroupKPI() {
-  STATE.kpis.push({label:'New KPI',target:100,actual:0,owner:'TBC'});
-  renderKPIEditor();
-}
 
-function removeKPI(i) {
-  STATE.kpis.splice(i,1);
-  renderKPIEditor();
-  autoSave();
-}
 
-function collectKPIForm() {
-  // Already collected live via oninput handlers
-}
 
 /* ══════════════════════════════════════════
    CALENDAR EDITOR
@@ -1577,17 +1513,7 @@ function renderCalendarEditor() {
   });
 }
 
-function addCalEvent(qi) {
-  STATE.calendar[qi].events.push({brand:'All brands',label:'New campaign',color:'#374151'});
-  renderCalendarEditor();
-  autoSave();
-}
 
-function removeCalEvent(qi,ei) {
-  STATE.calendar[qi].events.splice(ei,1);
-  renderCalendarEditor();
-  autoSave();
-}
 
 /* ══════════════════════════════════════════
    IMPORT / EXPORT
