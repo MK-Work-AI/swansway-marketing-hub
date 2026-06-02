@@ -3911,7 +3911,7 @@ function bbGenerateBrief() {
       <div class="bb-out-hero-top">
         <div class="bb-out-hero-brand" style="background:${BB.brand?.color||'var(--swansway)'}">${BB.brand?.name?.toUpperCase()||'BRAND'}</div>
         <div class="bb-out-hero-type">${BB.ctype?.name||'Campaign Brief'} &middot; ${BB.brand?.segment||''}</div>
-        <div class="bb-out-hero-title">${title}</div>
+        <div class="bb-out-hero-title">${document.getElementById('bb-brief-title')?.value||BB.brand?.name||'Campaign Brief'}</div>
       </div>
       <div class="bb-out-meta">
         <div class="bb-out-meta-item"><div class="bb-out-meta-label">Budget</div><div class="bb-out-meta-val">&pound;${BB.budget.toLocaleString()}</div></div>
@@ -5890,6 +5890,7 @@ function applyAdminKPITargets() {
 }
 
 function updateGroupKPIsFromSites() {
+  if (window._updatingKPIs) return; window._updatingKPIs = true; setTimeout(function(){ window._updatingKPIs = false; }, 500);
   console.log('updateGroupKPIsFromSites: SITE_KPIS has', Object.keys(SITE_KPIS).length, 'sites');
   if (!Object.keys(SITE_KPIS).length) { console.log('SITE_KPIS empty — skipping'); return; }
   var sites = HUB_SITES;
