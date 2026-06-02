@@ -349,6 +349,8 @@ td strong{font-weight:600}
 .sp-field-textarea{width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:13px;color:var(--ink);outline:none;resize:vertical;min-height:100px;line-height:1.6}
 .sp-field-textarea:focus{border-color:var(--swansway)}
 .sp-modal-footer{display:flex;gap:8px;padding:0 22px 22px}
+/* ── Campaign Mode Canvas ── */
+#bb-campaign-canvas{display:none;padding:0;animation:bbFadeUp .35s cubic-bezier(.16,1,.3,1) forwards}
 /* ── Brand context + budget intel cards ── */
 .bb-context-card{background:var(--white);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1rem}
 .bb-context-header{padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--surface)}
@@ -832,7 +834,6 @@ td strong{font-weight:600}
       <div class="nav-dd-panel">
         <button class="nav-dd-item" data-view="crosscal" onclick="navGo('crosscal',this)">Campaign Calendar</button>
         <button class="nav-dd-item nav-item-cta" data-view="brief" onclick="navGo('brief',this)">Brief Builder</button>
-        <button class="nav-dd-item" data-view="campaigns" onclick="navGo('campaigns',this)">Campaigns</button>
       </div>
     </div>
 
@@ -7225,13 +7226,11 @@ async function bbLaunchCampaignFromBrief(briefId, briefTitle) {
     if (typeof CB_CAMPAIGNS !== 'undefined') CB_CAMPAIGNS.unshift(camp);
     if (typeof CB_ALL_BRIEFS !== 'undefined') CB_ALL_BRIEFS = CB_ALL_BRIEFS.map(function(b){return b.id===briefId?Object.assign({},b,{status:'campaigned'}):b;});
 
-    // Clear save card and feedback, show success state only
+    // Enter campaign mode
     var _sc2 = document.getElementById('bb-save-bar');
-    var _sf2 = document.getElementById('bb-save-feedback');
     if (_sc2) _sc2.style.display = 'none';
-    if (_sf2) { _sf2.style.display = 'none'; _sf2.innerHTML = ''; }
-    bbRenderCampaignSection({id:briefId,title:briefTitle,status:'campaigned'});
-    // Refresh My Tasks badge
+    var launchedBrief = {id:briefId,title:briefTitle,status:'campaigned',brand_id:BB.brand?BB.brand.id:null,budget:BB.budget,start_date:BB.start_date,end_date:BB.end_date,site_id:BB.site_id,scope:BB.scope,campaign_type:BB.ctype?BB.ctype.name:null};
+    await bbEnterCampaignMode(launchedBrief);
     setTimeout(mtLoad, 500);
     loadBriefs();
 
@@ -9257,6 +9256,276 @@ async function spDelete(id) {
   } catch(e) { alert('Error deleting: ' + e.message); }
 }
 
+
+/* ════════════════════════════════════════════════════════════════
+   UNIFIED BRIEF → CAMPAIGN MODE
+   Single flow: Brief Builder transforms into Campaign Manager
+════════════════════════════════════════════════════════════════ */
+
+async function bbEnterCampaignMode(brief) {
+  // Load team/perms first
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+
+  if (!Object.keys(CB_TEAM).length) {
+    var t = await fetch(base+'/campaign_team?select=*&active=eq.true',{headers:hdrs}).then(function(r){return r.json();});
+    var p = await fetch(base+'/campaign_permissions?select=*',{headers:hdrs}).then(function(r){return r.json();});
+    (Array.isArray(t)?t:[]).forEach(function(m){CB_TEAM[m.id]=m;});
+    (Array.isArray(p)?p:[]).forEach(function(x){CB_PERMS[x.team_member_id]=x;});
+  }
+  await swEnsureUser();
+
+  // Load campaign linked to this brief
+  var camps = await fetch(base+'/campaigns?brief_id=eq.'+brief.id+'&select=*',{headers:hdrs}).then(function(r){return r.json();});
+  var camp = Array.isArray(camps) && camps.length ? camps[0] : null;
+  if (!camp) { console.warn('bbEnterCampaignMode: no campaign found for brief', brief.id); return; }
+
+  // Load tasks
+  var tasks = await fetch(base+'/campaign_tasks?campaign_id=eq.'+camp.id+'&order=stage,task_order',{headers:hdrs}).then(function(r){return r.json();});
+  if (!Array.isArray(tasks)) tasks = [];
+
+  // Store for later
+  window._bbCampModeActive = true;
+  window._bbCampModeCamp = camp;
+  window._bbCampModeTasks = tasks;
+  window._bbCampModeBrief = brief;
+
+  // ── Transform LEFT sidebar ──
+  var left = document.getElementById('bb-left');
+  if (left) {
+    left.dataset.origContent = left.innerHTML;
+    bbRenderCampaignSidebar(left, brief, camp, tasks);
+  }
+
+  // ── Hide step wizard, show campaign canvas ──
+  var indicator = document.getElementById('bb-step-indicator');
+  var progress  = document.getElementById('bb-progress-track');
+  if (indicator) indicator.style.display = 'none';
+  if (progress)  progress.style.display  = 'none';
+  document.querySelectorAll('.bb-step').forEach(function(s){ s.style.display = 'none'; });
+
+  var right = document.getElementById('bb-right');
+  if (right) {
+    var canvas = document.getElementById('bb-campaign-canvas');
+    if (!canvas) {
+      canvas = document.createElement('div');
+      canvas.id = 'bb-campaign-canvas';
+      right.appendChild(canvas);
+    }
+    canvas.style.display = 'block';
+    bbRenderCampaignCanvas(canvas, brief, camp, tasks);
+  }
+}
+
+function bbRenderCampaignSidebar(el, brief, camp, tasks) {
+  var brand = BB_BRANDS.find(function(b){return b.id===brief.brand_id;}) || {};
+  var brandColor = brand.color || 'var(--swansway)';
+  var currentStage = camp.current_stage || 1;
+  var SN = ['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'];
+  var SI = ['\uD83D\uDCCB','\u2699\uFE0F','\u2705','\uD83D\uDE80','\uD83D\uDCCA','\uD83C\uDFC1'];
+
+  // Progress
+  var total = tasks.length;
+  var approved = tasks.filter(function(t){return t.approved;}).length;
+  var pct = total > 0 ? Math.round(approved/total*100) : 0;
+  var myTasks = tasks.filter(function(t){return t.assigned_to === CB_CURRENT_USER && !t.approved;});
+
+  // Budget / dates
+  var budget = brief.budget ? '\u00a3' + Number(brief.budget).toLocaleString() : '\u2014';
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var dateStr = '\u2014';
+  if (brief.start_date && brief.end_date) {
+    var sd = new Date(brief.start_date+'T00:00:00'), ed = new Date(brief.end_date+'T00:00:00');
+    dateStr = sd.getDate()+' '+months[sd.getMonth()]+' \u2013 '+ed.getDate()+' '+months[ed.getMonth()]+' '+ed.getFullYear();
+  }
+
+  // Stage pips
+  var pips = SN.map(function(sn,i){
+    var s = i+1;
+    var done = s < currentStage, active = s === currentStage;
+    var bg = done?'#059669':active?'var(--accent)':'rgba(255,255,255,0.1)';
+    var tc = (done||active)?'#fff':'rgba(255,255,255,0.3)';
+    return '<div style="flex:1;height:4px;border-radius:2px;background:'+bg+';title=\''+sn+'\'"></div>';
+  }).join('');
+
+  // Team avatars with task counts
+  var byMember = {};
+  tasks.forEach(function(t){
+    if (!t.assigned_to) return;
+    if (!byMember[t.assigned_to]) byMember[t.assigned_to] = {total:0,done:0};
+    byMember[t.assigned_to].total++;
+    if (t.approved) byMember[t.assigned_to].done++;
+  });
+  var teamHtml = Object.keys(byMember).slice(0,8).map(function(mid){
+    var m = CB_TEAM[mid] || {name:mid};
+    var initials = m.name.split(' ').map(function(n){return n[0];}).join('').substring(0,2).toUpperCase();
+    var color = m.color || 'var(--swansway)';
+    var stats = byMember[mid];
+    return '<div title="'+m.name+' \u2014 '+stats.done+'/'+stats.total+' done" style="display:flex;flex-direction:column;align-items:center;gap:3px">'
+      + '<div style="width:32px;height:32px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,0.15)">'+initials+'</div>'
+      + '<div style="font-size:8px;font-family:var(--font-m);color:rgba(255,255,255,0.4)">'+stats.done+'/'+stats.total+'</div>'
+    + '</div>';
+  }).join('');
+
+  // Blocker status
+  var blockers = tasks.filter(function(t){return t.stage===currentStage&&t.is_blocker;});
+  var blockersApproved = blockers.filter(function(t){return t.approved;}).length;
+  var blockerHtml = blockers.length
+    ? '<div style="margin-top:10px;padding:8px 10px;background:rgba(255,255,255,0.06);border-radius:6px;font-size:11px;color:rgba(255,255,255,0.6)">'
+      + '<span style="font-family:var(--font-m);font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.35)">Stage blockers</span><br>'
+      + '<span style="font-size:14px;font-weight:700;color:'+(blockersApproved===blockers.length?'#34D399':'#FCD34D')+'">'
+      + blockersApproved+'/'+blockers.length+'</span> approved'
+    + '</div>'
+    : '';
+
+  el.innerHTML =
+    '<div style="height:4px;background:'+brandColor+';margin:-1.5rem -1.5rem 1.25rem;border-radius:0"></div>'
+    + '<div style="font-family:var(--font-m);font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:4px">Live campaign</div>'
+    + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:1rem;letter-spacing:-0.01em">'+(brief.title||brand.name||'Campaign')+'</div>'
+
+    // Stage progress bar
+    + '<div style="font-family:var(--font-m);font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:6px">Stage '+currentStage+' of 6 \u2014 '+SN[currentStage-1]+'</div>'
+    + '<div style="display:flex;gap:2px;margin-bottom:16px">'+pips+'</div>'
+
+    // Overall progress
+    + '<div style="font-family:var(--font-m);font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:5px">Overall progress</div>'
+    + '<div style="height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-bottom:4px"><div style="height:4px;background:'+brandColor+';width:'+pct+'%;border-radius:2px;transition:width .4s"></div></div>'
+    + '<div style="font-family:var(--font-m);font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:1rem">'+approved+' of '+total+' tasks approved ('+pct+'%)</div>'
+
+    // My tasks
+    + (myTasks.length ? '<div style="padding:8px 10px;background:rgba(200,16,46,0.15);border:1px solid rgba(200,16,46,0.3);border-radius:6px;margin-bottom:1rem;font-size:12px;color:#fff">'
+      + '<div style="font-family:var(--font-m);font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:4px">Your tasks</div>'
+      + '<div style="font-weight:700">'+myTasks.length+' task'+(myTasks.length>1?'s':'')+' waiting for you</div>'
+      + '</div>' : '')
+
+    // Brief details
+    + '<div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:1rem;display:flex;flex-direction:column;gap:10px">'
+      + bbCampSidebarRow('Brand', brand.name||'\u2014')
+      + bbCampSidebarRow('Campaign type', (brief.campaign_type)||'\u2014')
+      + bbCampSidebarRow('Budget', budget)
+      + bbCampSidebarRow('Dates', dateStr)
+      + bbCampSidebarRow('Site', brief.site_id||(brief.scope==='brand'&&brand.name?brand.name+' (all sites)':'\u2014'))
+    + '</div>'
+
+    // Blocker status
+    + blockerHtml
+
+    // Team avatars
+    + (teamHtml ? '<div style="margin-top:1rem;border-top:1px solid rgba(255,255,255,0.07);padding-top:1rem">'
+      + '<div style="font-family:var(--font-m);font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:10px">Team</div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap">'+teamHtml+'</div>'
+      + '</div>' : '')
+
+    // Exit button
+    + '<div style="margin-top:auto;padding-top:1.25rem">'
+      + '<button onclick="bbExitCampaignMode()" style="width:100%;padding:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.7);font-family:var(--font-b);font-size:12px;font-weight:600;cursor:pointer;transition:background .15s" onmouseover="this.style.background=\'rgba(255,255,255,0.14)\'" onmouseout="this.style.background=\'rgba(255,255,255,0.08)\'">\u2190 Edit brief</button>'
+    + '</div>';
+}
+
+function bbCampSidebarRow(label, val) {
+  return '<div>'
+    + '<div style="font-family:var(--font-m);font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:2px">'+label+'</div>'
+    + '<div style="font-size:13px;color:#fff;font-weight:500">'+val+'</div>'
+  + '</div>';
+}
+
+function bbRenderCampaignCanvas(canvas, brief, camp, tasks) {
+  var canApprove = !!(CB_PERMS[CB_CURRENT_USER] && (CB_PERMS[CB_CURRENT_USER].can_approve_all || CB_PERMS[CB_CURRENT_USER].can_approve_digital));
+  var canAdvance = !!(CB_PERMS[CB_CURRENT_USER] && CB_PERMS[CB_CURRENT_USER].can_advance_stage);
+  var currentStage = camp.current_stage || 1;
+  var brand = BB_BRANDS.find(function(b){return b.id===brief.brand_id;}) || {};
+  var brandColor = brand.color || 'var(--swansway)';
+  var total = tasks.length;
+  var approved = tasks.filter(function(t){return t.approved;}).length;
+  var pct = total > 0 ? Math.round(approved/total*100) : 0;
+
+  canvas.innerHTML = '';
+
+  // ── Campaign header strip ──
+  var header = document.createElement('div');
+  header.style.cssText = 'background:var(--white);border:1.5px solid var(--border);border-radius:8px;margin-bottom:20px;overflow:hidden';
+  header.innerHTML =
+    '<div style="border-left:5px solid '+brandColor+';padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px">'
+      + '<div>'
+        + '<div style="font-family:var(--font-m);font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:4px">Live campaign \u2014 Stage '+currentStage+' of 6</div>'
+        + '<div style="font-family:var(--font-d);font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-0.01em">'+(brief.title||'Campaign')+'</div>'
+      + '</div>'
+      + '<div style="display:flex;gap:8px;align-items:center;flex-shrink:0">'
+        + (canAdvance && currentStage < 6
+          ? '<button class="btn btn-primary" data-cid="'+camp.id+'" data-stage="'+currentStage+'" onclick="bbCampAdvance(this.dataset.cid,parseInt(this.dataset.stage))">Advance to Stage '+(currentStage+1)+' \u2192</button>'
+          : '')
+        + '<button class="btn" onclick="bbExitCampaignMode()">\u2190 Edit brief</button>'
+      + '</div>'
+    + '</div>'
+    + '<div style="padding:0 20px 12px">'
+      + '<div style="height:4px;background:var(--surface-2);border-radius:2px;overflow:hidden;margin-bottom:5px"><div style="height:4px;background:'+brandColor+';width:'+pct+'%;border-radius:2px;transition:width .5s"></div></div>'
+      + '<div style="display:flex;justify-content:space-between;font-family:var(--font-m);font-size:10px;color:var(--ink-faint)">'
+        + '<span>'+approved+' of '+total+' tasks approved</span><span>'+pct+'% complete</span>'
+      + '</div>'
+    + '</div>';
+  canvas.appendChild(header);
+
+  // ── All 6 stages — Slack scroll ──
+  for (var s = 1; s <= 6; s++) {
+    var stageContainer = document.createElement('div');
+    stageContainer.id = 'bb-camp-stage-'+camp.id+'-'+s;
+    stageContainer.style.cssText = s > currentStage ? 'opacity:0.4;pointer-events:none;margin-bottom:4px' : 'margin-bottom:4px';
+    canvas.appendChild(stageContainer);
+    bbShowStageDetail(s, tasks, currentStage, stageContainer, camp, canApprove);
+  }
+}
+
+async function bbCampAdvance(campId, currentStage) {
+  if (!confirm('Advance to Stage ' + (currentStage+1) + '? Make sure all blocker tasks are approved first.')) return;
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  var newStage = currentStage + 1;
+  try {
+    var r = await fetch(base+'/campaigns?id=eq.'+campId, {
+      method:'PATCH',
+      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify({current_stage:newStage,updated_at:new Date().toISOString()})
+    });
+    if (!r.ok) throw new Error(await r.text());
+    var updated = await r.json();
+    window._bbCampModeCamp = Array.isArray(updated) ? updated[0] : updated;
+    // Reload campaign mode with updated camp
+    var brief = window._bbCampModeBrief;
+    if (brief) await bbEnterCampaignMode(brief);
+  } catch(e) { alert('Error: '+e.message); }
+}
+
+function bbExitCampaignMode() {
+  window._bbCampModeActive = false;
+
+  // Restore left sidebar
+  var left = document.getElementById('bb-left');
+  if (left && left.dataset.origContent) {
+    left.innerHTML = left.dataset.origContent;
+    delete left.dataset.origContent;
+  }
+
+  // Show step indicator + progress
+  var indicator = document.getElementById('bb-step-indicator');
+  var progress  = document.getElementById('bb-progress-track');
+  if (indicator) indicator.style.display = '';
+  if (progress)  progress.style.display  = '';
+
+  // Hide campaign canvas
+  var canvas = document.getElementById('bb-campaign-canvas');
+  if (canvas) canvas.style.display = 'none';
+
+  // Re-show step 6
+  document.querySelectorAll('.bb-step').forEach(function(s){ s.style.display = 'none'; });
+  var s6 = document.getElementById('bb-step-6');
+  if (s6) { s6.style.display = 'block'; s6.classList.add('bb-active'); }
+
+  // Update brief context
+  bbUpdateBrief();
+}
+
+
 /* ── BRIEFS PANEL ── */
 function openBriefsPanel() {
   document.getElementById('briefs-panel').classList.add('open');
@@ -9435,38 +9704,25 @@ function bbLoadBrief(id) {
     if(saveBar) saveBar.style.display = 'block';
   }, 100);
 
-  // After loading brief - if it's campaigned/approved/submitted, jump to Step 6
-  if (brief.status === 'campaigned' || brief.status === 'approved' || brief.status === 'submitted') {
+  // After loading brief — route by status
+  if (brief.status === 'campaigned') {
+    // Launched: enter campaign mode
     setTimeout(async function() {
-      // Show Step 6
+      window._lastSavedBriefId = brief.id;
+      window._lastSavedBriefTitle = brief.title;
+      await bbEnterCampaignMode(brief);
+    }, 300);
+  } else if (brief.status === 'submitted' || brief.status === 'approved') {
+    // Submitted/approved: go to Step 6 and show campaign section
+    setTimeout(async function() {
       document.querySelectorAll('.bb-step').forEach(function(p){p.classList.remove('bb-active');});
       var s6 = document.getElementById('bb-step-6');
       if (s6) s6.classList.add('bb-active');
-      // For non-draft briefs: hide save card, show campaign section only
       var saveBar = document.getElementById('bb-save-bar');
       if (saveBar) saveBar.style.display = 'none';
-      var titleEl = document.getElementById('bb-brief-title');
-      if (titleEl) titleEl.value = brief.title;
-      var saveBtn = document.getElementById('bb-save-btn');
-      if (saveBtn) saveBtn.textContent = '\u2713 Saved';
       window._lastSavedBriefId = brief.id;
       window._lastSavedBriefTitle = brief.title;
       window.scrollTo(0, 0);
-
-      var anon = SUPABASE_ANON_KEY;
-      var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-      var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
-
-      // Always load fresh team + perms
-      var t = await fetch(base+'/campaign_team?select=*&active=eq.true',{headers:hdrs}).then(function(r){return r.json();});
-      var p = await fetch(base+'/campaign_permissions?select=*',{headers:hdrs}).then(function(r){return r.json();});
-      (Array.isArray(t)?t:[]).forEach(function(m){CB_TEAM[m.id]=m;});
-      (Array.isArray(p)?p:[]).forEach(function(x){CB_PERMS[x.team_member_id]=x;});
-
-      // Ensure user is detected
-      await swEnsureUser();
-
-      console.log('bbLoadBrief campaign render: user='+CB_CURRENT_USER+' perms='+Object.keys(CB_PERMS).length+' brief='+brief.title+' status='+brief.status);
       if (typeof bbRenderCampaignSection === 'function') await bbRenderCampaignSection(brief);
     }, 200);
   }
