@@ -7501,105 +7501,103 @@ async function bbRenderStages(section, camp, briefId) {
 function bbShowStageDetail(stageNum, allTasks, currentStage, container, camp, canApprove) {
   container.innerHTML = '';
   var stageTasks = allTasks.filter(function(t){ return t.stage === stageNum; });
-  var myTasks = stageTasks.filter(function(t){ return t.assigned_to === CB_CURRENT_USER; });
+  var myTasks    = stageTasks.filter(function(t){ return t.assigned_to === CB_CURRENT_USER; });
   var otherTasks = stageTasks.filter(function(t){ return t.assigned_to !== CB_CURRENT_USER; });
   var SN = ['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'];
+  var SI = ['??','⚙️','✅','??','??','??'];
   var isActive = stageNum === currentStage;
-  var isPast = stageNum < currentStage;
+  var isPast   = stageNum < currentStage;
   var me = CB_TEAM[CB_CURRENT_USER] || {};
   var myFirst = me.name ? me.name.split(' ')[0] : 'You';
 
-  // Stage header
-  var sh = document.createElement('div');
-  sh.style.cssText = 'padding:14px 18px;background:var(--ink);border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:space-between';
-  var doneCount = stageTasks.filter(function(t){return t.completed;}).length;
-  var blockers = stageTasks.filter(function(t){return t.is_blocker;}).length;
-  sh.innerHTML = '<div style="color:#fff"><div style="font-family:var(--font-d);font-size:18px;font-weight:700">Stage ' + stageNum + ': ' + SN[stageNum-1] + '</div>'
-    + '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px">' + doneCount + ' of ' + stageTasks.length + ' tasks complete</div></div>'
-    + '<span style="padding:4px 12px;border-radius:12px;font-size:11px;font-weight:700;background:'
-    + (isPast ? '#059669' : isActive ? '#F59E0B' : 'rgba(255,255,255,0.15)') + ';color:#fff">'
-    + (isPast ? '\u2713 Complete' : isActive ? 'Active now' : 'Upcoming') + '</span>';
-  container.appendChild(sh);
+  // ── Stage divider (Slack-style) ──
+  var divider = document.createElement('div');
+  divider.className = 'sw-stage-divider';
+  var stageColor = isPast ? '#059669' : isActive ? 'var(--swansway)' : 'var(--surface-2)';
+  var stageTC    = (isPast || isActive) ? '#fff' : 'var(--ink-faint)';
+  var doneCount  = stageTasks.filter(function(t){return t.completed;}).length;
+  divider.innerHTML =
+    '<div class="sw-stage-divider-icon" style="background:' + stageColor + ';color:' + stageTC + '">' + (isPast ? '✓' : SI[stageNum-1]) + '</div>' +
+    '<div class="sw-stage-divider-name">Stage ' + stageNum + ' — ' + SN[stageNum-1] + '</div>' +
+    '<div class="sw-stage-divider-line"></div>' +
+    '<span class="sw-pill" style="background:' + (isPast?'#D1FAE5':isActive?'rgba(200,16,46,0.1)':'var(--surface)') + ';color:' + (isPast?'#059669':isActive?'var(--accent)':'var(--ink-faint)') + '">' +
+      (isPast ? '✓ Complete' : isActive ? 'Active' : 'Upcoming') +
+    '</span>' +
+    '<span class="sw-pill sw-pill-muted">' + doneCount + '/' + stageTasks.length + ' done</span>';
+  container.appendChild(divider);
 
-  var body = document.createElement('div');
-  body.style.cssText = 'border:2px solid var(--ink);border-top:none;border-radius:0 0 8px 8px;overflow:hidden';
-
-  // MY TASKS section
+  // ── My tasks spotlight ──
   if (myTasks.length > 0 && isActive) {
-    var mySection = document.createElement('div');
-    mySection.style.cssText = 'padding:16px 18px;background:var(--white);border-bottom:2px solid var(--border)';
-    var myHdr = document.createElement('div');
-    myHdr.style.cssText = 'font-size:12px;font-weight:700;letter-spacing:0.06em;color:var(--swansway);text-transform:uppercase;margin-bottom:12px';
-    myHdr.textContent = '\uD83D\uDC49 Your tasks' + (myFirst ? ', ' + myFirst : '') + ' \u2014 let\u2019s go!';
-    mySection.appendChild(myHdr);
-
-    myTasks.forEach(function(task) {
-      var card = document.createElement('div');
-      var done = task.completed;
-      var approved = task.approved;
-      card.style.cssText = 'border:2px solid ' + (done ? '#059669' : 'var(--border)') + ';border-radius:8px;padding:16px 18px;margin-bottom:10px;background:' + (done ? '#F0FDF4' : '#fff');
-      
-      var taskName = document.createElement('div');
-      taskName.style.cssText = 'font-size:17px;font-weight:700;color:' + (done ? '#059669' : 'var(--ink)') + ';margin-bottom:6px;display:flex;align-items:center;gap:8px';
-      taskName.innerHTML = (done ? '\u2705 ' : '') + task.task_name + (task.is_blocker ? ' <span style="font-size:10px;background:#FEF3C7;color:#92400E;padding:2px 7px;border-radius:9px;font-weight:700">BLOCKER</span>' : '');
-      card.appendChild(taskName);
-
-      if (task.notes) {
-        var notes = document.createElement('div');
-        notes.style.cssText = 'font-size:12px;color:var(--ink-soft);margin-bottom:10px';
-        notes.textContent = task.notes;
-        card.appendChild(notes);
-      }
-
-      if (!done) {
-        var actions = document.createElement('div');
-        actions.style.cssText = 'display:flex;gap:8px;margin-top:10px';
-        var doneBtn = document.createElement('button');
-        doneBtn.style.cssText = 'background:var(--ink);color:#fff;border:none;padding:10px 20px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-m);flex:1';
-        doneBtn.textContent = '\u2713 Mark as done';
-        doneBtn.dataset.taskId = task.id;
-        doneBtn.dataset.campId = camp.id;
-        doneBtn.onclick = function() { bbMarkTaskDone(this.dataset.taskId, this.dataset.campId, card, taskName); };
-        actions.appendChild(doneBtn);
-        var notesBtn = document.createElement('button');
-        notesBtn.style.cssText = 'background:var(--white);color:var(--ink);border:2px solid var(--border);padding:10px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-family:var(--font-m)';
-        notesBtn.textContent = '\uD83D\uDCAC Notes';
-        notesBtn.dataset.taskId = task.id;
-        notesBtn.dataset.taskName = task.task_name;
-        notesBtn.onclick = function() { bbOpenNotesPanel(this.dataset.taskId, this.dataset.taskName); };
-        actions.appendChild(notesBtn);
-        card.appendChild(actions);
-      } else {
-        var doneRow = document.createElement('div');
-        doneRow.style.cssText = 'font-size:12px;color:#059669;margin-top:6px;display:flex;align-items:center;justify-content:space-between';
-        doneRow.innerHTML = '\u2713 Done' + (approved ? ' \u2022 Approved' : '');
-        var notesSmall = document.createElement('button');
-        notesSmall.style.cssText = 'background:none;border:none;color:var(--ink-soft);font-size:12px;cursor:pointer;text-decoration:underline';
-        notesSmall.textContent = 'View notes';
-        notesSmall.dataset.taskId = task.id;
-        notesSmall.dataset.taskName = task.task_name;
-        notesSmall.onclick = function() { bbOpenNotesPanel(this.dataset.taskId, this.dataset.taskName); };
-        doneRow.appendChild(notesSmall);
-        card.appendChild(doneRow);
-      }
-      mySection.appendChild(card);
-    });
-    body.appendChild(mySection);
+    var spotlight = document.createElement('div');
+    spotlight.className = 'sw-spotlight';
+    var initials = me.name ? me.name.split(' ').map(function(n){return n[0];}).join('').substring(0,2).toUpperCase() : '?';
+    var pendingCount = myTasks.filter(function(t){return !t.completed;}).length;
+    var doneCount2   = myTasks.filter(function(t){return t.completed;}).length;
+    spotlight.innerHTML =
+      '<div class="sw-spotlight-header">' +
+        '<div class="sw-avatar sw-avatar-lg">' + initials + '</div>' +
+        '<div><div class="sw-spotlight-title">Your tasks this stage, ' + myFirst + '</div>' +
+          '<div class="sw-spotlight-sub">' + pendingCount + ' to do · ' + doneCount2 + ' done</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="sw-spotlight-tasks">' +
+        myTasks.map(function(t){
+          return '<div class="sw-spotlight-task' + (t.completed?' sw-spotlight-task-done':'') + '">' +
+            '<span class="sw-spotlight-tick">' + (t.completed?'✓':'○') + '</span>' +
+            '<span>' + t.task_name + (t.is_blocker?' <span class="sw-blocker-tag">BLOCKER</span>':'') + '</span>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    container.appendChild(spotlight);
   } else if (myTasks.length === 0 && isActive) {
-    var noTasks = document.createElement('div');
-    noTasks.style.cssText = 'padding:20px 18px;background:#F0FDF4;border-bottom:2px solid var(--border);text-align:center;color:#059669;font-size:14px;font-weight:600';
-    noTasks.textContent = (myFirst ? myFirst + ', you' : 'You') + '\u2019re all done in this stage \uD83C\uDF89 The team is on it!'
-    body.appendChild(noTasks);
+    var allDone = document.createElement('div');
+    allDone.className = 'sw-notice sw-notice-green';
+    allDone.innerHTML = '<span style="font-size:20px">??</span><div><strong>' + myFirst + ', you&#39;re all done this stage.</strong> The team is on it.</div>';
+    container.appendChild(allDone);
   }
 
-  // REST OF TEAM section
+  // ── My tasks rows (actionable) ──
+  if (myTasks.length > 0 && isActive) {
+    myTasks.forEach(function(task) {
+      var done = task.completed;
+      var approved = task.approved;
+      var taskStatus = approved ? 'approved' : done ? 'pending' : 'todo';
+      var statusIcon = approved ? '✓' : done ? '⏳' : '○';
+      var statusColor = {approved:'#059669', pending:'#D97706', todo:'var(--ink-faint)'}[taskStatus];
+
+      var row = document.createElement('div');
+      row.className = 'sw-task-row sw-task-' + taskStatus;
+
+      var initials2 = me.name ? me.name.split(' ').map(function(n){return n[0];}).join('').substring(0,2).toUpperCase() : '?';
+      row.innerHTML =
+        '<div class="sw-task-status-icon" style="color:' + statusColor + '">' + statusIcon + '</div>' +
+        '<div class="sw-avatar sw-avatar-sm">' + initials2 + '</div>' +
+        '<div class="sw-task-body">' +
+          '<div class="sw-task-name-row">' +
+            '<span class="sw-task-name' + (task.is_blocker?' sw-task-blocker':'') + '">' + task.task_name + '</span>' +
+            (task.is_blocker ? '<span class="sw-blocker-tag">BLOCKER</span>' : '') +
+          '</div>' +
+          (task.notes ? '<div class="sw-task-note">?? ' + task.notes + '</div>' : '') +
+        '</div>' +
+        '<div class="sw-task-actions">' +
+          (!done ? '<button class="sw-btn-complete" data-tid="' + task.id + '" data-cid="' + camp.id + '" onclick="bbMarkTaskDone(this.dataset.tid,this.dataset.cid)">✓ Done</button>' : '') +
+          '<button class="sw-btn-note" data-tid="' + task.id + '" data-tn="' + task.task_name.replace(/"/g,'') + '" onclick="bbOpenNotesPanel(this.dataset.tid,this.dataset.tn)">?? Note</button>' +
+          (approved ? '<span class="sw-pill" style="background:#D1FAE5;color:#059669">✓ Approved</span>' : '') +
+          (done && !approved ? '<span class="sw-pill" style="background:#FEF3C7;color:#92400E">⏳ Pending</span>' : '') +
+        '</div>';
+      container.appendChild(row);
+    });
+  }
+
+  // ── Rest of team ──
   if (otherTasks.length > 0) {
-    var teamSection = document.createElement('div');
-    teamSection.style.cssText = 'padding:16px 18px;background:var(--surface)';
-    var teamHdr = document.createElement('div');
-    teamHdr.style.cssText = 'font-size:12px;font-weight:700;letter-spacing:0.06em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:10px';
-    teamHdr.textContent = 'The rest of the team';
-    teamSection.appendChild(teamHdr);
+    var teamDiv = document.createElement('div');
+    teamDiv.className = 'sw-stage-divider';
+    teamDiv.style.marginTop = '20px';
+    teamDiv.innerHTML =
+      '<div class="sw-label" style="color:var(--ink-faint)">The rest of the team</div>' +
+      '<div class="sw-stage-divider-line"></div>';
+    container.appendChild(teamDiv);
 
     // Group by assignee
     var byAssignee = {};
@@ -7610,36 +7608,46 @@ function bbShowStageDetail(stageNum, allTasks, currentStage, container, camp, ca
     });
 
     Object.keys(byAssignee).forEach(function(assigneeId) {
-      var member = CB_TEAM[assigneeId] || {name: assigneeId};
-      var memberFirst = member.name ? member.name.split(' ')[0] : assigneeId;
+      var member = CB_TEAM[assigneeId] || {name: assigneeId || 'Unassigned'};
       var memberTasks = byAssignee[assigneeId];
-      var memberDone = memberTasks.filter(function(t){return t.completed;}).length;
+      var memberDone  = memberTasks.filter(function(t){return t.completed;}).length;
+      var initials3   = member.name ? member.name.split(' ').map(function(n){return n[0];}).join('').substring(0,2).toUpperCase() : '?';
 
-      var memberRow = document.createElement('div');
-      memberRow.style.cssText = 'margin-bottom:12px';
-      var memberName = document.createElement('div');
-      memberName.style.cssText = 'font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;display:flex;align-items:center;gap:8px';
-      memberName.innerHTML = '<span style="width:24px;height:24px;border-radius:50%;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--ink-soft)">'
-        + (member.name ? member.name.charAt(0) : '?') + '</span>'
-        + memberFirst
-        + ' <span style="font-size:11px;font-weight:400;color:var(--ink-faint)">' + memberDone + '/' + memberTasks.length + ' done</span>';
-      memberRow.appendChild(memberName);
+      // Member header
+      var memberHdr = document.createElement('div');
+      memberHdr.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 0 6px';
+      memberHdr.innerHTML =
+        '<div class="sw-avatar sw-avatar-sm" style="background:' + (member.color||'var(--swansway)') + '">' + initials3 + '</div>' +
+        '<span style="font-family:var(--font-b);font-size:13px;font-weight:700;color:var(--ink)">' + member.name + '</span>' +
+        '<span style="font-size:11px;color:var(--ink-faint)">' + memberDone + '/' + memberTasks.length + ' done</span>';
+      container.appendChild(memberHdr);
 
       memberTasks.forEach(function(task) {
-        var row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;margin-bottom:4px;background:' + (task.completed ? '#F0FDF4' : 'var(--white)') + ';border:1px solid var(--border)';
-        row.innerHTML = '<span style="font-size:14px">' + (task.completed ? '\u2705' : '\u25CB') + '</span>'
-          + '<span style="font-size:13px;color:' + (task.completed ? '#059669' : 'var(--ink-soft)') + ';flex:1">' + task.task_name + '</span>'
-          + (task.is_blocker ? '<span style="font-size:10px;background:#FEF3C7;color:#92400E;padding:1px 6px;border-radius:9px;font-weight:600">BLOCKER</span>' : '');
-        memberRow.appendChild(row);
+        var done2 = task.completed;
+        var row2 = document.createElement('div');
+        row2.className = 'sw-task-row sw-task-' + (done2?'approved':'todo');
+        row2.innerHTML =
+          '<div class="sw-task-status-icon" style="color:' + (done2?'#059669':'var(--ink-faint)') + '">' + (done2?'✓':'○') + '</div>' +
+          '<div class="sw-avatar sw-avatar-sm" style="background:' + (member.color||'var(--swansway)') + '">' + initials3 + '</div>' +
+          '<div class="sw-task-body">' +
+            '<div class="sw-task-name-row">' +
+              '<span class="sw-task-name">' + task.task_name + '</span>' +
+              (task.is_blocker ? '<span class="sw-blocker-tag">BLOCKER</span>' : '') +
+            '</div>' +
+          '</div>';
+        container.appendChild(row2);
       });
-      teamSection.appendChild(memberRow);
     });
-    body.appendChild(teamSection);
   }
 
-  container.appendChild(body);
+  if (!stageTasks.length) {
+    var empty = document.createElement('div');
+    empty.className = 'sw-empty-tasks';
+    empty.textContent = 'No tasks for this stage.';
+    container.appendChild(empty);
+  }
 }
+
 
 async function bbMarkTaskDone(taskId, campId, cardEl, taskNameEl) {
   var anon = SUPABASE_ANON_KEY;
