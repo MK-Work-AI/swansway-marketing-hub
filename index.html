@@ -2644,7 +2644,21 @@ function switchInner(brandId, secId, el) {
   document.querySelectorAll(`#itabs-${brandId} .inner-tab`).forEach(t=>t.classList.remove('active'));
   document.querySelectorAll(`#${brandId}-content .inner-section`).forEach(s=>s.classList.remove('active'));
   el.classList.add('active');
-  if(secId === 'campaigns') { setTimeout(function(){ if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(brandId); }, 50); }
+  if(secId === 'campaigns') {
+    setTimeout(async function(){
+      // Ensure CB_CAMPAIGNS is loaded
+      if (!CB_CAMPAIGNS || !CB_CAMPAIGNS.length) {
+        var anon = SUPABASE_ANON_KEY, base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+        var rows = await fetch(base+'/campaigns?select=*&order=created_at.desc',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
+        if (Array.isArray(rows)) CB_CAMPAIGNS = rows;
+      }
+      // Ensure SB_BRIEFS_CACHE is loaded
+      if (!SB_BRIEFS_CACHE || !SB_BRIEFS_CACHE.length) {
+        if (typeof loadBriefs === 'function') loadBriefs();
+      }
+      if(typeof renderBrandCampaigns==='function') renderBrandCampaigns(brandId);
+    }, 50);
+  }
   if(secId === 'centres')   { setTimeout(function(){ if(typeof renderBrandCentres==='function') renderBrandCentres(brandId); }, 50); }
   if(secId === 'budget')    { setTimeout(function(){ if(typeof renderBrandChannelMix==='function') renderBrandChannelMix(brandId); }, 300); }
   if(secId === 'sites') { setTimeout(function(){ if(typeof renderBrandSites==='function') renderBrandSites(brandId); }, 50); }
@@ -5444,77 +5458,91 @@ function renderBrandCampaigns(brandId) {
   if (!listEl) return;
   var brand = BRANDS.find(function(b){ return b.id === brandId; });
   var brandName = brand ? brand.name : brandId;
-  var calCamps = BUILT_IN_CAMPAIGNS.filter(function(c){
-    return c.brand === brandName || c.brand === 'All brands';
+
+  // Pull from Supabase campaigns (CB_CAMPAIGNS) — correct source
+  var liveCamps = (CB_CAMPAIGNS || []).filter(function(camp) {
+    return camp.brand_id === brandId;
   });
-  var briefs = SB_BRIEFS_CACHE.filter(function(b){
-    var d = b.data || {};
-    return d.brand && (d.brand.id === brandId || d.brand.name === brandName);
+
+  // Pull from briefs cache — using correct top-level brand_id field
+  var briefs = (SB_BRIEFS_CACHE || []).filter(function(b) {
+    return b.brand_id === brandId;
   });
+
   listEl.innerHTML = '';
-  if (!calCamps.length && !briefs.length) {
-    var empty = document.createElement('div');
-    empty.style.cssText = 'padding:24px;text-align:center;color:var(--ink-faint);font-size:13px';
-    empty.textContent = 'No campaigns yet. Add via Campaign Calendar or Brief Builder.';
-    listEl.appendChild(empty);
+
+  if (!liveCamps.length && !briefs.length) {
+    listEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--ink-faint);font-size:13px">No campaigns yet. Start one from Planning → Brief Builder.</div>';
     return;
   }
+
   var MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  if (calCamps.length) {
-    var hdr1 = document.createElement('div');
-    hdr1.style.cssText = 'font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px';
-    hdr1.textContent = 'Scheduled campaigns';
-    listEl.appendChild(hdr1);
-    calCamps.forEach(function(c){
-      var timing = MN[c.start] + (c.end !== c.start ? ' \u2013 ' + MN[c.end] : '') + ' 2026';
+  var statusColors = {active:'#059669',planned:'#6B7280',briefed:'#D97706',completed:'#2563EB',cancelled:'#DC2626'};
+
+  if (liveCamps.length) {
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px';
+    hdr.textContent = 'Campaigns';
+    listEl.appendChild(hdr);
+
+    liveCamps.forEach(function(camp) {
       var row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--white);border:1px solid var(--border);border-left:3px solid ' + c.color + ';border-radius:3px;margin-bottom:6px';
-      var info = document.createElement('div');
-      info.style.flex = '1';
-      var name = document.createElement('div');
-      name.style.cssText = 'font-size:13px;font-weight:600';
-      name.textContent = c.name;
-      var date = document.createElement('div');
-      date.style.cssText = 'font-size:11px;color:var(--ink-soft);margin-top:2px';
-      date.textContent = timing;
-      info.appendChild(name); info.appendChild(date);
-      var tag = document.createElement('span');
-      tag.style.cssText = 'font-size:10px;font-family:var(--font-m);color:var(--ink-faint);background:var(--surface);padding:2px 8px;border-radius:10px';
-      tag.textContent = c.brand;
-      row.appendChild(info); row.appendChild(tag);
+      row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--white);border:1.5px solid var(--border);border-left:3px solid ' + (brand ? brand.color : 'var(--swansway)') + ';border-radius:5px;margin-bottom:6px;cursor:pointer;transition:box-shadow .15s';
+      row.onmouseenter = function(){ this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.08)'; };
+      row.onmouseleave = function(){ this.style.boxShadow = ''; };
+
+      var dates = '';
+      if (camp.start_date) {
+        var sd = new Date(camp.start_date+'T00:00:00'), ed = camp.end_date ? new Date(camp.end_date+'T00:00:00') : sd;
+        dates = sd.getDate()+' '+MN[sd.getMonth()]+' – '+ed.getDate()+' '+MN[ed.getMonth()]+' '+ed.getFullYear();
+      }
+
+      var statusCol = statusColors[camp.status] || '#6B7280';
+      row.innerHTML =
+        '<div style="flex:1;min-width:0">'
+          + '<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:3px">' + (camp.title || 'Campaign') + '</div>'
+          + (dates ? '<div style="font-size:11px;color:var(--ink-soft)">' + dates + '</div>' : '')
+        + '</div>'
+        + '<span style="font-size:10px;font-family:var(--font-m);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:3px 9px;border-radius:10px;background:' + statusCol + '20;color:' + statusCol + '">' + camp.status + '</span>'
+        + '<span style="font-size:11px;color:var(--ink-faint);font-family:var(--font-m)">Stage ' + (camp.current_stage||1) + '/6</span>';
+
+      if (camp.brief_id) {
+        row.onclick = function() {
+          switchView('brief', document.querySelector('[data-view="brief"]'));
+          setTimeout(function() { bbLoadBrief(camp.brief_id); }, 200);
+        };
+      }
       listEl.appendChild(row);
     });
   }
-  if (briefs.length) {
+
+  // Show briefs not yet turned into campaigns
+  var unbriefedBriefs = briefs.filter(function(b) {
+    return !liveCamps.find(function(c){ return c.brief_id === b.id; });
+  });
+
+  if (unbriefedBriefs.length) {
     var hdr2 = document.createElement('div');
-    hdr2.style.cssText = 'font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;margin-top:' + (calCamps.length ? '16px' : '0');
-    hdr2.textContent = 'Campaign briefs';
+    hdr2.style.cssText = 'font-family:var(--font-m);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;margin-top:' + (liveCamps.length ? '16px' : '0');
+    hdr2.textContent = 'Briefs in progress';
     listEl.appendChild(hdr2);
-    briefs.forEach(function(brief){
-      var d = brief.data || {};
-      var title = d.title || (d.ctype && d.ctype.name) || 'Campaign brief';
-      var budget = d.budget ? '\u00a3' + parseInt(d.budget).toLocaleString() : '';
-      var updated = new Date(brief.updated_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+
+    unbriefedBriefs.forEach(function(brief) {
       var row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--white);border:1px solid var(--border);border-radius:3px;cursor:pointer;margin-bottom:6px';
-      row.addEventListener('click', (function(id){ return function(){ loadBriefFromSupabase(id); }; })(brief.id));
-      var info = document.createElement('div');
-      info.style.flex = '1';
-      var name = document.createElement('div');
-      name.style.cssText = 'font-size:13px;font-weight:600';
-      name.textContent = title;
-      info.appendChild(name);
-      row.appendChild(info);
-      if (budget) {
-        var bspan = document.createElement('span');
-        bspan.style.cssText = 'font-family:var(--font-m);font-size:12px;font-weight:600;color:var(--swansway)';
-        bspan.textContent = budget;
-        row.appendChild(bspan);
-      }
-      var dspan = document.createElement('span');
-      dspan.style.cssText = 'font-size:11px;color:var(--ink-faint);font-family:var(--font-m)';
-      dspan.textContent = updated;
-      row.appendChild(dspan);
+      row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--white);border:1.5px solid var(--border);border-radius:5px;cursor:pointer;margin-bottom:6px;transition:box-shadow .15s';
+      row.onmouseenter = function(){ this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.08)'; };
+      row.onmouseleave = function(){ this.style.boxShadow = ''; };
+      var statusCol2 = statusColors[brief.status] || '#6B7280';
+      row.innerHTML =
+        '<div style="flex:1;min-width:0">'
+          + '<div style="font-size:13px;font-weight:600;color:var(--ink)">' + (brief.title || 'Brief') + '</div>'
+          + (brief.campaign_type ? '<div style="font-size:11px;color:var(--ink-soft)">' + brief.campaign_type + '</div>' : '')
+        + '</div>'
+        + '<span style="font-size:10px;font-family:var(--font-m);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:3px 9px;border-radius:10px;background:' + statusCol2 + '20;color:' + statusCol2 + '">' + (brief.status||'draft') + '</span>';
+      row.onclick = function() {
+        switchView('brief', document.querySelector('[data-view="brief"]'));
+        setTimeout(function() { bbLoadBrief(brief.id); }, 200);
+      };
       listEl.appendChild(row);
     });
   }
