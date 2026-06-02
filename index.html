@@ -3060,6 +3060,8 @@ function renderBrandKpiChart() {
 ══════════════════════════════════════ */
 function loadAdminConfig() {
   if (!SB) return;
+  if (window._adminConfigLoaded) return; // only load once
+  window._adminConfigLoaded = true;
   // Admin config is shared — load the most recently saved version
   SB.from('admin_config')
     .select('config')
@@ -6104,6 +6106,7 @@ function updateGroupKPIsFromBrands() {
 var BRAND_CHANNELS_DATA = {};  // brand_id -> [{channel, pct, color, note}]
 
 async function loadBrandChannels() {
+  if (window._brandChannelsLoaded) { updateGroupChannelsFromBrands(); return; }
   console.log('loadBrandChannels: SUPABASE_URL=', SUPABASE_URL ? 'set' : 'MISSING', 'ANON_KEY=', SUPABASE_ANON_KEY ? 'set' : 'MISSING');
   try {
     var resp = await fetch(SUPABASE_URL + '/rest/v1/brand_channels?select=*&order=brand_id,sort_order', {
@@ -6115,17 +6118,14 @@ async function loadBrandChannels() {
       if (!BRAND_CHANNELS_DATA[row.brand_id]) BRAND_CHANNELS_DATA[row.brand_id] = [];
       BRAND_CHANNELS_DATA[row.brand_id].push(row);
     });
-    updateGroupChannelsFromBrands();
-    // Re-render all brand channel mix divs that exist in DOM
+    // Re-render brand channel mix divs
     Object.keys(BRAND_CHANNELS_DATA).forEach(function(bid) {
       var el = document.getElementById(bid + '-budget');
       if (el && typeof renderBrandChannelMix === 'function') renderBrandChannelMix(bid);
     });
-    // Re-render group channels if that view is open
-    var chanView = document.getElementById('view-channels');
-    if (chanView && chanView.classList.contains('active')) {
-      if (typeof renderGroupChannels === 'function') renderGroupChannels();
-    }
+    // updateGroupChannelsFromBrands handles group render + view-gate
+    updateGroupChannelsFromBrands();
+    window._brandChannelsLoaded = true;
     console.log('Brand channels loaded: ' + rows.length + ' rows');
   } catch(e) { console.warn('loadBrandChannels error:', e); }
 }
@@ -6133,8 +6133,6 @@ async function loadBrandChannels() {
 var _updatingGroupChannels = false;
 function updateGroupChannelsFromBrands() {
   if (_updatingGroupChannels) return;
-  // Don't run until site budgets are loaded — they affect channel budget calc
-  if (!Object.keys(SITE_BUDGETS).length) { return; }
   _updatingGroupChannels = true;
   // Aggregate all brand channel spend into group channel totals
   console.log('updateGroupChannelsFromBrands: brands=', Object.keys(BRAND_CHANNELS_DATA).length, 'sites=', Object.keys(SITE_BUDGETS).length);
