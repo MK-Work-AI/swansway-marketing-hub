@@ -8341,7 +8341,15 @@ async function bbSaveBrief() {
         showToast('Brief updated ✓ Refreshing campaign view…', 'success');
         setTimeout(function() { bbEnterCampaignMode(data); }, 800);
       } else {
-        bbShowPostSave(data ? data.id : null, _savedStatus);
+        // Re-render campaign section with fresh status (resets any stuck button states)
+        var _updatedBrief = data || {id: window._lastSavedBriefId, title: window._lastSavedBriefTitle, status: _savedStatus};
+        if (_savedStatus === 'approved' || _savedStatus === 'submitted') {
+          var _campSec = document.getElementById('bb-campaign-section');
+          if (_campSec) _campSec.style.display = 'block';
+          bbRenderCampaignSection(_updatedBrief);
+        } else {
+          bbShowPostSave(data ? data.id : null, _savedStatus);
+        }
         showToast('Brief updated ✓', 'success');
       }
     });
