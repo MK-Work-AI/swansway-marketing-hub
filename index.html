@@ -5408,11 +5408,33 @@ function calShowCampaign(cJson) {
   var actions = document.createElement('div');
   actions.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-top:4px';
 
-  var briefBtn = document.createElement('button');
-  briefBtn.className = 'btn btn-accent';
-  briefBtn.style.flex = '1';
-  briefBtn.textContent = '\u270F Build brief for this campaign';
-  briefBtn.onclick = function() { overlay.remove(); calBuildBrief(c.brand, c.name, c); };
+  var primaryBtn = document.createElement('button');
+  primaryBtn.className = 'btn btn-accent';
+  primaryBtn.style.flex = '1';
+
+  if (c.status === 'active' && c.brief_id) {
+    // Campaign is live — open it in campaign mode via Brief Builder
+    primaryBtn.textContent = '\uD83D\uDE80 Open campaign';
+    primaryBtn.onclick = function() {
+      overlay.remove();
+      closeBriefsPanel && closeBriefsPanel();
+      switchView('brief', document.querySelector('[data-view=brief]'));
+      setTimeout(function() { bbLoadBrief(c.brief_id); }, 150);
+    };
+  } else if ((c.status === 'briefed') && c.brief_id) {
+    // Brief exists but not launched yet
+    primaryBtn.textContent = '\uD83D\uDCC4 View brief';
+    primaryBtn.onclick = function() {
+      overlay.remove();
+      closeBriefsPanel && closeBriefsPanel();
+      switchView('brief', document.querySelector('[data-view=brief]'));
+      setTimeout(function() { bbLoadBrief(c.brief_id); }, 150);
+    };
+  } else {
+    // No brief yet — start one
+    primaryBtn.textContent = '\u270F Build brief for this campaign';
+    primaryBtn.onclick = function() { overlay.remove(); calBuildBrief(c.brand, c.name, c); };
+  }
 
   var closeBtn2 = document.createElement('button');
   closeBtn2.className = 'btn';
@@ -5420,7 +5442,7 @@ function calShowCampaign(cJson) {
   closeBtn2.textContent = 'Close';
   closeBtn2.onclick = function() { overlay.remove(); };
 
-  actions.appendChild(briefBtn); actions.appendChild(closeBtn2);
+  actions.appendChild(primaryBtn); actions.appendChild(closeBtn2);
   body.appendChild(sBadge); body.appendChild(grid); body.appendChild(actions);
   box.appendChild(hdr); box.appendChild(body);
   overlay.appendChild(box);
