@@ -47,14 +47,21 @@ html{overflow-y:scroll}body{font-family:var(--font-b);background:var(--surface);
 
 /* ── BRAND NAV ── */
 .brand-nav{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:190;overflow:visible}
-.brand-nav-inner{display:flex;padding:0 1.5rem;max-width:1500px;margin:0 auto;overflow:visible;gap:0}
-
-.bnav-btn{padding:12px 16px 10px;font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-soft);cursor:pointer;border:none;background:none;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;flex-shrink:0}
-.bnav-btn:hover{color:var(--ink)}
-.dd-brand-btn{display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;border:none;background:none;cursor:pointer;font-size:13px;font-family:var(--font-b);color:var(--ink);text-align:left;transition:background .15s}
+.brand-nav-inner{display:flex;align-items:stretch;padding:0 1.5rem;max-width:1500px;margin:0 auto;overflow:visible;gap:0}
+.bnav-group{display:flex;align-items:stretch;position:relative}
+.bnav-group+.bnav-group{margin-left:4px;padding-left:8px;border-left:1px solid var(--border)}
+.bnav-group-label{font-family:var(--font-m);font-size:8px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);position:absolute;top:7px;left:10px;pointer-events:none;line-height:1}
+.bnav-btn{padding:22px 12px 9px;font-size:11px;font-weight:500;letter-spacing:0.03em;text-transform:uppercase;color:var(--ink-soft);cursor:pointer;border:none;background:none;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;flex-shrink:0;font-family:var(--font-b)}
+.bnav-btn:hover{color:var(--ink);background:rgba(0,0,0,0.02)}
+.bnav-btn.active{color:var(--ink);font-weight:700;border-bottom-color:var(--accent)}
+.bnav-btn.bnav-cta{color:var(--accent);font-weight:700}
+.dd-brand-btn{display:flex;align-items:center;gap:9px;width:100%;padding:7px 14px;border:none;background:none;cursor:pointer;font-size:13px;font-family:var(--font-b);color:var(--ink);text-align:left;transition:background .15s}
 .dd-brand-btn:hover{background:var(--surface)}
-.bnav-btn.active{font-weight:600;border-bottom-color:currentColor}
-
+.bnav-dd-wrap{position:relative;display:inline-flex;align-items:stretch}
+.bnav-dd{position:absolute;top:100%;left:0;background:var(--white);border:1.5px solid var(--border);border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,0.12);z-index:500;min-width:200px;padding:6px 0;margin-top:2px;display:none}
+.bnav-dd.open{display:block}
+.bnav-dd-label{padding:6px 14px 5px;font-family:var(--font-m);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);border-bottom:1px solid var(--border);margin-bottom:4px}
+.brand-nav-to{font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--brand-color);margin-top:10px;opacity:0.8}
 /* ── MAIN LAYOUT ── */
 .main{max-width:1500px;margin:0 auto;padding:1.5rem}
 .view{display:none}
@@ -243,7 +250,7 @@ td strong{font-weight:600}
   .brand-grid{grid-template-columns:1fr 1fr}
   .centres-grid{grid-template-columns:1fr}
   .cal-grid{grid-template-columns:1fr 1fr}
-  .topbar-meta{display:none}
+  .topbar-meta{display:flex;align-items:center;gap:10px}
 }
 
 /* ── UTILITIES ── */
@@ -749,44 +756,52 @@ td strong{font-weight:600}
           <div id="mt-list" style="max-height:360px;overflow-y:auto"></div>
           <div id="mt-footer" style="padding:10px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--ink-faint);text-align:center"></div>
         </div>
-      <button onclick="switchView('brief',document.querySelector('[data-view=brief]'))" style="font-family:var(--font-b);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:var(--accent);border:none;border-radius:2px;color:#fff;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#a00d26'" onmouseout="this.style.background='var(--accent)'">✏ Brief Builder</button>
+
       <button onclick="openAuth()" id="signin-btn" style="display:none;font-family:var(--font-b);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 16px;background:#fff;border:none;border-radius:2px;color:var(--swansway);cursor:pointer;transition:all .2s" onmouseover="this.style.background='#f0ede8'" onmouseout="this.style.background='#fff'">Sign in</button>
       <button id="briefs-btn" onclick="openBriefsPanel()" style="display:none;font-family:var(--font-b);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 16px;background:#fff;border:none;border-radius:2px;color:var(--swansway);cursor:pointer;transition:all .2s" onmouseover="this.style.background='#f0ede8'" onmouseout="this.style.background='#fff'">📋 My Briefs</button>
-      <a href="admin.html" class="ai-link" style="text-decoration:none;color:rgba(255,255,255,0.6)">⚙ Admin</a>
-      <span class="ai-link" onclick="openAIModal('group')"><span class="ai-dot"></span>AI Prompts</span>
-    </div>
-  </div>
-</header>
-
-<!-- ── BRAND NAV ── -->
 <nav class="brand-nav">
   <div class="brand-nav-inner" id="brand-nav-inner">
-    <button class="bnav-btn active" data-view="group" onclick="switchView('group',this)">🏠 Overview</button>
-    <button class="bnav-btn" data-view="channels" onclick="switchView('channels',this)">📊 Channels</button>
-    <button class="bnav-btn" data-view="kpis" onclick="switchView('kpis',this)">🎯 KPIs</button>
-    <div style="position:relative;display:inline-flex;align-items:center" id="brand-dropdown-wrap">
-      <button class="bnav-btn" id="brand-dd-btn" onclick="toggleBrandDropdown(event)">
-        🚗 Brands <span id="brand-dd-active" style="color:var(--accent);font-weight:700"></span> <span style="font-size:9px;opacity:0.6">▼</span>
-      </button>
-      <div id="brand-dropdown" style="display:none;position:absolute;top:100%;left:0;background:var(--white);border:1px solid var(--border-med);border-radius:4px;box-shadow:0 8px 32px rgba(0,0,0,0.14);z-index:500;min-width:210px;padding:5px 0;margin-top:2px">
-        <div style="padding:5px 14px 7px;font-family:var(--font-m);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);border-bottom:1px solid var(--border)">Brand plans</div>
-        <button class="dd-brand-btn" onclick="switchBrandView('audi')"><span style="width:8px;height:8px;border-radius:50%;background:#BB0A21;display:inline-block;flex-shrink:0"></span>Audi</button>
-        <button class="dd-brand-btn" onclick="switchBrandView('vw')"><span style="width:8px;height:8px;border-radius:50%;background:#001E50;display:inline-block;flex-shrink:0"></span>Volkswagen</button>
-        <button class="dd-brand-btn" onclick="switchBrandView('vwcv')"><span style="width:8px;height:8px;border-radius:50%;background:#1B4F72;display:inline-block;flex-shrink:0"></span>VW Commercial</button>
-        <button class="dd-brand-btn" onclick="switchBrandView('seat')"><span style="width:8px;height:8px;border-radius:50%;background:#E2231A;display:inline-block;flex-shrink:0"></span>SEAT</button>
-        <button class="dd-brand-btn" onclick="switchBrandView('cupra')"><span style="width:8px;height:8px;border-radius:50%;background:#C8920A;display:inline-block;flex-shrink:0"></span>CUPRA</button>
-        <button class="dd-brand-btn" onclick="switchBrandView('landrover')"><span style="width:8px;height:8px;border-radius:50%;background:#1D4E1D;display:inline-block;flex-shrink:0"></span>Land Rover</button>
-        <button class="dd-brand-btn" onclick="switchBrandView('jaguar')"><span style="width:8px;height:8px;border-radius:50%;background:#1B2631;display:inline-block;flex-shrink:0"></span>Jaguar</button>
-        <button class="dd-brand-btn" onclick="switchBrandView('honda')"><span style="width:8px;height:8px;border-radius:50%;background:#CC0000;display:inline-block;flex-shrink:0"></span>Honda</button>
-        <button class="dd-brand-btn" onclick="switchBrandView('peugeot')"><span style="width:8px;height:8px;border-radius:50%;background:#1B3A6B;display:inline-block;flex-shrink:0"></span>Peugeot</button>
-        <button class="dd-brand-btn" onclick="switchBrandView('byd')"><span style="width:8px;height:8px;border-radius:50%;background:#0066CC;display:inline-block;flex-shrink:0"></span>BYD</button>
-        <button class="dd-brand-btn" onclick="switchBrandView('omoda')"><span style="width:8px;height:8px;border-radius:50%;background:#6B21A8;display:inline-block;flex-shrink:0"></span>OMODA / JAECOO</button>
-        <button class="dd-brand-btn" onclick="switchBrandView('motormatch')"><span style="width:8px;height:8px;border-radius:50%;background:#374151;display:inline-block;flex-shrink:0"></span>Motor Match</button>
+    <!-- INTEL -->
+    <div class="bnav-group">
+      <div class="bnav-group-label">Intel</div>
+      <button class="bnav-btn active" data-view="group" onclick="switchView('group',this)">Overview</button>
+      <button class="bnav-btn" data-view="channels" onclick="switchView('channels',this)">Channels</button>
+      <button class="bnav-btn" data-view="kpis" onclick="switchView('kpis',this)">KPIs</button>
+      <div class="bnav-dd-wrap" id="brand-dropdown-wrap">
+        <button class="bnav-btn" id="brand-dd-btn" onclick="toggleBrandDropdown(event)">Brands <span id="brand-dd-active" style="color:var(--accent);font-weight:700"></span> <span style="font-size:8px;opacity:0.4;margin-left:1px">▾</span></button>
+        <div id="brand-dropdown" class="bnav-dd">
+          <div class="bnav-dd-label">Brand plans</div>
+          <button class="dd-brand-btn" onclick="switchBrandView('audi')"><span style="width:8px;height:8px;border-radius:50%;background:#BB0A21;display:inline-block;flex-shrink:0"></span>Audi</button>
+          <button class="dd-brand-btn" onclick="switchBrandView('vw')"><span style="width:8px;height:8px;border-radius:50%;background:#001E50;display:inline-block;flex-shrink:0"></span>Volkswagen</button>
+          <button class="dd-brand-btn" onclick="switchBrandView('vwcv')"><span style="width:8px;height:8px;border-radius:50%;background:#1B4F72;display:inline-block;flex-shrink:0"></span>VW Commercial</button>
+          <button class="dd-brand-btn" onclick="switchBrandView('seat')"><span style="width:8px;height:8px;border-radius:50%;background:#E2231A;display:inline-block;flex-shrink:0"></span>SEAT</button>
+          <button class="dd-brand-btn" onclick="switchBrandView('cupra')"><span style="width:8px;height:8px;border-radius:50%;background:#C8920A;display:inline-block;flex-shrink:0"></span>CUPRA</button>
+          <button class="dd-brand-btn" onclick="switchBrandView('landrover')"><span style="width:8px;height:8px;border-radius:50%;background:#1D4E1D;display:inline-block;flex-shrink:0"></span>Land Rover</button>
+          <button class="dd-brand-btn" onclick="switchBrandView('jaguar')"><span style="width:8px;height:8px;border-radius:50%;background:#1B2631;display:inline-block;flex-shrink:0"></span>Jaguar</button>
+          <button class="dd-brand-btn" onclick="switchBrandView('honda')"><span style="width:8px;height:8px;border-radius:50%;background:#CC0000;display:inline-block;flex-shrink:0"></span>Honda</button>
+          <button class="dd-brand-btn" onclick="switchBrandView('peugeot')"><span style="width:8px;height:8px;border-radius:50%;background:#1B3A6B;display:inline-block;flex-shrink:0"></span>Peugeot</button>
+          <button class="dd-brand-btn" onclick="switchBrandView('byd')"><span style="width:8px;height:8px;border-radius:50%;background:#0066CC;display:inline-block;flex-shrink:0"></span>BYD</button>
+          <button class="dd-brand-btn" onclick="switchBrandView('omoda')"><span style="width:8px;height:8px;border-radius:50%;background:#6B21A8;display:inline-block;flex-shrink:0"></span>OMODA / JAECOO</button>
+          <button class="dd-brand-btn" onclick="switchBrandView('motormatch')"><span style="width:8px;height:8px;border-radius:50%;background:#374151;display:inline-block;flex-shrink:0"></span>Motor Match</button>
+        </div>
       </div>
+      <button class="bnav-btn" data-view="competitor" onclick="switchView('competitor',this)">Competitors</button>
     </div>
-    <button class="bnav-btn" data-view="brief" onclick="switchView('brief',this)" style="color:var(--accent);font-weight:700;border-left:1px solid var(--border);margin-left:6px;padding-left:18px">✏️ Brief Builder</button>
-    
-    <div style="width:1px;background:var(--border);margin:8px 6px"></div>
+    <!-- PLANNING -->
+    <div class="bnav-group">
+      <div class="bnav-group-label">Planning</div>
+      <button class="bnav-btn" data-view="crosscal" onclick="switchView('crosscal',this)">Calendar</button>
+      <button class="bnav-btn bnav-cta" data-view="brief" onclick="switchView('brief',this)">Brief Builder</button>
+      <button class="bnav-btn" data-view="campaigns" onclick="switchView('campaigns',this)">Campaigns</button>
+    </div>
+    <!-- REVIEW -->
+    <div class="bnav-group">
+      <div class="bnav-group-label">Review</div>
+      <button class="bnav-btn" data-view="budget" onclick="switchView('budget',this)">Budget</button>
+      <button class="bnav-btn" data-view="autopsy" onclick="switchView('autopsy',this)">Autopsy</button>
+    </div>
+  </div>
+</nav>
     <button class="bnav-btn" data-view="crosscal" onclick="switchView('crosscal',this)">📆 Campaign Calendar</button>
     <button class="bnav-btn" data-view="budget" onclick="switchView('budget',this)">💰 Budget</button>
     <button class="bnav-btn" data-view="autopsy" onclick="switchView('autopsy',this)">🔬 Autopsy</button>
@@ -4029,8 +4044,8 @@ function toggleBrandDropdown(e) {
   if(e) e.stopPropagation();
   const dd = document.getElementById('brand-dropdown');
   if(!dd) return;
-  const isOpen = dd.style.display !== 'none';
-  dd.style.display = isOpen ? 'none' : 'block';
+  const isOpen = dd.classList.contains('open');
+  dd.classList.toggle('open', !isOpen);
   if(!isOpen) {
     setTimeout(() => {
       document.addEventListener('click', closeBrandDropdown, { once: true });
