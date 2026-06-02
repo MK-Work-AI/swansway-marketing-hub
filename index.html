@@ -3909,12 +3909,15 @@ function bbGenerateBrief() {
     saveBar.style.display = 'block';
     const saveBtn = document.getElementById('bb-save-btn');
     if(saveBtn) {
-      if(SB_USER) {
-        saveBtn.textContent = 'Save brief';
-        saveBtn.style.opacity = '1';
-      } else {
+      saveBtn.disabled = false; saveBtn.style.background = '';
+      if (!SB_USER) {
         saveBtn.textContent = 'Sign in to save';
-        saveBtn.style.opacity = '1';
+      } else if (window._lastSavedBriefId) {
+        saveBtn.textContent = 'Update brief';
+        const _ti = document.getElementById('bb-brief-title');
+        if (_ti && window._lastSavedBriefTitle) _ti.value = window._lastSavedBriefTitle;
+      } else {
+        saveBtn.textContent = 'Save brief';
       }
     }
   }
@@ -9301,24 +9304,37 @@ function renderBriefsList() {
   }
 
   listEl.innerHTML = filtered.map(brief => {
-    const date = new Date(brief.updated_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
     const color = brief.brand_color || '#1A2E4A';
-    return `
-      <div class="brief-card" style="--card-color:${color}" onclick="bbLoadBrief('${brief.id}')">
-        <div class="brief-card-brand" style="color:${color}">${brief.brand_name}</div>
-        <div class="brief-card-title">${brief.title}</div>
-        <div class="brief-card-meta">${brief.campaign_type||'Campaign'} · £${(brief.budget||0).toLocaleString()} · ${brief.duration_weeks||'?'} weeks</div>
-        <div class="brief-card-meta" style="margin-top:2px">${brief.proposition ? '"'+brief.proposition.substring(0,60)+(brief.proposition.length>60?'…':'')+'"' : '<em>No proposition yet</em>'}</div>
-        <span class="brief-card-status status-${brief.status||'draft'}">${brief.status||'draft'}</span>
-        <div class="brief-card-actions" onclick="event.stopPropagation()">
-          <button class="brief-card-btn" onclick="bbLoadBrief('${brief.id}')">↩ Load</button>
-          <button class="brief-card-btn" onclick="bbSetStatus('${brief.id}','${brief.status==='final'?'draft':'final'}')">${brief.status==='final'?'Reopen':'Mark final'}</button>
+    const status = brief.status || 'draft';
+    const sStyles = {draft:'background:#FEF3C7;color:#92400E',submitted:'background:#DBEAFE;color:#1E40AF',approved:'background:#D1FAE5;color:#065F46',campaigned:'background:#EDE9FE;color:#5B21B6',final:'background:#F0FDF4;color:#15803D',archived:'background:#F1F5F9;color:#475569'};
+    const ss = sStyles[status] || 'background:#F1F5F9;color:#475569';
+    const updated = new Date(brief.updated_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    let dateStr = '';
+    if (brief.start_date && brief.end_date) {
+      const sd = new Date(brief.start_date+'T00:00:00'), ed = new Date(brief.end_date+'T00:00:00');
+      dateStr = sd.getDate()+' '+MN[sd.getMonth()]+' – '+ed.getDate()+' '+MN[ed.getMonth()];
+    }
+    const site = brief.site_id ? brief.site_id.replace(/-/g,' ').replace(/\b\w/g,l=>l.toUpperCase()) : '';
+    const chips = [brief.campaign_type, brief.budget ? '£'+Number(brief.budget).toLocaleString() : '', brief.duration_label||(brief.duration_weeks?brief.duration_weeks+' wks':''), dateStr, site].filter(Boolean).map(t=>`<span style="background:var(--surface);padding:2px 7px;border-radius:4px;font-size:10px;white-space:nowrap">${t}</span>`).join('');
+    return `<div class="brief-card" style="--card-color:${color}" onclick="bbLoadBrief('${brief.id}');closeBriefsPanel()">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <div class="brief-card-brand" style="color:${color};margin-bottom:0">${brief.brand_name}</div>
+        <span style="font-family:var(--font-m);font-size:9px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:10px;flex-shrink:0;${ss}">${status}</span>
+      </div>
+      <div class="brief-card-title">${brief.title}</div>
+      ${chips?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${chips}</div>`:''}
+      ${brief.objective?`<div class="brief-card-meta" style="margin-top:5px">${brief.objective}</div>`:''}
+      ${brief.proposition?`<div class="brief-card-meta" style="margin-top:4px;font-style:italic">“${brief.proposition.substring(0,70)}${brief.proposition.length>70?'…':''}”</div>`:''}
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <span style="font-size:10px;color:var(--ink-faint)">Updated ${updated}</span>
+        <div class="brief-card-actions" onclick="event.stopPropagation()" style="margin-top:0;padding-top:0;border-top:none">
+          <button class="brief-card-btn" onclick="bbLoadBrief('${brief.id}');closeBriefsPanel()">&#8617; Open</button>
           <button class="brief-card-btn" onclick="bbArchiveBrief('${brief.id}')">Archive</button>
           <button class="brief-card-btn danger" onclick="bbDeleteBrief('${brief.id}')">Delete</button>
         </div>
-        <div style="font-size:10px;color:var(--ink-faint);margin-top:6px;font-family:var(--font-m)">Updated ${date}</div>
       </div>
-    `;
+    </div>`;
   }).join('');
 }
 
