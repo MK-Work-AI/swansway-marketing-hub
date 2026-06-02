@@ -6936,9 +6936,11 @@ async function bbLaunchCampaignFromBrief(briefId, briefTitle) {
   } catch(e) { alert('Error launching campaign: '+e.message); btn.textContent='\uD83D\uDE80 LAUNCH CAMPAIGN'; btn.disabled=false; }
 }
 
-function bbViewCampaign(campaignId) {
-  // Will be built in Phase 4 - for now just show alert
-  alert('Campaign tasks view coming in Phase 4!');
+async function bbViewCampaign(campaignId) {
+  var anon = SUPABASE_ANON_KEY, base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  var rows = await fetch(base+'/campaigns?id=eq.'+campaignId+'&select=*',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
+  var camp = Array.isArray(rows) && rows[0];
+  if (camp && camp.brief_id) { await bbLoadBrief(camp.brief_id); } else { showToast('Could not find brief for this campaign','error'); }
 }
 
 
@@ -6963,13 +6965,8 @@ async function bbRenderCampaignSection(briefData) {
   if (existingCamp || brief.status === 'campaigned') {
     var camp = existingCamp || {};
     var stageNames = ['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'];
-    el.innerHTML = '<div style="background:linear-gradient(135deg,#059669,#047857);border-radius:10px;padding:24px;text-align:center;color:#fff;margin-top:1.5rem">'
-      + '<div style="font-size:22px;margin-bottom:8px">\uD83D\uDE80</div>'
-      + '<div style="font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:6px">Campaign is live!</div>'
-      + '<div style="font-size:14px;opacity:0.9;margin-bottom:16px">Stage '+(camp.current_stage||1)+' of 6 \u2014 '+(stageNames[(camp.current_stage||1)-1]||'')+'</div>'
-      + '<button onclick="bbViewCampaign(\''+(camp.id||'')+'\',\''+brief.id+'\')" style="background:#fff;color:#059669;border:none;padding:10px 28px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-b)">View campaign tasks \u2192</button>'
-      + '</div>';
-    if (camp.id) bbRenderStages(el, camp, brief.id);
+    el.style.display = 'none';
+    await bbEnterCampaignMode(brief);
     return;
   }
   if (brief.status === 'draft') { el.style.display = 'none'; return; }
