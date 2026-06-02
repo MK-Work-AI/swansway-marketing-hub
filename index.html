@@ -6847,7 +6847,12 @@ async function bbSubmitBrief() {
     });
     if (!r.ok) throw new Error(await r.text());
     loadBriefs();
-    bbShowPostSave(window._lastSavedBriefId, 'submitted');
+    // Immediately show the submitted card — no refresh needed
+    var _submitBrief = {id: window._lastSavedBriefId, title: window._lastSavedBriefTitle, status: 'submitted'};
+    var _campSec = document.getElementById('bb-campaign-section');
+    if (_campSec) _campSec.style.display = 'block';
+    await bbRenderCampaignSection(_submitBrief);
+    showToast('Brief submitted ✓ The team has been notified.', 'success');
     // Refresh My Tasks badge
     setTimeout(mtLoad, 500);
   } catch(e) { alert('Error: ' + e.message); }
@@ -6870,7 +6875,8 @@ async function bbApproveBriefAndLaunch() {
     var briefs = await r.json();
     var brief = Array.isArray(briefs) ? briefs[0] : briefs;
     loadBriefs();
-    bbRenderCampaignSection(brief);
+    showToast('Brief approved ✓ Launching campaign…', 'success');
+    await bbRenderCampaignSection(brief);
   } catch(e) { alert('Error: '+e.message); }
 }
 
@@ -6984,7 +6990,7 @@ async function bbRenderCampaignSection(briefData) {
         + '<div class="bb-s6-card-pill" style="background:var(--accent)">Ready to launch</div>'
         + '<div class="bb-s6-card-title">' + (firstName ? firstName + ', this brief is waiting for you.' : 'Ready to launch.') + '</div>'
         + '<div class="bb-s6-card-sub">Approve it and the team will get their tasks automatically.</div>'
-        + '<button class="bb-s6-launch" onclick="bbApproveBriefAndLaunch()">??  LAUNCH CAMPAIGN</button>'
+        + '<button class="bb-s6-launch" onclick="bbApproveBriefAndLaunch()">🚀 LAUNCH CAMPAIGN</button>'
         + '<div class="bb-s6-launch-hint">Creates all 58 tasks and assigns them to the team</div>'
         + '</div>';
     } else {
@@ -7002,7 +7008,7 @@ async function bbRenderCampaignSection(briefData) {
       + '<div class="bb-s6-card-pill" style="background:#059669">Brief approved</div>'
       + '<div class="bb-s6-card-title">' + (firstName ? 'Go for it, '+firstName+'.' : 'Ready to launch.') + '</div>'
       + '<div class="bb-s6-card-sub">Approved and ready. Create the campaign and assign all tasks to the team.</div>'
-      + '<button class="bb-s6-launch" onclick="bbLaunchCampaignFromBrief(\'' + brief.id + '\',\'' + safeTitle + '\')">??  LAUNCH CAMPAIGN</button>'
+      + '<button class="bb-s6-launch" onclick="bbLaunchCampaignFromBrief(\'' + brief.id + '\',\'' + safeTitle + '\')">🚀 LAUNCH CAMPAIGN</button>'
       + '<div class="bb-s6-launch-hint">Creates all 58 tasks and assigns them to the team</div>'
       + '</div>';
   }
