@@ -5888,6 +5888,16 @@ function syncBrandSitesFromHubSites() {
       brand.sitenames = brandSites.map(function(s) {
         return s.site_name.replace(brand.name + ' ', '').replace('VWC ', '').replace('VW ', '').replace('Motor Match ', '');
       }).join(' · ');
+      // If this brand page is already rendered, patch the DOM live
+      var container = document.getElementById(brand.id + '-content');
+      if (container && container.dataset.rendered) {
+        var subtitle = container.querySelector('.page-subtitle');
+        if (subtitle) subtitle.textContent = brand.sites + ' site' + (brand.sites > 1 ? 's' : '') + ' · ' + brand.sitenames;
+        var heroSites = container.querySelector('.brand-hero-sites');
+        if (heroSites) heroSites.textContent = brand.sitenames;
+        var tabBtn = container.querySelector('[onclick*="centres"]');
+        if (tabBtn) tabBtn.textContent = 'Dealership/s (' + brand.sites + ')';
+      }
     }
   });
 }
