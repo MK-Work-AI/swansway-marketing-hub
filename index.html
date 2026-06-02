@@ -8870,9 +8870,8 @@ async function bbSaveBrief() {
         var _match2 = Object.values(CB_TEAM).find(function(m){return m.email&&m.email.toLowerCase()===SB_USER.email.toLowerCase();});
         if (_match2) CB_CURRENT_USER = _match2.id;
       }
-      // Show post-save state then render campaign section
+      // Show post-save state
       bbShowPostSave(data ? data.id : null, 'draft');
-      if (typeof bbRenderCampaignSection === 'function' && data) bbRenderCampaignSection(data);
     });
   }
 }
@@ -9641,7 +9640,7 @@ function renderBriefsList() {
 }
 
 /* ── LOAD BRIEF INTO BUILDER ── */
-function bbLoadBrief(id) {
+async function bbLoadBrief(id) {
   const brief = SB_BRIEFS_CACHE.find(b=>b.id===id);
   if(!brief) return;
 
@@ -9737,18 +9736,19 @@ function bbLoadBrief(id) {
 
   // After loading brief — route by status
   if (brief.status === 'campaigned') {
-    // Launched: enter campaign mode
-    setTimeout(async function() {
-      window._lastSavedBriefId = brief.id;
-      window._lastSavedBriefTitle = brief.title;
-      await bbEnterCampaignMode(brief);
-    }, 300);
+    // Launched: enter campaign mode immediately — no delay to avoid flash
+    window._lastSavedBriefId = brief.id;
+    window._lastSavedBriefTitle = brief.title;
+    // Hide step 6 output first so nothing flashes
+    var _s6 = document.getElementById('bb-step-6');
+    if (_s6) _s6.style.display = 'none';
+    await bbEnterCampaignMode(brief);
   } else if (brief.status === 'submitted' || brief.status === 'approved') {
-    // Submitted/approved: go to Step 6 and show campaign section
+    // Submitted/approved: go to Step 6 and show status card
     setTimeout(async function() {
       document.querySelectorAll('.bb-step').forEach(function(p){p.classList.remove('bb-active');});
       var s6 = document.getElementById('bb-step-6');
-      if (s6) s6.classList.add('bb-active');
+      if (s6) { s6.classList.add('bb-active'); s6.style.display = ''; }
       var saveBar = document.getElementById('bb-save-bar');
       if (saveBar) saveBar.style.display = 'none';
       window._lastSavedBriefId = brief.id;
