@@ -1687,31 +1687,6 @@ td strong{font-weight:600}
 </div><!-- end bb-layout -->
 </div><!-- end view-brief -->
 
-<!-- CAMPAIGN BUILDER -->
-
-  <div style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:12px 18px;margin-bottom:1.5rem;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-      <span style="font-size:12px;color:var(--ink-soft)">Viewing as</span>
-      <select id="cb-user-sel" onchange="cbSetUser(this.value)" style="padding:5px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px;font-family:var(--font-m);color:var(--ink);min-width:180px">
-        <option value="">&#8212; Select your name &#8212;</option>
-      </select>
-    </div>
-    <div style="width:1px;height:20px;background:var(--border);flex-shrink:0"></div>
-    <div style="display:flex;flex-direction:row;gap:5px;flex-wrap:wrap;align-items:center">
-      <button id="cbf-all" onclick="cbSetFilter('all',this)" class="sw-filter-btn active">All</button>
-      <button id="cbf-draft" onclick="cbSetFilter('draft',this)" class="sw-filter-btn">Draft</button>
-      <button id="cbf-submitted" onclick="cbSetFilter('submitted',this)" class="sw-filter-btn">Submitted</button>
-      <button id="cbf-approved" onclick="cbSetFilter('approved',this)" class="sw-filter-btn">Approved</button>
-      <button id="cbf-campaigned" onclick="cbSetFilter('campaigned',this)" class="sw-filter-btn">Live</button>
-    </div>
-    <div style="margin-left:auto">
-      <button class="btn" id="cb-mytasks-btn" onclick="cbToggleMyTasksFilter()" style="font-size:12px">&#128100; My tasks only</button>
-    </div>
-  </div>
-  <div id="cb-briefs-list"></div>
-  <div id="cb-detail" style="display:none"></div>
-</div>
-
 
 <!-- ── AI MODAL ── -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnBg(event)">
@@ -9012,10 +8987,11 @@ function bbExitCampaignMode() {
   var canvas = document.getElementById('bb-campaign-canvas');
   if (canvas) canvas.style.display = 'none';
 
-  // Re-show step 6
+  // Go to step 1 so team can edit from the beginning
   document.querySelectorAll('.bb-step').forEach(function(s){ s.style.display = 'none'; });
-  var s6 = document.getElementById('bb-step-6');
-  if (s6) { s6.style.display = 'block'; s6.classList.add('bb-active'); }
+  document.querySelectorAll('.bb-step').forEach(function(s){ s.classList.remove('bb-active'); });
+  BB.step = 1;
+  bbGoStep(1);
 
   // Update brief context
   bbUpdateBrief();
