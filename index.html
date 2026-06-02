@@ -4131,17 +4131,14 @@ function closeBrandDropdown(e) {
 
 function switchBrandView(id) {
   // Close dropdown
-  const dd = document.getElementById('brand-dropdown');
-  if(dd) dd.style.display = 'none';
+  navCloseAll();
   // Update dropdown button label
   const brand = BRANDS.find(b => b.id === id);
-  const activeLabel = document.getElementById('brand-dd-active');
-  if(activeLabel && brand) activeLabel.textContent = '— ' + brand.name;
-  // Clear all bnav active states
-  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('brand-dd-btn').classList.add('active');
+  // brand-dd-active removed with old nav
+  // Update nav active state
+  navUpdateActive(id);
   // Switch view
-  switchView(id, document.getElementById('brand-dd-btn'));
+  switchView(id, null);
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -6349,7 +6346,7 @@ async function cbLoad() {
     CB_ALL_BRIEFS = Array.isArray(results[3]) ? results[3] : [];
     console.log('CB loaded:', CB_CAMPAIGNS.length, 'campaigns,', CB_ALL_BRIEFS.length, 'briefs,', Object.keys(CB_TEAM).length, 'team members');
     cbPopulateUserDropdown();
-    cbRenderBriefsList();
+    cbRenderDashboard();
   } catch(e) { console.warn('cbLoad error:', e); }
 }
 
