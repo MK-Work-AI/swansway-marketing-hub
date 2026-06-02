@@ -332,7 +332,7 @@ td strong{font-weight:600}
 .sp-card-top{background:var(--swansway);padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
 .sp-card-num{font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.5)}
 .sp-card-actions{display:flex;gap:6px}
-.sp-card-edit{background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:var(--font-m);font-weight:600}
+.sp-card-edit{background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:var(--font-b);font-weight:600}
 .sp-card-edit:hover{background:rgba(255,255,255,0.25)}
 .sp-card-body{padding:18px}
 .sp-card-title{font-family:var(--font-d);font-size:17px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-0.01em;line-height:1.2}
@@ -626,7 +626,7 @@ td strong{font-weight:600}
 .sw-dept-tag{font-size:10px;background:var(--surface);color:var(--ink-soft);padding:2px 7px;border-radius:10px;font-family:var(--font-m)}
 
 /* Filter buttons */
-.sw-filter-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--ink-soft);font-size:12px;font-family:var(--font-m);cursor:pointer;transition:all .15s;font-weight:500}
+.sw-filter-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--ink-soft);font-size:12px;font-family:var(--font-b);cursor:pointer;transition:all .15s;font-weight:500}
 .sw-filter-btn:hover{border-color:var(--swansway);color:var(--swansway)}
 .sw-filter-btn.active{background:var(--swansway);color:#fff;border-color:var(--swansway)}
 
@@ -697,7 +697,7 @@ td strong{font-weight:600}
 .sw-task-actions{display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;min-width:80px}
 
 /* Task action buttons */
-.sw-btn-complete,.sw-btn-approve,.sw-btn-reject,.sw-btn-note{font-size:11px;font-family:var(--font-m);font-weight:600;padding:5px 12px;border-radius:4px;cursor:pointer;border:none;white-space:nowrap;transition:opacity .15s}
+.sw-btn-complete,.sw-btn-approve,.sw-btn-reject,.sw-btn-note{font-size:11px;font-family:var(--font-b);font-weight:600;padding:5px 12px;border-radius:4px;cursor:pointer;border:none;white-space:nowrap;transition:opacity .15s}
 .sw-btn-complete{background:var(--swansway);color:#fff}
 .sw-btn-approve{background:#059669;color:#fff}
 .sw-btn-reject{background:none;color:#DC2626;border:1px solid #DC2626}
@@ -1067,7 +1067,7 @@ td strong{font-weight:600}
 
 <style>
 /* ── BRIEF BUILDER SCOPED STYLES ──────────────────────────────── */
-.bb-scope-btn{padding:6px 14px;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;font-size:12px;font-family:var(--font-m);background:var(--white);color:var(--ink);transition:all .15s;}
+.bb-scope-btn{padding:6px 14px;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;font-size:12px;font-family:var(--font-b);background:var(--white);color:var(--ink);transition:all .15s;}
 .bb-scope-btn:hover{border-color:var(--accent);}
 .bb-scope-btn.bb-selected{border-color:var(--accent);background:rgba(200,16,46,0.06);color:var(--accent);font-weight:600;}
 .bb-site-tile{padding:8px 12px;border:1.5px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;background:var(--white);transition:all .15s;}
@@ -7269,7 +7269,7 @@ async function bbRenderCampaignSection(briefData) {
       + '<div style="font-size:22px;margin-bottom:8px">\uD83D\uDE80</div>'
       + '<div style="font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:6px">Campaign is live!</div>'
       + '<div style="font-size:14px;opacity:0.9;margin-bottom:16px">Stage '+(camp.current_stage||1)+' of 6 \u2014 '+(stageNames[(camp.current_stage||1)-1]||'')+'</div>'
-      + '<button onclick="bbViewCampaign(\''+(camp.id||'')+'\',\''+brief.id+'\')" style="background:#fff;color:#059669;border:none;padding:10px 28px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-m)">View campaign tasks \u2192</button>'
+      + '<button onclick="bbViewCampaign(\''+(camp.id||'')+'\',\''+brief.id+'\')" style="background:#fff;color:#059669;border:none;padding:10px 28px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-b)">View campaign tasks \u2192</button>'
       + '</div>';
     if (camp.id) bbRenderStages(el, camp, brief.id);
     return;
@@ -7449,7 +7449,7 @@ async function bbRenderStages(section, camp, briefId) {
 
   // View Brief button - always shown
   var briefBtn = document.createElement('button');
-  briefBtn.style.cssText = 'background:var(--white);color:var(--ink);border:2px solid var(--border);padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-m)';
+  briefBtn.style.cssText = 'background:var(--white);color:var(--ink);border:1.5px solid var(--border);padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-b)';
   briefBtn.innerHTML = '&#128203; View Brief';
   briefBtn.dataset.briefId = briefId;
   briefBtn.onclick = function() { bbOpenBriefPanel(this.dataset.briefId); };
@@ -7457,7 +7457,7 @@ async function bbRenderStages(section, camp, briefId) {
 
   if (canAdvance && currentStage < 6) {
     var advBtn = document.createElement('button');
-    advBtn.style.cssText = 'background:var(--swansway);color:#fff;border:none;padding:8px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-m)';
+    advBtn.style.cssText = 'background:var(--swansway);color:#fff;border:none;padding:8px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-b)';
     advBtn.textContent = 'Advance to Stage ' + (currentStage + 1) + ' \u2192';
     advBtn.dataset.campId = camp.id;
     advBtn.dataset.stage = currentStage;
