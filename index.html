@@ -9021,8 +9021,11 @@ function bbExitCampaignMode() {
   var left = document.getElementById('bb-left');
   if (left) delete left.dataset.origContent;
 
-  // Go to step 1
-  document.querySelectorAll('.bb-step').forEach(function(s){ s.classList.remove('bb-active'); });
+  // Go to step 1 — must reset inline display:none set by bbEnterCampaignMode
+  document.querySelectorAll('.bb-step').forEach(function(s){
+    s.classList.remove('bb-active');
+    s.style.display = ''; // clear inline style so CSS class can control visibility
+  });
   BB.step = 1;
   bbGoStep(1);
 
