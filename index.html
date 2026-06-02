@@ -3316,6 +3316,8 @@ function bbGoStep(n) {
   bbUpdateStepIndicator(n);
   const pf = document.getElementById('bb-progress-fill');
   if(pf) pf.style.width = ((n-1)/5*100)+'%';
+  if(n===2){ var _b2=document.getElementById('bb-btn-2-next'); if(_b2) _b2.disabled=!(BB.ctype&&BB.objective); }
+  if(n===3){ var _b3=document.getElementById('bb-btn-3-next'); if(_b3) _b3.disabled=!BB.duration; }
   if(n===4){ bbRenderAudiences(); }
   if(n===5){ bbRenderPESO(); bbRenderToneChips(); bbRenderKPITargets(); }
   if(n===6) bbGenerateBrief();
@@ -3757,6 +3759,7 @@ function bbRenderPESO() {
     </div>
   `).join('');
   bbUpdateBrief();
+  var _b5=document.getElementById('bb-btn-5-next'); if(_b5) _b5.disabled=BB.channels.length===0;
 }
 
 function bbToggleCh(id, row) {
