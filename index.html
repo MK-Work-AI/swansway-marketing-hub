@@ -1415,7 +1415,7 @@ td strong{font-weight:600}
   background:var(--white); margin:-2rem -2.5rem; padding:0; min-height:500px;
 }
 .bb-out-hero {
-  background:var(--ink); color:#fff; padding:2.5rem 2.5rem 2rem;
+  background:var(--hero-color, var(--swansway)); color:#fff; padding:2.5rem 2.5rem 2rem;
   position:relative; overflow:hidden;
 }
 .bb-out-brand { color:#fff !important; }
@@ -3964,6 +3964,8 @@ function bbGenerateBrief() {
   const prop = document.getElementById('bb-smp')?.value||'Not yet defined — complete Step 5';
   const mandatories = document.getElementById('bb-mandatories')?.value||'None listed';
 
+  var _heroColor = (BB.brand && BB.brand.color) ? BB.brand.color : 'var(--swansway)';
+  document.getElementById('bb-output').style.setProperty('--hero-color', _heroColor);
   document.getElementById('bb-output').innerHTML = `
     <button class="bb-print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
     <div class="bb-out-hero">
@@ -9658,6 +9660,7 @@ function bbLoadBrief(id) {
 
   // Re-init and jump to step 5
   bbInit();
+  BB.step = 6;
 
   // Set proposition
   setTimeout(() => {
@@ -9721,9 +9724,15 @@ function bbLoadBrief(id) {
 
     // Go to step 6 to show the full brief
     bbGoStep(6);
-    // Show save bar immediately with existing title
-    const saveBar = document.getElementById('bb-save-bar');
-    if(saveBar) saveBar.style.display = 'block';
+    // Lock title for saved brief
+    setTimeout(function() {
+      var _titleEl = document.getElementById('bb-brief-title');
+      var _saveBtn = document.getElementById('bb-save-btn');
+      var _saveBar = document.getElementById('bb-save-bar');
+      if (_titleEl) _titleEl.value = brief.title || '';
+      if (_saveBtn) { _saveBtn.textContent = '\u2713 Saved'; _saveBtn.disabled = true; _saveBtn.style.background = '#059669'; }
+      if (_saveBar) _saveBar.style.display = 'block';
+    }, 150);
   }, 100);
 
   // After loading brief — route by status
