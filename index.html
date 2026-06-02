@@ -1467,7 +1467,7 @@ td strong{font-weight:600}
 .bb-out-tl-label { font-family:var(--font-m); font-size:9px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.08em; padding-top:4px; }
 .bb-out-tl-pills { display:flex; gap:6px; flex-wrap:wrap; }
 .bb-out-tl-pill { font-size:11px; padding:4px 10px; border-radius:2px; background:var(--surface); border:1px solid var(--border); color:var(--ink); }
-.bb-print-btn{display:inline-flex;align-items:center;gap:6px;margin-bottom:1.5rem;padding:7px 14px;background:var(--surface);color:var(--ink-soft);border:1px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.bb-print-btn{display:inline-flex;align-items:center;gap:6px;padding:0 14px;height:44px;background:var(--surface);color:var(--ink-soft);border:1px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;flex-shrink:0}
 
 
 
@@ -1671,10 +1671,11 @@ td strong{font-weight:600}
 
     <!-- Step 6: Output -->
     <div class="bb-step" id="bb-step-6">
-      <div id="bb-save-bar" style="display:none;margin-bottom:1.5rem">
+      <div id="bb-save-bar" style="display:none;margin-bottom:1rem">
         <div class="bb-s6-row">
           <input class="bb-s6-input" id="bb-brief-title" placeholder="e.g. Volkswagen Plate Change June 2026" maxlength="80">
           <button class="bb-s6-btn" id="bb-save-btn" onclick="bbSaveBrief()">Save brief</button>
+          <button class="bb-print-btn" onclick="window.print()" style="margin-bottom:0;flex-shrink:0">?? Print</button>
         </div>
         <div id="bb-save-feedback" style="display:none;margin-top:12px"></div>
       </div>
@@ -3945,7 +3946,6 @@ function bbGenerateBrief() {
   var _heroColor = (BB.brand && BB.brand.color) ? BB.brand.color : 'var(--swansway)';
   document.getElementById('bb-output').style.setProperty('--hero-color', _heroColor);
   document.getElementById('bb-output').innerHTML = `
-    <button class="bb-print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
     <div class="bb-out-hero">
       <div class="bb-out-brand" style="color:${BB.brand?.color||'#fff'}">${BB.brand?.name?.toUpperCase()||'BRAND'}</div>
       <div class="bb-out-type">${BB.ctype?.icon||'📋'} ${BB.ctype?.name||'Campaign Brief'} · ${BB.brand?.segment}</div>
