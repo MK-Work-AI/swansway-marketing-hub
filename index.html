@@ -3228,7 +3228,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   syncBrandSitesFromHubSites();
   renderGroupBrandCards();
   renderGroupCalendar();
-  renderGroupChannels();
+  var _cvEl2 = document.getElementById('view-channels');
+  if (_cvEl2 && _cvEl2.classList.contains('active')) renderGroupChannels();
   renderGroupKPIs();
   // Restore last view from URL hash on page load/refresh
   (function restoreView() {
@@ -5840,8 +5841,11 @@ async function loadSiteBudgets() {
     updateBrandBudgetsFromSites();
     syncBrandSitesFromHubSites();
     await loadBriefCommitmentsForTracker();
+    // Now site budgets are loaded — trigger channel aggregation if brand data ready
+    if (Object.keys(BRAND_CHANNELS_DATA).length) updateGroupChannelsFromBrands();
     if (typeof renderBudgetTracker === 'function') renderBudgetTracker();
-    if (typeof renderGroupChannels === 'function') renderGroupChannels();
+    var _cvEl = document.getElementById('view-channels');
+    if (_cvEl && _cvEl.classList.contains('active') && typeof renderGroupChannels === 'function') renderGroupChannels();
     console.log('Site budgets loaded: ' + rows.length + ' sites, £' + groupTotal.toLocaleString());
   } catch(e) { console.warn('loadSiteBudgets exception:', e); }
 }
@@ -6129,6 +6133,8 @@ async function loadBrandChannels() {
 var _updatingGroupChannels = false;
 function updateGroupChannelsFromBrands() {
   if (_updatingGroupChannels) return;
+  // Don't run until site budgets are loaded — they affect channel budget calc
+  if (!Object.keys(SITE_BUDGETS).length) { return; }
   _updatingGroupChannels = true;
   // Aggregate all brand channel spend into group channel totals
   console.log('updateGroupChannelsFromBrands: brands=', Object.keys(BRAND_CHANNELS_DATA).length, 'sites=', Object.keys(SITE_BUDGETS).length);
