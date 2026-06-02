@@ -2412,15 +2412,7 @@ const GROUP_CALENDAR = [
 /* ══════════════════════════════════════
    GROUP CHANNELS DATA
 ══════════════════════════════════════ */
-var GROUP_CHANNELS = [
-  {n:'Digital Paid (PPC/Display)',pct:30,budget:'auto',note:'Google, Bing, AutoTrader PPC — brand-specific ad sets per brand and dealership. Google Shopping for used cars. ZEV-specific EV search terms across BYD, VW, Peugeot, CUPRA.',color:'#1E3A8A'},
-  {n:'Social & Content',pct:20,budget:'—',note:'TikTok, Instagram, Facebook, YouTube — brand personality-led, mix of UGC and produced content. Josh S. as group social lead. Each brand has its own social identity.',color:'#14532D'},
-  {n:'Manufacturer Co-op',pct:15,budget:'—',note:'Leverage VW Group, JLR, Honda, Stellantis, OMODA UK central funds. Submit compliant creative to unlock match funding. This is effectively free money — prioritise compliance.',color:'#78350F'},
-  {n:'Email & CRM',pct:12,budget:'—',note:'Lifecycle nurture, conquest, retention — segmented by brand and lifecycle stage. 5–6 stage sequences for each brand. Owner upgrade triggers. Service retention campaigns.',color:'#4C1D95'},
-  {n:'Events & Showroom',pct:10,budget:'—',note:'VIP nights, test drive events, community activations, fleet drive days, padel events — per-site P&L tracked. Events are the highest ROI channel for premium brands.',color:'#831843'},
-  {n:'SEO & Local Search',pct:8,budget:'—',note:'Google Business Profile optimisation across all 30 sites. 30-minute review response SLA. Local content by brand and dealership. AutoTrader Highly Rated status maintenance.',color:'#065F46'},
-  {n:'OOH & Print',pct:5,budget:'—',note:'Regional press, radio, outdoor — plate-change bursts and new brand launches (OMODA, BYD Stoke). Tactical only — used when local awareness is below threshold.',color:'#92400E'},
-];
+var GROUP_CHANNELS = []; // populated from Supabase brand_channels
 
 /* ══════════════════════════════════════
    GROUP KPIs
@@ -2508,7 +2500,17 @@ function switchView(id, el) {
   window.scrollTo({top:0,behavior:'smooth'});
   // View-specific load hooks
   if (id === 'campaigns') { if(typeof cbLoad==='function') cbLoad(); }
-  if (id === 'channels')  { updateGroupChannelsFromBrands(); setTimeout(renderGroupChannels, 200); }
+  if (id === 'channels')  { 
+    if (!Object.keys(BRAND_CHANNELS_DATA).length) {
+      // Show loading, then render when data arrives
+      var _chEl = document.getElementById('group-channel-list');
+      if (_chEl) _chEl.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint)"><div style="font-size:24px;margin-bottom:8px">⏳</div><div>Loading channel data…</div></div>';
+      // Data will arrive via loadBrandChannels callback
+    } else {
+      updateGroupChannelsFromBrands();
+      setTimeout(renderGroupChannels, 100);
+    }
+  }
   if (id === 'priorities') { spLoad(); }
   navUpdateActive(id);
 }
@@ -2710,7 +2712,12 @@ function renderGroupChannels() {
   console.log('renderGroupChannels: GROUP_CHANNELS=', GROUP_CHANNELS.length, 'BRAND_CHANNELS_DATA brands=', Object.keys(BRAND_CHANNELS_DATA).length);
   // If still no data, show empty state
   if (!GROUP_CHANNELS || !GROUP_CHANNELS.length) {
-    g.innerHTML = '<div style="padding:24px;text-align:center;color:var(--ink-faint);font-size:13px">No channel data yet. Set brand channel mixes in Admin → Brand Channels.</div>';
+    // Check if Supabase has loaded yet
+    if (!Object.keys(BRAND_CHANNELS_DATA).length) {
+      g.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint)"><div style="font-size:24px;margin-bottom:8px">⏳</div><div>Loading channel data…</div></div>';
+    } else {
+      g.innerHTML = '<div style="padding:24px;text-align:center;color:var(--ink-faint);font-size:13px">No channel data yet. Set brand channel mixes in Admin → Brand Channels.</div>';
+    }
     var cardsEl = document.getElementById('channel-summary-cards');
     if (cardsEl) cardsEl.innerHTML = '';
     return;
