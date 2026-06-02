@@ -373,6 +373,7 @@ td strong{font-weight:600}
 .bb-context-bar-fill{height:6px;border-radius:3px;transition:width .4s}
 .bb-context-bar-labels{display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--ink-faint)}
 /* ── Step 6 unified save card ── */
+.bb-save-bar-wrap{background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:1.5rem}
 .bb-s6-label{font-family:var(--font-b);font-size:11px;font-weight:600;color:var(--ink-soft);margin-bottom:6px}
 .bb-s6-row{display:flex;gap:8px;align-items:center}
 .bb-s6-input{flex:1;padding:0 14px;height:44px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:14px;color:var(--ink);background:var(--white);outline:none;transition:border-color .15s;box-sizing:border-box}
@@ -1447,7 +1448,7 @@ td strong{font-weight:600}
   .bb-out-kpis { grid-template-columns:1fr 1fr; }
 }
 @media print {
-  #bb-left, #bb-step-indicator, #bb-progress-track, .bb-print-btn, .bb-nav-btns { display:none !important; }
+  #bb-left, #bb-step-indicator, #bb-progress-track, .bb-nav-btns { display:none !important; }
   #bb-output { margin:0; }
   .bb-out-hero { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 }
@@ -1632,11 +1633,10 @@ td strong{font-weight:600}
 
     <!-- Step 6: Output -->
     <div class="bb-step" id="bb-step-6">
-      <div id="bb-save-bar" style="display:none;margin-bottom:1rem">
+      <div id="bb-save-bar" class="bb-save-bar-wrap" style="display:none">
         <div class="bb-s6-row">
           <input class="bb-s6-input" id="bb-brief-title" placeholder="e.g. Volkswagen Plate Change June 2026" maxlength="80">
           <button class="bb-s6-btn" id="bb-save-btn" onclick="bbSaveBrief()">Save brief</button>
-          <button class="bb-print-btn" onclick="window.print()" style="margin-bottom:0;flex-shrink:0">&#128424; Print</button>
         </div>
         <div id="bb-save-feedback" style="display:none;margin-top:12px"></div>
       </div>
