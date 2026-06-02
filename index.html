@@ -46,23 +46,29 @@ html{overflow-y:scroll}body{font-family:var(--font-b);background:var(--surface);
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.25}}
 
 /* ── BRAND NAV ── */
+/* ── Navigation ── */
 .brand-nav{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:190;overflow:visible}
-.brand-nav-inner{display:flex;align-items:stretch;padding:0 1.5rem;max-width:1500px;margin:0 auto;overflow:visible;gap:0}
-.bnav-group{display:flex;align-items:stretch;position:relative}
-.bnav-group+.bnav-group{margin-left:4px;padding-left:8px;border-left:1px solid var(--border)}
-.bnav-group-label{font-family:var(--font-m);font-size:8px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);position:absolute;top:7px;left:10px;pointer-events:none;line-height:1}
-.bnav-btn{padding:22px 12px 9px;font-size:11px;font-weight:500;letter-spacing:0.03em;text-transform:uppercase;color:var(--ink-soft);cursor:pointer;border:none;background:none;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;flex-shrink:0;font-family:var(--font-b)}
-.bnav-btn:hover{color:var(--ink);background:rgba(0,0,0,0.02)}
-.bnav-btn.active{color:var(--ink);font-weight:700;border-bottom-color:var(--accent)}
-.bnav-btn.bnav-cta{color:var(--accent);font-weight:700}
-.dd-brand-btn{display:flex;align-items:center;gap:9px;width:100%;padding:7px 14px;border:none;background:none;cursor:pointer;font-size:13px;font-family:var(--font-b);color:var(--ink);text-align:left;transition:background .15s}
-.dd-brand-btn:hover{background:var(--surface)}
-.bnav-dd-wrap{position:relative;display:inline-flex;align-items:stretch}
-.bnav-dd{position:absolute;top:100%;left:0;background:var(--white);border:1.5px solid var(--border);border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,0.12);z-index:500;min-width:200px;padding:6px 0;margin-top:2px;display:none}
-.bnav-dd.open{display:block}
-.bnav-dd-label{padding:6px 14px 5px;font-family:var(--font-m);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);border-bottom:1px solid var(--border);margin-bottom:4px}
-.brand-nav-to{font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--brand-color);margin-top:10px;opacity:0.8}
-/* ── MAIN LAYOUT ── */
+.brand-nav-inner{display:flex;align-items:center;padding:0 1.5rem;max-width:1500px;margin:0 auto;gap:2px}
+.nav-dd-wrap{position:relative;display:inline-flex}
+.nav-dd-btn{display:flex;align-items:center;gap:5px;padding:10px 14px;font-size:12px;font-weight:600;font-family:var(--font-b);letter-spacing:0.02em;color:var(--ink-soft);cursor:pointer;border:none;background:none;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;flex-shrink:0}
+.nav-dd-btn:hover{color:var(--ink);background:rgba(0,0,0,0.03)}
+.nav-dd-btn.active,.nav-dd-btn.has-active{color:var(--ink);border-bottom-color:var(--accent)}
+.nav-dd-btn.nav-cta{color:var(--accent);font-weight:700}
+.nav-dd-btn.nav-cta.active{border-bottom-color:var(--accent)}
+.nav-dd-chevron{font-size:8px;opacity:0.45;transition:transform .15s}
+.nav-dd-wrap.open .nav-dd-chevron{transform:rotate(180deg)}
+.nav-dd-panel{position:absolute;top:calc(100% + 2px);left:0;background:var(--white);border:1.5px solid var(--border);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.12);z-index:500;min-width:180px;padding:6px 0;display:none}
+.nav-dd-wrap.open .nav-dd-panel{display:block}
+.nav-dd-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 16px;border:none;background:none;cursor:pointer;font-size:13px;font-family:var(--font-b);color:var(--ink-soft);text-align:left;transition:all .12s;white-space:nowrap}
+.nav-dd-item:hover{background:var(--surface);color:var(--ink)}
+.nav-dd-item.active{color:var(--ink);font-weight:700;background:rgba(200,16,46,0.04)}
+.nav-dd-item.nav-item-cta{color:var(--accent);font-weight:700}
+.nav-dd-item.nav-item-cta:hover{background:rgba(200,16,46,0.06)}
+.nav-dd-sep{height:1px;background:var(--border);margin:4px 0}
+.nav-dd-section-label{padding:8px 16px 3px;font-family:var(--font-m);font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint)}
+.nav-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dd-brand-btn{display:flex;align-items:center;gap:9px;width:100%;padding:8px 16px;border:none;background:none;cursor:pointer;font-size:13px;font-family:var(--font-b);color:var(--ink-soft);text-align:left;transition:background .12s;white-space:nowrap}
+.dd-brand-btn:hover{background:var(--surface);color:var(--ink)}
 .main{max-width:1500px;margin:0 auto;padding:1.5rem}
 .view{display:none}
 .view.active{display:block}
@@ -759,53 +765,59 @@ td strong{font-weight:600}
 
       <button onclick="openAuth()" id="signin-btn" style="display:none;font-family:var(--font-b);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 16px;background:#fff;border:none;border-radius:2px;color:var(--swansway);cursor:pointer;transition:all .2s" onmouseover="this.style.background='#f0ede8'" onmouseout="this.style.background='#fff'">Sign in</button>
       <button id="briefs-btn" onclick="openBriefsPanel()" style="display:none;font-family:var(--font-b);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 16px;background:#fff;border:none;border-radius:2px;color:var(--swansway);cursor:pointer;transition:all .2s" onmouseover="this.style.background='#f0ede8'" onmouseout="this.style.background='#fff'">📋 My Briefs</button>
-<nav class="brand-nav">
+<nav class="brand-nav" id="brand-nav">
   <div class="brand-nav-inner" id="brand-nav-inner">
-    <!-- INTEL -->
-    <div class="bnav-group">
-      <div class="bnav-group-label">Intel</div>
-      <button class="bnav-btn active" data-view="group" onclick="switchView('group',this)">Overview</button>
-      <button class="bnav-btn" data-view="channels" onclick="switchView('channels',this)">Channels</button>
-      <button class="bnav-btn" data-view="kpis" onclick="switchView('kpis',this)">KPIs</button>
-      <div class="bnav-dd-wrap" id="brand-dropdown-wrap">
-        <button class="bnav-btn" id="brand-dd-btn" onclick="toggleBrandDropdown(event)">Brands <span id="brand-dd-active" style="color:var(--accent);font-weight:700"></span> <span style="font-size:8px;opacity:0.4;margin-left:1px">▾</span></button>
-        <div id="brand-dropdown" class="bnav-dd">
-          <div class="bnav-dd-label">Brand plans</div>
-          <button class="dd-brand-btn" onclick="switchBrandView('audi')"><span style="width:8px;height:8px;border-radius:50%;background:#BB0A21;display:inline-block;flex-shrink:0"></span>Audi</button>
-          <button class="dd-brand-btn" onclick="switchBrandView('vw')"><span style="width:8px;height:8px;border-radius:50%;background:#001E50;display:inline-block;flex-shrink:0"></span>Volkswagen</button>
-          <button class="dd-brand-btn" onclick="switchBrandView('vwcv')"><span style="width:8px;height:8px;border-radius:50%;background:#1B4F72;display:inline-block;flex-shrink:0"></span>VW Commercial</button>
-          <button class="dd-brand-btn" onclick="switchBrandView('seat')"><span style="width:8px;height:8px;border-radius:50%;background:#E2231A;display:inline-block;flex-shrink:0"></span>SEAT</button>
-          <button class="dd-brand-btn" onclick="switchBrandView('cupra')"><span style="width:8px;height:8px;border-radius:50%;background:#C8920A;display:inline-block;flex-shrink:0"></span>CUPRA</button>
-          <button class="dd-brand-btn" onclick="switchBrandView('landrover')"><span style="width:8px;height:8px;border-radius:50%;background:#1D4E1D;display:inline-block;flex-shrink:0"></span>Land Rover</button>
-          <button class="dd-brand-btn" onclick="switchBrandView('jaguar')"><span style="width:8px;height:8px;border-radius:50%;background:#1B2631;display:inline-block;flex-shrink:0"></span>Jaguar</button>
-          <button class="dd-brand-btn" onclick="switchBrandView('honda')"><span style="width:8px;height:8px;border-radius:50%;background:#CC0000;display:inline-block;flex-shrink:0"></span>Honda</button>
-          <button class="dd-brand-btn" onclick="switchBrandView('peugeot')"><span style="width:8px;height:8px;border-radius:50%;background:#1B3A6B;display:inline-block;flex-shrink:0"></span>Peugeot</button>
-          <button class="dd-brand-btn" onclick="switchBrandView('byd')"><span style="width:8px;height:8px;border-radius:50%;background:#0066CC;display:inline-block;flex-shrink:0"></span>BYD</button>
-          <button class="dd-brand-btn" onclick="switchBrandView('omoda')"><span style="width:8px;height:8px;border-radius:50%;background:#6B21A8;display:inline-block;flex-shrink:0"></span>OMODA / JAECOO</button>
-          <button class="dd-brand-btn" onclick="switchBrandView('motormatch')"><span style="width:8px;height:8px;border-radius:50%;background:#374151;display:inline-block;flex-shrink:0"></span>Motor Match</button>
-        </div>
+
+    <!-- INTEL dropdown -->
+    <div class="nav-dd-wrap" id="nav-intel">
+      <button class="nav-dd-btn has-active" onclick="navToggle('nav-intel',event)">
+        Intel <span class="nav-dd-chevron">▾</span>
+      </button>
+      <div class="nav-dd-panel">
+        <button class="nav-dd-item active" data-view="group" onclick="navGo('group',this)">Overview</button>
+        <button class="nav-dd-item" data-view="channels" onclick="navGo('channels',this)">Channels</button>
+        <button class="nav-dd-item" data-view="kpis" onclick="navGo('kpis',this)">KPIs</button>
+        <button class="nav-dd-item" data-view="competitor" onclick="navGo('competitor',this)">Competitors</button>
+        <div class="nav-dd-sep"></div>
+        <div class="nav-dd-section-label">Brand plans</div>
+        <button class="dd-brand-btn" onclick="navBrand('audi')"><span class="nav-dot" style="background:#BB0A21"></span>Audi</button>
+        <button class="dd-brand-btn" onclick="navBrand('vw')"><span class="nav-dot" style="background:#001E50"></span>Volkswagen</button>
+        <button class="dd-brand-btn" onclick="navBrand('vwcv')"><span class="nav-dot" style="background:#1B4F72"></span>VW Commercial</button>
+        <button class="dd-brand-btn" onclick="navBrand('seat')"><span class="nav-dot" style="background:#E2231A"></span>SEAT</button>
+        <button class="dd-brand-btn" onclick="navBrand('cupra')"><span class="nav-dot" style="background:#C8920A"></span>CUPRA</button>
+        <button class="dd-brand-btn" onclick="navBrand('landrover')"><span class="nav-dot" style="background:#1D4E1D"></span>Land Rover</button>
+        <button class="dd-brand-btn" onclick="navBrand('jaguar')"><span class="nav-dot" style="background:#1B2631"></span>Jaguar</button>
+        <button class="dd-brand-btn" onclick="navBrand('honda')"><span class="nav-dot" style="background:#CC0000"></span>Honda</button>
+        <button class="dd-brand-btn" onclick="navBrand('peugeot')"><span class="nav-dot" style="background:#1B3A6B"></span>Peugeot</button>
+        <button class="dd-brand-btn" onclick="navBrand('byd')"><span class="nav-dot" style="background:#0066CC"></span>BYD</button>
+        <button class="dd-brand-btn" onclick="navBrand('omoda')"><span class="nav-dot" style="background:#6B21A8"></span>OMODA / JAECOO</button>
+        <button class="dd-brand-btn" onclick="navBrand('motormatch')"><span class="nav-dot" style="background:#374151"></span>Motor Match</button>
       </div>
-      <button class="bnav-btn" data-view="competitor" onclick="switchView('competitor',this)">Competitors</button>
     </div>
-    <!-- PLANNING -->
-    <div class="bnav-group">
-      <div class="bnav-group-label">Planning</div>
-      <button class="bnav-btn" data-view="crosscal" onclick="switchView('crosscal',this)">Calendar</button>
-      <button class="bnav-btn bnav-cta" data-view="brief" onclick="switchView('brief',this)">Brief Builder</button>
-      <button class="bnav-btn" data-view="campaigns" onclick="switchView('campaigns',this)">Campaigns</button>
+
+    <!-- PLANNING dropdown -->
+    <div class="nav-dd-wrap" id="nav-planning">
+      <button class="nav-dd-btn" onclick="navToggle('nav-planning',event)">
+        Planning <span class="nav-dd-chevron">▾</span>
+      </button>
+      <div class="nav-dd-panel">
+        <button class="nav-dd-item" data-view="crosscal" onclick="navGo('crosscal',this)">Campaign Calendar</button>
+        <button class="nav-dd-item nav-item-cta" data-view="brief" onclick="navGo('brief',this)">Brief Builder</button>
+        <button class="nav-dd-item" data-view="campaigns" onclick="navGo('campaigns',this)">Campaigns</button>
+      </div>
     </div>
-    <!-- REVIEW -->
-    <div class="bnav-group">
-      <div class="bnav-group-label">Review</div>
-      <button class="bnav-btn" data-view="budget" onclick="switchView('budget',this)">Budget</button>
-      <button class="bnav-btn" data-view="autopsy" onclick="switchView('autopsy',this)">Autopsy</button>
+
+    <!-- REVIEW dropdown -->
+    <div class="nav-dd-wrap" id="nav-review">
+      <button class="nav-dd-btn" onclick="navToggle('nav-review',event)">
+        Review <span class="nav-dd-chevron">▾</span>
+      </button>
+      <div class="nav-dd-panel">
+        <button class="nav-dd-item" data-view="budget" onclick="navGo('budget',this)">Budget</button>
+        <button class="nav-dd-item" data-view="autopsy" onclick="navGo('autopsy',this)">Autopsy</button>
+      </div>
     </div>
-  </div>
-</nav>
-    <button class="bnav-btn" data-view="crosscal" onclick="switchView('crosscal',this)">📆 Campaign Calendar</button>
-    <button class="bnav-btn" data-view="budget" onclick="switchView('budget',this)">💰 Budget</button>
-    <button class="bnav-btn" data-view="autopsy" onclick="switchView('autopsy',this)">🔬 Autopsy</button>
-    <button class="bnav-btn" data-view="competitor" onclick="switchView('competitor',this)">👁 Competitors</button>
+
   </div>
 </nav>
 
@@ -2501,6 +2513,7 @@ function switchView(id, el) {
   // View-specific load hooks
   if (id === 'campaigns') { if(typeof cbLoad==='function') cbLoad(); }
   if (id === 'channels')  { updateGroupChannelsFromBrands(); setTimeout(renderGroupChannels, 200); }
+  navUpdateActive(id);
 }
 
 function renderBrand(b) {
@@ -4040,6 +4053,57 @@ function bbGenerateBrief() {
 
 
 /* ── BRAND DROPDOWN NAV ── */
+
+/* ── NAV DROPDOWN FUNCTIONS ── */
+var _navOpen = null;
+
+function navToggle(id, e) {
+  if (e) e.stopPropagation();
+  var wrap = document.getElementById(id);
+  if (!wrap) return;
+  var wasOpen = wrap.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.nav-dd-wrap.open').forEach(function(w){ w.classList.remove('open'); });
+  if (!wasOpen) {
+    wrap.classList.add('open');
+    setTimeout(function(){
+      document.addEventListener('click', navCloseAll, {once:true});
+    }, 10);
+  }
+}
+
+function navCloseAll() {
+  document.querySelectorAll('.nav-dd-wrap.open').forEach(function(w){ w.classList.remove('open'); });
+}
+
+function navGo(id, el) {
+  navCloseAll();
+  switchView(id, el);
+}
+
+function navBrand(id) {
+  navCloseAll();
+  switchBrandView(id);
+}
+
+function navUpdateActive(viewId) {
+  // Remove active from all nav items
+  document.querySelectorAll('.nav-dd-item').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.nav-dd-btn').forEach(function(b){ b.classList.remove('has-active'); });
+  // Find matching item
+  var item = document.querySelector('.nav-dd-item[data-view="' + viewId + '"]');
+  if (item) {
+    item.classList.add('active');
+    // Mark parent dropdown button as has-active
+    var wrap = item.closest('.nav-dd-wrap');
+    if (wrap) wrap.querySelector('.nav-dd-btn').classList.add('has-active');
+  } else {
+    // Brand view — mark Intel as has-active
+    var intelWrap = document.getElementById('nav-intel');
+    if (intelWrap) intelWrap.querySelector('.nav-dd-btn').classList.add('has-active');
+  }
+}
+
 function toggleBrandDropdown(e) {
   if(e) e.stopPropagation();
   const dd = document.getElementById('brand-dropdown');
