@@ -9026,14 +9026,14 @@ function bbExitCampaignMode() {
   BB.step = 1;
   bbGoStep(1);
 
-  // Re-apply brand selection visually
+  // Re-apply brand selection visually — AFTER bbGoStep re-renders the grid
   setTimeout(function() {
     if (BB.brand) {
-      // Mark the correct brand pill as selected
+      // Mark correct pill — bbGoStep(1) calls bbRenderBrands() which wipes classes
       document.querySelectorAll('.bb-brand-pill').forEach(function(p) {
-        p.classList.toggle('selected', p.dataset.brand === BB.brand.id);
+        p.classList.toggle('bb-selected', p.dataset.brand === BB.brand.id);
       });
-      // Re-render brand context in sidebar
+      // Re-render sidebar and context
       bbUpdateBrief();
       bbRenderBrandContext();
       // Show scope + dates sections
@@ -9050,11 +9050,11 @@ function bbExitCampaignMode() {
         var picker = document.getElementById('bb-site-picker');
         if (picker) { picker.style.display = 'block'; setTimeout(bbRenderSiteGrid, 100); }
       }
-      // Enable step 1 next button
+      // Enable next button
       var btn1 = document.getElementById('bb-btn-1-next');
       if (btn1) btn1.disabled = false;
     }
-  }, 100);
+  }, 200);
 }
 
 
@@ -9402,7 +9402,7 @@ async function bbLoadBrief(id) {
     // Re-apply brand selection visually (brand pill in step 1)
     if (BB.brand) {
       document.querySelectorAll('.bb-brand-pill').forEach(function(p) {
-        p.classList.toggle('selected', p.dataset.brand === BB.brand.id);
+        p.classList.toggle('bb-selected', p.dataset.brand === BB.brand.id);
       });
       var btn1 = document.getElementById('bb-btn-1-next');
       if (btn1) btn1.disabled = false;
