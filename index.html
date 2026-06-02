@@ -1636,7 +1636,7 @@ td strong{font-weight:600}
         <div class="bb-s6-row">
           <input class="bb-s6-input" id="bb-brief-title" placeholder="e.g. Volkswagen Plate Change June 2026" maxlength="80">
           <button class="bb-s6-btn" id="bb-save-btn" onclick="bbSaveBrief()">Save brief</button>
-          <button class="bb-print-btn" onclick="window.print()" style="margin-bottom:0;flex-shrink:0">?? Print</button>
+          <button class="bb-print-btn" onclick="window.print()" style="margin-bottom:0;flex-shrink:0">&#128424; Print</button>
         </div>
         <div id="bb-save-feedback" style="display:none;margin-top:12px"></div>
       </div>
@@ -8781,6 +8781,10 @@ async function bbEnterCampaignMode(brief) {
   if (indicator) indicator.style.display = 'none';
   if (progress)  progress.style.display  = 'none';
   document.querySelectorAll('.bb-step').forEach(function(s){ s.style.display = 'none'; });
+  var _sb2 = document.getElementById('bb-save-bar');
+  if (_sb2) _sb2.style.display = 'none';
+  var _op2 = document.getElementById('bb-output');
+  if (_op2) _op2.innerHTML = '';
 
   var right = document.getElementById('bb-right');
   if (right) {
@@ -9409,9 +9413,13 @@ async function bbLoadBrief(id) {
     window._lastSavedBriefId = brief.id;
     window._lastSavedBriefTitle = brief.title;
     bbSetUrlBrief(brief.id);
-    // Hide step 6 output first so nothing flashes
+    // Hide all brief wizard UI before entering campaign mode
     var _s6 = document.getElementById('bb-step-6');
     if (_s6) _s6.style.display = 'none';
+    var _sb = document.getElementById('bb-save-bar');
+    if (_sb) _sb.style.display = 'none';
+    var _op = document.getElementById('bb-output');
+    if (_op) _op.innerHTML = '';
     await bbEnterCampaignMode(brief);
   } else if (brief.status === 'submitted' || brief.status === 'approved') {
     // Submitted/approved: go to Step 6 and show status card
