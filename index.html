@@ -1810,7 +1810,7 @@ const BRANDS = [
   },
 
   {
-    id:'vw', name:'Volkswagen', color:'#001E5A', segment:'Mainstream',
+    id:'vw', name:'Volkswagen', color:'#001E50', segment:'Mainstream',
     sites:3, sitenames:'Wrexham · Crewe · Oldham',
     budget:'—', newTarget:'2,400 units', evTarget:'35%', q2:'ID.3 summer finance push + Golf facelift media',
     progress:71,
@@ -3861,7 +3861,7 @@ function bbUpdateBrief() {
     if(el) el.innerHTML = isEmpty?`<div class="bb-brief-empty">${html}</div>`:`<div class="bb-brief-val">${html}</div>`;
   };
   const pan = document.getElementById('bbp-brand');
-  if(pan && BB.brand) { pan.textContent=BB.brand.name.toUpperCase(); pan.style.color=BB.brand.color; }
+  if(pan && BB.brand) { pan.textContent=BB.brand.name.toUpperCase(); pan.style.color='#fff'; }
   else if(pan) { pan.textContent='SELECT BRAND'; pan.style.color='rgba(255,255,255,0.2)'; }
   // Dates
   if (BB.start_date && BB.end_date) {
