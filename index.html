@@ -373,13 +373,13 @@ td strong{font-weight:600}
 .bb-context-bar-fill{height:6px;border-radius:3px;transition:width .4s}
 .bb-context-bar-labels{display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--ink-faint)}
 /* ── Step 6 unified save card ── */
-.bb-s6-label{font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.bb-s6-label{font-family:var(--font-b);font-size:11px;font-weight:600;color:var(--ink-soft);margin-bottom:6px}
 .bb-s6-row{display:flex;gap:8px;align-items:center}
-.bb-s6-input{flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:14px;color:var(--ink);background:var(--white);outline:none;transition:border-color .15s}
+.bb-s6-input{flex:1;padding:0 14px;height:44px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:14px;color:var(--ink);background:var(--white);outline:none;transition:border-color .15s;box-sizing:border-box}
 .bb-s6-input::placeholder{color:var(--ink-faint)}
 .bb-s6-input:focus{border-color:var(--swansway)}
 .bb-s6-input:disabled{background:transparent;color:var(--ink);border-color:transparent;cursor:default;padding-left:0;font-weight:600}
-.bb-s6-btn{padding:11px 22px;background:var(--swansway);color:#fff;border:none;border-radius:6px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s}
+.bb-s6-btn{padding:0 22px;height:44px;background:var(--swansway);color:#fff;border:none;border-radius:6px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s;flex-shrink:0}
 .bb-s6-btn:hover:not(:disabled){background:var(--accent)}
 .bb-s6-btn:disabled{background:#059669;cursor:default}
 .bb-s6-confirm{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap}
@@ -1467,13 +1467,13 @@ td strong{font-weight:600}
 .bb-out-tl-label { font-family:var(--font-m); font-size:9px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.08em; padding-top:4px; }
 .bb-out-tl-pills { display:flex; gap:6px; flex-wrap:wrap; }
 .bb-out-tl-pill { font-size:11px; padding:4px 10px; border-radius:2px; background:var(--surface); border:1px solid var(--border); color:var(--ink); }
-.bb-print-btn {
-  display:block; margin:0 auto 1.5rem; padding:11px 28px;
-  background:var(--ink); color:#fff; border:none; border-radius:3px;
-  font-family:var(--font-b); font-size:13px; font-weight:700;
-  cursor:pointer; letter-spacing:0.04em; transition:background 0.2s;
-}
-.bb-print-btn:hover { background:var(--accent); }
+.bb-print-btn{display:inline-flex;align-items:center;gap:6px;margin-bottom:1.5rem;padding:7px 14px;background:var(--surface);color:var(--ink-soft);border:1px solid var(--border);border-radius:6px;font-family:var(--font-b);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+
+
+
+
+
+.bb-print-btn:hover{background:var(--surface-2);color:var(--ink);border-color:var(--ink-soft)}
 
 @media(max-width:900px) {
   #bb-layout { grid-template-columns:1fr; }
@@ -1672,7 +1672,6 @@ td strong{font-weight:600}
     <!-- Step 6: Output -->
     <div class="bb-step" id="bb-step-6">
       <div id="bb-save-bar" style="display:none;margin-bottom:1.5rem">
-        <div class="bb-s6-label">Give this brief a title</div>
         <div class="bb-s6-row">
           <input class="bb-s6-input" id="bb-brief-title" placeholder="e.g. Volkswagen Plate Change June 2026" maxlength="80">
           <button class="bb-s6-btn" id="bb-save-btn" onclick="bbSaveBrief()">Save brief</button>
