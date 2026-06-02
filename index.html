@@ -35,12 +35,12 @@ html{overflow-y:scroll}body{font-family:var(--font-b);background:var(--surface);
 .topbar{background:var(--swansway);color:#fff;padding:0;position:sticky;top:0;z-index:200;border-bottom:2px solid var(--accent)}
 .topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:52px;max-width:1500px;margin:0 auto;gap:12px}
 .logo-wrap{display:flex;align-items:center;gap:12px;flex-shrink:0}
-.logo-icon{width:32px;height:32px;background:var(--accent);border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:14px;font-weight:700;color:#fff;letter-spacing:0.02em}
-.logo-text{font-family:var(--font-d);font-size:16px;font-weight:700;color:#fff;letter-spacing:0.02em}
-.logo-sub{font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:0.1em;text-transform:uppercase;margin-top:1px}
+
+
+
 .topbar-meta{display:flex;align-items:center;gap:10px}
 .topbar-pill{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border:1px solid rgba(255,255,255,0.15);border-radius:2px;color:rgba(255,255,255,0.5)}
-.ai-link{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,0.6);padding:5px 12px;border:1px solid rgba(255,255,255,0.18);border-radius:2px;text-decoration:none;transition:all .2s;cursor:pointer}
+
 .ai-link:hover{border-color:var(--accent);color:#fff}
 .ai-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.25}}
@@ -53,7 +53,7 @@ html{overflow-y:scroll}body{font-family:var(--font-b);background:var(--surface);
 .nav-dd-btn{display:flex;align-items:center;gap:5px;padding:10px 14px;font-size:12px;font-weight:600;font-family:var(--font-b);letter-spacing:0.02em;color:var(--ink-soft);cursor:pointer;border:none;background:none;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;flex-shrink:0}
 .nav-dd-btn:hover{color:var(--ink);background:rgba(0,0,0,0.03)}
 .nav-dd-btn.active,.nav-dd-btn.has-active{color:var(--ink);border-bottom-color:var(--accent)}
-.nav-dd-btn.nav-cta{color:var(--accent);font-weight:700}
+.nav-dd-btn
 .nav-dd-btn.nav-cta.active{border-bottom-color:var(--accent)}
 .nav-dd-chevron{font-size:8px;opacity:0.45;transition:transform .15s}
 .nav-dd-wrap.open .nav-dd-chevron{transform:rotate(180deg)}
@@ -150,15 +150,15 @@ html{overflow-y:scroll}body{font-family:var(--font-b);background:var(--surface);
 .pillar-desc{font-size:12px;color:var(--ink-soft);line-height:1.65}
 
 /* ── CENTRES GRID ── */
-.centres-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.75rem}
-.centre-card{background:var(--white);border:1px solid var(--border);border-radius:4px;padding:18px;transition:box-shadow .2s}
+
+
 .centre-card:hover{box-shadow:0 3px 14px rgba(0,0,0,0.08)}
 .centre-card.flagship{border-color:var(--brand-color,#1A2E4A);border-width:1.5px}
-.centre-flag{font-size:9px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;margin-bottom:4px}
-.centre-name{font-family:var(--font-d);font-size:16px;margin-bottom:2px}
-.centre-area{font-size:11px;color:var(--ink-soft);margin-bottom:10px}
-.centre-desc{font-size:12px;color:var(--ink-soft);line-height:1.6;margin-bottom:10px}
-.centre-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-top:1px solid var(--border)}
+
+
+
+
+
 .centre-row span:first-child{color:var(--ink-soft)}
 .centre-row span:last-child{font-weight:500;color:var(--ink)}
 
@@ -169,7 +169,7 @@ html{overflow-y:scroll}body{font-family:var(--font-b);background:var(--surface);
 .cal-event-brand{font-size:9px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;opacity:0.65;margin-bottom:2px}
 
 /* ── CAMPAIGN TABLE ── */
-.table-wrap{overflow-x:auto;margin-bottom:1.75rem}
+
 table{width:100%;border-collapse:collapse;font-size:12px;background:var(--white);border:1px solid var(--border);border-radius:4px;overflow:hidden}
 th{text-align:left;padding:10px 14px;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:500;background:var(--surface);border-bottom:1px solid var(--border)}
 td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--ink)}
@@ -201,16 +201,16 @@ td strong{font-weight:600}
 .kpi-item:last-child{border-bottom:none}
 .kpi-label{font-size:13px;color:var(--ink);min-width:220px}
 .kpi-target{font-size:11px;color:var(--ink-soft);min-width:80px}
-.kpi-bar-wrap{flex:1;height:5px;background:var(--surface-2);border-radius:3px}
-.kpi-bar{height:5px;border-radius:3px;background:var(--swansway)}
-.kpi-owner{font-size:10px;color:var(--ink-faint);min-width:130px;text-align:right;letter-spacing:0.03em}
+
+
+
 
 /* ── AI PANEL ── */
-.ai-panel{background:linear-gradient(135deg,var(--swansway) 0%,var(--swansway-light) 100%);color:#fff;border-radius:4px;padding:20px 24px;margin-bottom:1.75rem}
-.ai-panel-title{font-family:var(--font-d);font-size:16px;margin-bottom:6px;color:#fff}
-.ai-panel-sub{font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:14px;line-height:1.6}
-.ai-prompts{display:flex;flex-wrap:wrap;gap:8px}
-.ai-prompt-btn{font-size:11px;padding:6px 14px;border:1px solid rgba(255,255,255,0.25);border-radius:2px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85);cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block}
+
+
+
+
+
 .ai-prompt-btn:hover{background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.45);color:#fff}
 
 /* ── AI MODAL ── */
@@ -245,7 +245,7 @@ td strong{font-weight:600}
 @media(max-width:900px){
   .metrics-row{grid-template-columns:repeat(2,1fr)}
   .brand-grid{grid-template-columns:repeat(2,1fr)}
-  .centres-grid{grid-template-columns:1fr 1fr}
+  
   .pillars{grid-template-columns:1fr}
   .audience-grid{grid-template-columns:1fr}
   .cal-grid{grid-template-columns:repeat(2,1fr)}
@@ -254,7 +254,7 @@ td strong{font-weight:600}
   .main{padding:1rem}
   .metrics-row{grid-template-columns:1fr 1fr}
   .brand-grid{grid-template-columns:1fr 1fr}
-  .centres-grid{grid-template-columns:1fr}
+  
   .cal-grid{grid-template-columns:1fr 1fr}
   .topbar-meta{display:flex;align-items:center;gap:10px}
 }
@@ -263,9 +263,9 @@ td strong{font-weight:600}
 .mb1{margin-bottom:.75rem}
 .mb2{margin-bottom:1.5rem}
 .divider{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-@media(max-width:700px){.two-col,.three-col{grid-template-columns:1fr}}
+
+
+@media(max-width:700px){.two-col,}
 
 /* ── SUPABASE AUTH & BRIEFS ─────────────────────────────────── */
 /* Auth modal */
@@ -275,15 +275,15 @@ td strong{font-weight:600}
 .auth-header{background:var(--swansway);color:#fff;padding:20px 24px;border-bottom:2px solid var(--accent)}
 .auth-header-title{font-family:var(--font-d);font-size:18px;font-weight:700;letter-spacing:-0.01em}
 .auth-header-sub{font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;letter-spacing:0.04em}
-.auth-body{padding:24px}
-.auth-tabs{display:flex;gap:0;margin-bottom:20px;border:1.5px solid var(--border);border-radius:3px;overflow:hidden}
+
+
 .auth-tab{flex:1;padding:8px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;border:none;background:transparent;color:var(--ink-soft);letter-spacing:0.04em;text-transform:uppercase;transition:all .2s}
 .auth-tab.active{background:var(--swansway);color:#fff}
-.auth-field{margin-bottom:14px}
-.auth-label{font-family:var(--font-m);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px;display:block}
-.auth-input{width:100%;padding:9px 12px;border:1.5px solid var(--border-med);border-radius:3px;font-family:var(--font-b);font-size:13px;color:var(--ink);outline:none;transition:border-color .2s}
-.auth-input:focus{border-color:var(--swansway)}
-.auth-btn{width:100%;padding:11px;background:var(--swansway);color:#fff;border:none;border-radius:3px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.03em;transition:background .2s}
+
+
+
+
+
 .auth-btn:hover{background:var(--swansway-light)}
 .auth-btn:disabled{opacity:0.5;cursor:not-allowed}
 .auth-err{font-size:12px;color:var(--accent);margin-top:8px;display:none}
@@ -317,9 +317,9 @@ td strong{font-weight:600}
 .brief-card-title{font-family:var(--font-d);font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;letter-spacing:-0.01em}
 .brief-card-meta{font-size:11px;color:var(--ink-soft)}
 .brief-card-status{display:inline-block;font-family:var(--font-m);font-size:9px;padding:2px 7px;border-radius:2px;font-weight:500;letter-spacing:0.04em;margin-top:6px}
-.status-draft{background:#FEF3C7;color:#78350F}
-.status-final{background:#DCFCE7;color:#14532D}
-.status-archived{background:#F1F5F9;color:#475569}
+
+
+
 .brief-card-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
 .brief-card-btn{font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:2px;background:var(--white);cursor:pointer;color:var(--ink-soft);transition:all .2s;font-family:var(--font-b)}
 .brief-card-btn:hover{background:var(--surface-2);color:var(--ink)}
@@ -555,10 +555,10 @@ td strong{font-weight:600}
 
 /* ── NEW FEATURES CSS ── */
 .crosscal-grid{display:grid;grid-template-columns:120px repeat(12,1fr);gap:1px;background:var(--border);border-radius:4px;overflow:hidden}
-.crosscal-header{background:var(--swansway);color:#fff;padding:8px 6px;font-family:var(--font-m);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;text-align:center}
-.crosscal-brand-cell{background:var(--white);padding:8px 10px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
-.crosscal-month-cell{background:var(--white);padding:3px;min-height:48px}
-.crosscal-campaign-bar{border-radius:2px;padding:2px 5px;font-size:10px;color:#fff;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+
+
+
+
 .budget-cell{padding:6px 10px;text-align:right;font-family:var(--font-m);font-size:12px;cursor:pointer;transition:background .15s}
 .budget-cell:hover{background:var(--surface-2)}
 .budget-over{color:#DC2626}.budget-under{color:#059669}.budget-on{color:var(--swansway)}
@@ -576,11 +576,11 @@ td strong{font-weight:600}
 .autopsy-text{font-size:13px;color:var(--ink);line-height:1.65}
 .competitor-card{background:var(--white);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:1rem}
 .competitor-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
-.competitor-name{font-family:var(--font-d);font-size:16px;font-weight:700}
-.competitor-body{padding:16px 18px}
-.competitor-offer{padding:8px 12px;background:var(--surface);border-radius:3px;border-left:3px solid var(--swansway);margin-bottom:6px}
-.competitor-offer-text{font-size:12px;color:var(--ink);line-height:1.5}
-.competitor-insight{padding:10px 14px;background:#FFF8E1;border:1px solid #FDE68A;border-radius:3px;font-size:12px;color:#78350F;margin-top:8px;line-height:1.6}
+
+
+
+
+
 .quiz-question{background:var(--white);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:12px}
 .quiz-q-num{font-family:var(--font-m);font-size:10px;color:var(--ink-soft);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px}
 .quiz-q-text{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:14px;line-height:1.5}
@@ -604,7 +604,7 @@ td strong{font-weight:600}
    ══════════════════════════════════════════ */
 
 /* Shared card */
-.sw-card{background:var(--white);border:1.5px solid var(--border);border-radius:6px;overflow:hidden}
+
 
 /* Label — used everywhere */
 .sw-label{font-family:var(--font-m);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft)}
@@ -1684,16 +1684,7 @@ td strong{font-weight:600}
 </div><!-- end view-brief -->
 
 <!-- CAMPAIGN BUILDER -->
-<div class="view" id="view-campaigns">
-  <div class="page-strip">
-    <div>
-      <div class="page-title">Campaign Builder</div>
-      <div class="page-subtitle">From brief to live &mdash; manage every campaign stage</div>
-    </div>
-    <div class="action-row">
-      <button class="btn btn-primary" id="cb-new-brief-btn" onclick="cbGoToBrief()">&#43; New Brief</button>
-    </div>
-  </div>
+
   <div style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:12px 18px;margin-bottom:1.5rem;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
       <span style="font-size:12px;color:var(--ink-soft)">Viewing as</span>
@@ -3189,16 +3180,6 @@ function applyAdminConfig(cfg) {
 }
 
 
-function showConfigBadge() {
-  const meta = document.querySelector('.topbar-meta');
-  if (!meta) return;
-  const badge = document.createElement('span');
-  badge.className = 'topbar-pill';
-  badge.textContent = '⚙ Admin configured';
-  badge.style.color = '#4ADE80';
-  badge.style.borderColor = 'rgba(74,222,128,0.3)';
-  meta.insertBefore(badge, meta.firstChild);
-}
 
 document.addEventListener('DOMContentLoaded',()=>{
   loadAdminConfig();
@@ -3489,15 +3470,6 @@ function bbRenderSiteGrid() {
   });
 }
 
-function bbCalcDuration() {
-  if (!BB.start_date || !BB.end_date) return;
-  var days = Math.round((new Date(BB.end_date) - new Date(BB.start_date)) / 86400000);
-  var weeks = Math.round(days / 7);
-  BB.duration_weeks = weeks;
-  BB.duration_label = weeks + ' week' + (weeks !== 1 ? 's' : '') + ' (' + days + ' days)';
-  var el = document.getElementById('bb-duration-display');
-  if (el) el.textContent = '⏱ ' + BB.duration_label;
-}
 
 function bbOnDateChange() {
   var sd = document.getElementById('bb-start-date');
@@ -4133,18 +4105,6 @@ function navUpdateActive(viewId) {
   }
 }
 
-function toggleBrandDropdown(e) {
-  if(e) e.stopPropagation();
-  const dd = document.getElementById('brand-dropdown');
-  if(!dd) return;
-  const isOpen = dd.classList.contains('open');
-  dd.classList.toggle('open', !isOpen);
-  if(!isOpen) {
-    setTimeout(() => {
-      document.addEventListener('click', closeBrandDropdown, { once: true });
-    }, 10);
-  }
-}
 
 function closeBrandDropdown(e) {
   const wrap = document.getElementById('brand-dropdown-wrap');
@@ -4423,16 +4383,6 @@ function updateBrandBudgetsFromSites() {
   if (typeof renderGroupBrandCards === 'function') renderGroupBrandCards();
 }
 
-function getBudgetFromSites(brandId) {
-  var sites = HUB_SITES.filter(function(s) { return s.brand_id === brandId; });
-  var planned = 0, actual = 0;
-  sites.forEach(function(s) {
-    var d = SITE_BUDGETS[s.site_id] || {};
-    planned += d.annual_planned || 0;
-    for (var i = 0; i < 12; i++) actual += (d['m' + i + '_actual'] || 0);
-  });
-  return { planned: planned, actual: actual };
-}
 
 function renderBudgetTracker() {
   // Planned and actual come directly from site monthly figures — no double-counting
@@ -4636,33 +4586,8 @@ function renderBudgetSummary() {
   el.innerHTML = html;
 }
 
-function btToggle(brandId) {
-  var row  = document.getElementById('bt-sites-' + brandId);
-  var icon = document.getElementById('bt-icon-' + brandId);
-  if (!row) return;
-  var open = row.style.display !== 'none';
-  row.style.display  = open ? 'none' : 'table-row';
-  if (icon) icon.innerHTML = open ? '&#9660;' : '&#9650;';
-}
 
 
-function budgetEditCell(brandId, monthIdx, el) {
-  if (el.querySelector('input')) return;
-  var current = 0; // Actuals from site budgets
-  var brand = BUDGET_BRANDS.find(function(b) { return b.id === brandId; });
-  var planned = brand ? Math.round(brand.annual / 12) : 0;
-  el.classList.add('editing');
-  el.innerHTML = '<input type="number" value="' + current + '" placeholder="' + planned + '" min="0" style="width:90px;padding:3px 6px;border:1px solid var(--swansway);border-radius:2px;font-size:12px">';
-  var input = el.querySelector('input');
-  input.focus(); input.select();
-  function save() {
-    var val = parseInt(input.value) || 0;
-    // Actuals now managed via Admin → Site Budgets
-    showToast('Enter actuals in Admin → Site Budgets', 'success');
-  }
-  input.addEventListener('blur', save);
-  input.addEventListener('keydown', function(e) { if (e.key === 'Enter') save(); if (e.key === 'Escape') renderBudgetTracker(); });
-}
 
 var budgetChartInst;
 function renderBudgetChart(planned, actual) {
@@ -5183,25 +5108,6 @@ function renderQuizResults() {
 /* ════════════════════════════════════════════════════════════════
    FEATURE 6 — CREATIVE ASSET CHECKLIST
 ════════════════════════════════════════════════════════════════ */
-function bbGetAssetChecklist() {
-  var channels = BB ? BB.channels || [] : [];
-  var assets = [];
-  var CHANNEL_ASSETS = {
-    google:    [{format:'Google Search Headlines',spec:'30 chars x15',qty:1},{format:'Google Search Descriptions',spec:'90 chars x4',qty:1},{format:'Google Display Banners',spec:'300x250, 728x90, 160x600px',qty:3}],
-    meta:      [{format:'Facebook/Instagram Image',spec:'1200x628px and 1080x1080px',qty:2},{format:'Facebook/Instagram Video',spec:'16:9 or 1:1, 15s or 30s',qty:1},{format:'Story/Reel',spec:'1080x1920px, 15s max',qty:1}],
-    autotrader:[{format:'AutoTrader Listing Images',spec:'1280x960px min JPG',qty:8},{format:'AutoTrader Display Banner',spec:'728x90 and 300x250px',qty:2}],
-    youtube:   [{format:'YouTube Pre-Roll',spec:'1280x720px, 15-30s',qty:1},{format:'YouTube Bumper',spec:'6s non-skippable',qty:1}],
-    tiktok:    [{format:'TikTok Video',spec:'1080x1920px, 15-60s',qty:2}],
-    linkedin:  [{format:'LinkedIn Image Ad',spec:'1200x627px',qty:1},{format:'LinkedIn Document Ad',spec:'PDF brochure',qty:1}],
-    crm:       [{format:'Email Header Banner',spec:'600px wide',qty:1},{format:'Email Template',spec:'600px, responsive',qty:1}],
-    organic:   [{format:'Organic Social Images',spec:'1080x1080 and 1080x1350px',qty:4},{format:'Organic Reels',spec:'1080x1920px, 15-90s',qty:2}],
-  };
-  var seen = {};
-  channels.forEach(function(ch) { if (CHANNEL_ASSETS[ch] && !seen[ch]) { seen[ch] = true; assets = assets.concat(CHANNEL_ASSETS[ch]); } });
-  assets.push({format:'Finance Rep Example + T&Cs',spec:'APR, term, deposit, monthly payment',qty:1});
-  assets.push({format:'Brand Logo (approved)',spec:'Vector SVG + high-res PNG',qty:1});
-  return assets;
-}
 
 function renderAssetChecklist() { return ''; }
 
@@ -6079,61 +5985,6 @@ function updateGroupKPIsFromSites() {
 }
 
 
-function renderBrandSiteKPIs(brandId) {
-  var el = document.getElementById(brandId + '-kpis-sites');
-  if (!el) return;
-  var sites = HUB_SITES.filter(function(s) { return s.brand_id === brandId; });
-  if (!sites.length || !Object.keys(SITE_KPIS).length) {
-    el.innerHTML = '<div style="padding:16px;color:var(--ink-faint);font-size:13px">No KPI data yet. Enter in Admin \u2192 Site KPIs.</div>';
-    return;
-  }
-
-  var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
-  html += '<thead><tr style="background:var(--swansway);color:#fff">';
-  html += '<th style="padding:8px 12px;text-align:left;font-family:var(--font-m);font-size:10px;font-weight:500">Site</th>';
-  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Units<br>Target</th>';
-  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Units<br>YTD</th>';
-  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Used<br>YTD</th>';
-  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">EV%<br>avg</th>';
-  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Leads<br>YTD</th>';
-  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Conv<br>%</th>';
-  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">Ret<br>%</th>';
-  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">NPS</th>';
-  html += '<th style="padding:8px 10px;text-align:right;font-family:var(--font-m);font-size:10px;font-weight:500">CPL<br>\u00a3</th>';
-  html += '</tr></thead><tbody>';
-
-  sites.forEach(function(site, idx) {
-    var d = SITE_KPIS[site.site_id] || {};
-    var units = 0, used = 0, evSum = 0, evMos = 0, leads = 0;
-    for (var i = 0; i < 12; i++) {
-      units += d['m' + i + '_units'] || 0;
-      used  += d['m' + i + '_used']  || 0;
-      leads += d['m' + i + '_leads'] || 0;
-      if (d['m' + i + '_ev'] > 0) { evSum += d['m' + i + '_ev']; evMos++; }
-    }
-    var evAvg = evMos > 0 ? Math.round(evSum / evMos * 10) / 10 : 0;
-    var tgt   = d.units_target || 0;
-    var pct   = tgt > 0 ? Math.min(100, Math.round(units / tgt * 100)) : 0;
-    var pctCol = pct >= 75 ? '#059669' : pct >= 50 ? '#D97706' : units > 0 ? '#DC2626' : 'var(--ink-faint)';
-    var bg = idx % 2 === 0 ? 'var(--white)' : 'var(--surface)';
-
-    html += '<tr style="background:' + bg + '">';
-    html += '<td style="padding:8px 12px;font-weight:600">' + site.site_name + '</td>';
-    html += '<td style="padding:8px 10px;text-align:right;color:var(--ink-soft)">' + (tgt > 0 ? tgt.toLocaleString() : '\u2014') + '</td>';
-    html += '<td style="padding:8px 10px;text-align:right;font-weight:600;color:' + pctCol + '">' + (units > 0 ? units.toLocaleString() + ' <small>(' + pct + '%)</small>' : '\u2014') + '</td>';
-    html += '<td style="padding:8px 10px;text-align:right">'       + (used   > 0 ? used.toLocaleString()      : '\u2014') + '</td>';
-    html += '<td style="padding:8px 10px;text-align:right">'       + (evAvg  > 0 ? evAvg  + '%'               : '\u2014') + '</td>';
-    html += '<td style="padding:8px 10px;text-align:right">'       + (leads  > 0 ? leads.toLocaleString()     : '\u2014') + '</td>';
-    html += '<td style="padding:8px 10px;text-align:right">'       + (d.conversion_actual > 0 ? d.conversion_actual + '%' : '\u2014') + '</td>';
-    html += '<td style="padding:8px 10px;text-align:right">'       + (d.retention_actual  > 0 ? d.retention_actual  + '%' : '\u2014') + '</td>';
-    html += '<td style="padding:8px 10px;text-align:right">'       + (d.nps_actual        > 0 ? d.nps_actual              : '\u2014') + '</td>';
-    html += '<td style="padding:8px 10px;text-align:right">'       + (d.cpl_actual        > 0 ? '\u00a3' + d.cpl_actual   : '\u2014') + '</td>';
-    html += '</tr>';
-  });
-
-  html += '</tbody></table></div>';
-  el.innerHTML = html;
-}
 
 
 /* ════ SITE CONTACTS — HUB ════ */
@@ -6436,12 +6287,6 @@ function cbPopulateUserDropdown() {
 
 function cbSetUser(id) { CB_CURRENT_USER=id||null; cbRenderDashboard(); }
 
-function cbFilter(status,el) {
-  CB_FILTER=status;
-  document.querySelectorAll('#cb-filters .cal-q-tab').forEach(function(t){t.classList.remove('active');});
-  if(el) el.classList.add('active');
-  cbRenderDashboard();
-}
 
 function cbRenderDashboard() {
   var el=document.getElementById('cb-campaign-list');
@@ -6853,169 +6698,14 @@ async function cbNewCampaign(){
 
 function cbAddBriefButton() { /* disabled - campaign section handles this */ }
 
-async function cbCreateFromBrief(){
-  var titleEl=document.querySelector('#bb-left .bb-live-campaign')||document.querySelector('.bb-live-title');
-  var title=titleEl?titleEl.textContent.trim():'';
-  if(!title) title=prompt('Campaign title:')||'New Campaign';
-  switchView('campaigns',document.querySelector('[data-view="campaigns"]'));
-  setTimeout(async function(){
-    var anon=SUPABASE_ANON_KEY;
-    try{
-      var cr=await fetch(CB_API+'/campaigns',{method:'POST',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify([{title:title.trim(),scope:'brand',status:'active',current_stage:1,created_by:CB_CURRENT_USER||'brief',confirmed_channels:[]}])});
-      if(!cr.ok) throw new Error(await cr.text());
-      var newCamps=await cr.json();
-      var newCamp=newCamps[0];
-      var templates=await fetch(CB_API+'/campaign_task_templates?select=*&order=stage,task_order',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
-      if(Array.isArray(templates)&&templates.length){
-        var taskRows=templates.map(function(t){return {campaign_id:newCamp.id,stage:t.stage,task_order:t.task_order,task_name:t.task_name,department:t.department,assigned_to:t.default_assignee,approver_scope:t.approver_scope,is_blocker:t.is_blocker,channel:t.channel,completed:false,approved:false,rejected:false,notes:''};});
-        await fetch(CB_API+'/campaign_tasks',{method:'POST',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(taskRows)});
-      }
-      CB_CAMPAIGNS.unshift(newCamp);
-      await cbLoad();
-      await cbOpenCampaign(newCamp.id);
-    }catch(e){alert('Error: '+e.message);}
-  },300);
-}
 
 
 
 /* ════ LAUNCH CAMPAIGN FROM BRIEF ════ */
-async function cbLaunchFromBrief(briefId, briefTitle) {
-  var title = briefTitle || 'Campaign from brief';
-  var anon = SUPABASE_ANON_KEY;
-
-  // Switch to campaigns view
-  switchView('campaigns', document.querySelector('[data-view="campaigns"]'));
-
-  try {
-    // Create campaign linked to brief
-    var cr = await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaigns', {
-      method: 'POST',
-      headers: {'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
-      body: JSON.stringify([{
-        title: title,
-        brief_id: briefId || null,
-        scope: 'brand',
-        status: 'active',
-        current_stage: 1,
-        created_by: CB_CURRENT_USER || 'brief',
-        confirmed_channels: []
-      }])
-    });
-    if (!cr.ok) throw new Error(await cr.text());
-    var newCamps = await cr.json();
-    var newCamp = newCamps[0];
-
-    // Load and copy task templates
-    var templates = await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaign_task_templates?select=*&order=stage,task_order', {
-      headers: {'apikey':anon,'Authorization':'Bearer '+anon}
-    }).then(function(r){return r.json();});
-
-    if (Array.isArray(templates) && templates.length) {
-      var taskRows = templates.map(function(t) {
-        return {
-          campaign_id: newCamp.id,
-          stage: t.stage,
-          task_order: t.task_order,
-          task_name: t.task_name,
-          department: t.department,
-          assigned_to: t.default_assignee,
-          approver_scope: t.approver_scope,
-          is_blocker: t.is_blocker,
-          channel: t.channel,
-          completed: false,
-          approved: false,
-          rejected: false,
-          notes: ''
-        };
-      });
-      await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaign_tasks', {
-        method: 'POST',
-        headers: {'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
-        body: JSON.stringify(taskRows)
-      });
-    }
-
-    // Load all campaigns and open the new one
-    await cbLoad();
-    await cbOpenCampaign(newCamp.id);
-
-  } catch(e) {
-    alert('Error creating campaign: ' + e.message);
-  }
-}
 
 
 /* ── BRIEF STATUS FLOW ── */
-async function bbApproveBrief(briefId) {
-  var perms = window.CB_PERMS && CB_PERMS[window.SWANSWAY_USER_ID];
-  if (!perms || !perms.can_approve_all) { alert('You do not have permission to approve briefs.'); return; }
-  try {
-    await SB.from('briefs').update({status:'approved', approved_by: SWANSWAY_USER_ID, approved_at: new Date().toISOString(), updated_at: new Date().toISOString()}).eq('id', briefId);
-    loadBriefs();
-    alert('✓ Brief approved! Create a campaign from it.');
-  } catch(e) { alert('Error: ' + e.message); }
-}
 
-async function bbLaunchCampaign() {
-  if (!window._lastSavedBriefId) return;
-  // Switch to campaign builder view
-  switchView('campaigns', document.querySelector('[data-view="campaigns"]'));
-  setTimeout(async function() {
-    try {
-      // Check if campaign already exists for this brief
-      var existing = await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaigns?brief_id=eq.' + window._lastSavedBriefId + '&select=*', {
-        headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY}
-      }).then(function(r){return r.json();});
-      if (existing && existing.length) {
-        CB_CAMPAIGNS = existing;
-        cbRenderDashboard();
-        cbOpenCampaign(existing[0].id);
-        return;
-      }
-      // Create new campaign
-      var cr = await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaigns', {
-        method: 'POST',
-        headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation'},
-        body: JSON.stringify([{
-          title: window._lastSavedBriefTitle || 'Campaign',
-          brief_id: window._lastSavedBriefId,
-          scope: BB.scope || 'brand',
-          brand_id: BB.brand ? BB.brand.id : null,
-          site_id: BB.site_id || null,
-          status: 'active',
-          current_stage: 1,
-          confirmed_channels: BB.channels || [],
-          created_by: window.SWANSWAY_USER_ID || 'brief'
-        }])
-      });
-      if (!cr.ok) throw new Error(await cr.text());
-      var camps = await cr.json();
-      var camp = camps[0];
-      // Load and create tasks from template
-      var templates = await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaign_task_templates?select=*&order=stage,task_order', {
-        headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY}
-      }).then(function(r){return r.json();});
-      if (Array.isArray(templates) && templates.length) {
-        var cmap = {'Paid Search (Google/Bing)':'paid_search','Display & Programmatic':'display','Email Marketing':'email','Social Organic':'social_organic','Meta (Facebook/Instagram)':'social_paid','Events & Showroom':'events','OOH & Print':'ooh_print','Manufacturer Co-op':'manufacturer_coop'};
-        var ack = (BB.channels||[]).map(function(c){return cmap[c]||c.toLowerCase().replace(/[^a-z]/g,'_');});
-        var taskRows = templates.filter(function(t){return !t.channel||ack.includes(t.channel);}).map(function(t){
-          var notes = '';
-          if (t.stage===1&&t.task_order===3) notes = 'Budget: £' + (BB.budget||0).toLocaleString();
-          if (t.stage===1&&t.task_order===2) notes = (BB.start_date?'Start: '+BB.start_date:'') + (BB.end_date?' | End: '+BB.end_date:'');
-          return {campaign_id:camp.id,stage:t.stage,task_order:t.task_order,task_name:t.task_name,department:t.department,assigned_to:t.default_assignee,approver_scope:t.approver_scope,is_blocker:t.is_blocker,channel:t.channel,completed:false,approved:false,rejected:false,notes:notes};
-        });
-        await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/campaign_tasks', {
-          method: 'POST',
-          headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal'},
-          body: JSON.stringify(taskRows)
-        });
-      }
-      await cbLoad();
-      cbOpenCampaign(camp.id);
-    } catch(e) { alert('Error creating campaign: ' + e.message); }
-  }, 400);
-}
 
 
 /* ==== MY TASKS ==== */
@@ -7338,188 +7028,7 @@ async function bbRenderCampaignSection(briefData) {
 
 
 
-async function bbApproveThenShowLaunch() {
-  await swEnsureUser();
-  if (!CB_CURRENT_USER) { alert('Could not detect your login. Please refresh the page.'); return; }
-  var briefId = window._lastSavedBriefId;
-  if (!briefId) return;
-  var anon = SUPABASE_ANON_KEY;
-  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-  try {
-    var r = await fetch(base+'/briefs?id=eq.'+briefId, {
-      method:'PATCH',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
-      body:JSON.stringify({status:'approved',approved_by:CB_CURRENT_USER,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()})
-    });
-    if (!r.ok) throw new Error(await r.text());
-    var data = await r.json();
-    var brief = Array.isArray(data) ? data[0] : data;
-    await bbRenderCampaignSection(brief);
-  } catch(e) { alert('Error approving: '+e.message); }
-}
-async function bbCreateCampaign(briefId, briefTitle) {
-  await swEnsureUser();
-  var btn = event && event.target;
-  if (btn) { btn.textContent = 'Launching...'; btn.disabled = true; }
 
-  var anon = SUPABASE_ANON_KEY;
-  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-
-  try {
-    // Load full brief data
-    var brief = await fetch(base+'/briefs?id=eq.'+briefId+'&select=*',{
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon}
-    }).then(function(r){return r.json();}).then(function(d){return d[0];});
-
-    // Create campaign
-    var cr = await fetch(base+'/campaigns',{
-      method:'POST',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
-      body:JSON.stringify([{
-        title: briefTitle,
-        brief_id: briefId,
-        scope: brief.scope||'brand',
-        brand_id: brief.brand_id||null,
-        site_id: brief.site_id||null,
-        status: 'active',
-        current_stage: 1,
-        confirmed_channels: brief.confirmed_channels||brief.channels||[],
-        created_by: CB_CURRENT_USER||'system',
-        start_date: brief.start_date||null,
-        end_date: brief.end_date||null,
-        campaign_type: brief.campaign_type||null,
-        planned_budget: brief.budget||null
-      }])
-    });
-    if (!cr.ok) throw new Error(await cr.text());
-    var camp = (await cr.json())[0];
-
-    // Create tasks from template
-    var tmpl = await fetch(base+'/campaign_task_templates?select=*&order=stage,task_order',{
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon}
-    }).then(function(r){return r.json();});
-
-    if (Array.isArray(tmpl) && tmpl.length) {
-      var cmap = {'Paid Search (Google/Bing)':'paid_search','Display & Programmatic':'display','Email Marketing':'email','Social Organic':'social_organic','Meta (Facebook/Instagram)':'social_paid','Events & Showroom':'events','OOH & Print':'ooh_print','Manufacturer Co-op':'manufacturer_coop'};
-      var chs = (brief.confirmed_channels||brief.channels||[]).map(function(c){return cmap[c]||c.toLowerCase().replace(/[^a-z]/g,'_');});
-      var rows = tmpl.filter(function(t){return !t.channel||!chs.length||chs.includes(t.channel);}).map(function(t){
-        var notes = '';
-        if (t.stage===1&&t.task_order===3) notes = 'Budget: \u00a3'+(brief.budget||0).toLocaleString();
-        if (t.stage===1&&t.task_order===2) notes = (brief.start_date?'Start: '+brief.start_date:'')+(brief.end_date?' | End: '+brief.end_date:'');
-        return {campaign_id:camp.id,stage:t.stage,task_order:t.task_order,task_name:t.task_name,department:t.department,assigned_to:t.default_assignee,approver_scope:t.approver_scope,is_blocker:t.is_blocker,channel:t.channel,completed:false,approved:false,rejected:false,notes:notes};
-      });
-      await fetch(base+'/campaign_tasks',{
-        method:'POST',
-        headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
-        body:JSON.stringify(rows)
-      });
-    }
-
-    // Mark brief as campaigned
-    await fetch(base+'/briefs?id=eq.'+briefId,{
-      method:'PATCH',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify({status:'campaigned',updated_at:new Date().toISOString()})
-    });
-
-    // Update CB_CAMPAIGNS
-    if (typeof CB_CAMPAIGNS !== 'undefined') CB_CAMPAIGNS.unshift(camp);
-
-    // Update My Tasks badge
-    if (typeof mtLoad === 'function') mtLoad();
-
-    // Show campaign stages
-    var section = document.getElementById('bb-campaign-section');
-    if (section) bbRenderStages(section, camp, briefId);
-
-  } catch(e) {
-    if (btn) { btn.textContent = '\uD83D\uDE80 LAUNCH CAMPAIGN'; btn.disabled = false; }
-    alert('Error launching campaign: '+e.message);
-  }
-}
-
-async function bbRenderStages(section, camp, briefId) {
-  var anon = SUPABASE_ANON_KEY;
-  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
-
-  // Load all tasks for this campaign
-  var tasks = await fetch(base+'/campaign_tasks?campaign_id=eq.'+camp.id+'&order=stage,task_order',{headers:hdrs}).then(function(r){return r.json();});
-  if (!Array.isArray(tasks)) tasks = [];
-
-  var me = CB_TEAM[CB_CURRENT_USER] || {};
-  var myFirst = me.name ? me.name.split(' ')[0] : '';
-  var currentStage = camp.current_stage || 1;
-  var SN = ['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'];
-  var SI = ['\uD83D\uDCCB','\u2699\uFE0F','\u2705','\uD83D\uDE80','\uD83D\uDCCA','\uD83C\uDFC1'];
-  var canApprove = !!(CB_PERMS[CB_CURRENT_USER] && (CB_PERMS[CB_CURRENT_USER].can_approve_all || CB_PERMS[CB_CURRENT_USER].can_approve_digital));
-  var canAdvance = !!(CB_PERMS[CB_CURRENT_USER] && CB_PERMS[CB_CURRENT_USER].can_advance_stage);
-
-  section.innerHTML = '';
-
-  // ── Campaign header ──
-  var hdr = document.createElement('div');
-  hdr.style.cssText = 'margin-top:24px;border-top:2px solid var(--border);padding-top:24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px';
-  var hdrLeft = document.createElement('div');
-  hdrLeft.innerHTML = '<div style="font-family:var(--font-d);font-size:20px;font-weight:700;color:var(--ink)">Campaign is live \uD83C\uDF89</div>'
-    + '<div style="font-size:14px;color:var(--ink-soft);margin-top:2px">'
-    + (myFirst ? 'Great work ' + myFirst + ' \u2014 ' : '') + 'Stage ' + currentStage + ' of 6 is active</div>';
-  hdr.appendChild(hdrLeft);
-
-  // Buttons row
-  var btnRow = document.createElement('div');
-  btnRow.style.cssText = 'display:flex;gap:8px;flex-shrink:0;align-items:center';
-
-  // View Brief button - always shown
-  var briefBtn = document.createElement('button');
-  briefBtn.style.cssText = 'background:var(--white);color:var(--ink);border:1.5px solid var(--border);padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-b)';
-  briefBtn.innerHTML = '&#128203; View Brief';
-  briefBtn.dataset.briefId = briefId;
-  briefBtn.onclick = function() { bbOpenBriefPanel(this.dataset.briefId); };
-  btnRow.appendChild(briefBtn);
-
-  if (canAdvance && currentStage < 6) {
-    var advBtn = document.createElement('button');
-    advBtn.style.cssText = 'background:var(--swansway);color:#fff;border:none;padding:8px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-b)';
-    advBtn.textContent = 'Advance to Stage ' + (currentStage + 1) + ' \u2192';
-    advBtn.dataset.campId = camp.id;
-    advBtn.dataset.stage = currentStage;
-    advBtn.onclick = function() { bbAdvanceStage(this.dataset.campId, parseInt(this.dataset.stage), section, camp, briefId); };
-    btnRow.appendChild(advBtn);
-  }
-  hdr.appendChild(btnRow);
-  section.appendChild(hdr);
-
-  // ── Stage tabs ──
-  var tabBar = document.createElement('div');
-  tabBar.style.cssText = 'display:flex;gap:4px;margin-bottom:20px;overflow-x:auto;padding-bottom:2px';
-  SN.forEach(function(sn, i) {
-    var stageNum = i + 1;
-    var done = stageNum < currentStage;
-    var active = stageNum === currentStage;
-    var btn = document.createElement('button');
-    btn.style.cssText = 'flex:1;min-width:100px;padding:10px 8px;border-radius:6px;border:2px solid '
-      + (active ? 'var(--swansway)' : done ? '#059669' : 'var(--border)')
-      + ';background:' + (active ? 'var(--swansway)' : done ? '#D1FAE5' : 'var(--white)')
-      + ';color:' + (active ? '#fff' : done ? '#059669' : 'var(--ink-faint)')
-      + ';font-size:11px;font-weight:' + (active ? '700' : done ? '600' : '400')
-      + ';cursor:pointer;text-align:center;transition:all .15s';
-    btn.innerHTML = '<div style="font-size:16px;margin-bottom:2px">' + (done ? '\u2705' : SI[i]) + '</div>'
-      + '<div>' + sn + '</div>';
-    btn.dataset.stageNum = stageNum;
-    btn.onclick = function() { bbShowStageDetail(parseInt(this.dataset.stageNum), tasks, currentStage, stageContent, camp, canApprove); };
-    tabBar.appendChild(btn);
-  });
-  section.appendChild(tabBar);
-
-  // ── Stage content area ──
-  var stageContent = document.createElement('div');
-  stageContent.id = 'bb-stage-content-' + camp.id;
-  section.appendChild(stageContent);
-
-  // Show active stage by default
-  bbShowStageDetail(currentStage, tasks, currentStage, stageContent, camp, canApprove);
-}
 
 function bbShowStageDetail(stageNum, allTasks, currentStage, container, camp, canApprove) {
   container.innerHTML = '';
@@ -8713,47 +8222,7 @@ function authGoogle() {
   SB.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://mk-work-ai.github.io/swansway-marketing-hub/' } });
 }
 
-async function authSignIn() {
-  if(!SB) { alert('Supabase not configured — see DEPLOYMENT.md'); return; }
-  const email = document.getElementById('auth-email').value.trim();
-  const pw    = document.getElementById('auth-password').value;
-  const btn   = document.getElementById('auth-signin-btn');
-  const err   = document.getElementById('auth-err-in');
-  if(!email||!pw) { showAuthErr(err,'Please enter email and password'); return; }
-  btn.disabled = true; btn.textContent = 'Signing in…'; err.style.display='none';
-  const { error } = await SB.auth.signInWithPassword({ email, password:pw });
-  btn.disabled = false; btn.textContent = 'Sign in';
-  if(error) showAuthErr(err, error.message);
-  else closeAuth();
-}
 
-async function authSignUp() {
-  if(!SB) { alert('Supabase not configured — see DEPLOYMENT.md'); return; }
-  const name  = document.getElementById('auth-name').value.trim();
-  const email = document.getElementById('auth-email-up').value.trim();
-  const pw    = document.getElementById('auth-password-up').value;
-  const btn   = document.getElementById('auth-signup-btn');
-  const err   = document.getElementById('auth-err-up');
-  const msg   = document.getElementById('auth-msg-up');
-  if(!name||!email||!pw) { showAuthErr(err,'Please fill in all fields'); return; }
-  if(pw.length < 8) { showAuthErr(err,'Password must be at least 8 characters'); return; }
-  btn.disabled = true; btn.textContent = 'Creating account…'; err.style.display='none';
-  const { error } = await SB.auth.signUp({
-    email, password:pw,
-    options:{
-      data:{ full_name:name },
-      emailRedirectTo: 'https://mk-work-ai.github.io/swansway-marketing-hub/'
-    }
-  });
-  btn.disabled = false; btn.textContent = 'Create account';
-  if(error) showAuthErr(err, error.message);
-  else {
-    err.style.display='none';
-    msg.style.display='block';
-    msg.textContent = '✓ Account created! Check your email inbox for a confirmation link. Click it and you will be signed in automatically.';
-    switchAuthTab('in');
-  }
-}
 
 function showAuthErr(el, msg) {
   el.textContent = msg; el.style.display='block';
