@@ -3265,26 +3265,28 @@ function bbGoStep(n) {
   if(n > BB.step && !bbCanGoTo(n)) return;
   if (n === 3) setTimeout(bbRenderBudgetIntel, 100);
   if (n === 5) setTimeout(bbRenderStep5Context, 100);
-  // Clear campaign mode display overrides without calling bbExitCampaignMode (avoids redirect to step 1)
+  // Always clear any campaign-mode display overrides
   if (window._bbCampModeActive) {
     window._bbCampModeActive = false;
     var _canvas = document.getElementById('bb-campaign-canvas');
     if (_canvas) _canvas.style.display = 'none';
-    // Restore sidebar
     var _left = document.getElementById('bb-left');
     if (_left && typeof BB_LEFT_ORIGINAL_HTML !== 'undefined') _left.innerHTML = BB_LEFT_ORIGINAL_HTML;
   }
-  document.querySelectorAll('.bb-step').forEach(s=>{ s.classList.remove('bb-active'); s.style.display = ''; });
-  const target = document.getElementById('bb-step-'+n);
-  if(target) { target.classList.add('bb-active'); target.style.display = ''; }
-  // Also ensure bb-right is visible
+  // Always clear inline display:none on steps (set by campaign mode or any other path)
+  document.querySelectorAll('.bb-step').forEach(function(s){ s.classList.remove('bb-active'); s.style.display = ''; });
   var _bbRight = document.getElementById('bb-right');
   if (_bbRight) _bbRight.style.display = '';
-  // Ensure step indicator and progress are visible
   var _ind = document.getElementById('bb-step-indicator');
   var _prog = document.getElementById('bb-progress-track');
   if (_ind) _ind.style.display = '';
   if (_prog) _prog.style.display = '';
+  var _campCanvas = document.getElementById('bb-campaign-canvas');
+  if (_campCanvas) _campCanvas.style.display = 'none';
+  var _campSec = document.getElementById('bb-campaign-section');
+  if (_campSec && n !== 6) { _campSec.style.display = 'none'; }
+  const target = document.getElementById('bb-step-'+n);
+  if(target) { target.classList.add('bb-active'); target.style.display = ''; }
   BB.step = n;
   bbUpdateStepIndicator(n);
   const pf = document.getElementById('bb-progress-fill');
