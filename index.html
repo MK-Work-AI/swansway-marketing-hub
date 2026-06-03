@@ -196,16 +196,8 @@ td strong{font-weight:600}
 .audience-desc strong{font-weight:600;color:var(--ink)}
 
 /* ── KPI LIST ── */
-/* ── KPI summary cards ── */
-.kpi-summary-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:1.75rem}
-.kpi-sum-card{background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:18px 20px}
-.kpi-sum-cat{font-family:var(--font-m);font-size:9px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px}
-.kpi-sum-val{font-family:var(--font-d);font-size:30px;font-weight:800;letter-spacing:-0.02em;line-height:1;margin-bottom:4px}
-.kpi-sum-label{font-size:12px;color:var(--ink-soft);margin-bottom:12px;line-height:1.4}
-.kpi-sum-bar{height:4px;background:var(--surface-2);border-radius:2px}
-.kpi-sum-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
 /* ── KPI full list cards ── */
-.kpi-card{border:1.5px solid;border-radius:8px;padding:18px 20px;margin-bottom:12px}
+.kpi-card{background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:12px}
 .kpi-card-main{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px}
 .kpi-card-left{flex:1}
 .kpi-card-cat{font-family:var(--font-m);font-size:9px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px}
@@ -1041,7 +1033,7 @@ td strong{font-weight:600}
     <div><div class="page-title">Group KPI Framework <span class="year-ref"></span></div><div class="page-subtitle">Measures, targets and ownership across all 30 sites and 11 brands</div></div>
 
   </div>
-  <div id="kpi-summary-cards" class="kpi-summary-row"></div>
+  <div id="kpi-summary-cards" class="metrics-row"></div>
   <div class="sh"><div><div class="sh-title">All KPIs</div></div></div>
   <div style="display:flex;gap:16px;margin-bottom:1rem;align-items:center;flex-wrap:wrap;padding:10px 0">
     <div style="font-size:12px;color:var(--ink-soft);font-weight:600">Key:</div>
@@ -2826,11 +2818,10 @@ function renderGroupKPIs() {
       var isPlaceholder = !k.t || k.t === '\u2014' || k.t === '0' || k.t === 0 || k.t === '--';
       var pctColor = k.p >= 70 ? '#15803D' : k.p >= 50 ? '#D97706' : '#C8102E';
       var col = isPlaceholder ? '#F59E0B' : pctColor;
-      return '<div class="kpi-sum-card">'
-        + '<div class="kpi-sum-cat">' + (k.cat||'') + '</div>'
-        + '<div class="kpi-sum-val" style="color:' + col + '">' + (k.a||k.t||'--') + '</div>'
-        + '<div class="kpi-sum-label">' + (k.l||k.label||'') + '</div>'
-        + '<div class="kpi-sum-bar"><div class="kpi-sum-bar-fill" style="width:' + Math.min(k.p||0,100) + '%;background:' + col + '"></div></div>'
+      return '<div class="metric" style="color:' + col + '">'
+        + '<div class="metric-label">' + (k.cat||'') + '</div>'
+        + '<div class="metric-val">' + (k.a||k.t||'--') + '</div>'
+        + '<div class="metric-sub">' + (k.l||k.label||'') + '</div>'
         + '</div>';
     }).join('');
   }
@@ -2858,10 +2849,10 @@ function renderGroupKPIs() {
         + '</div>';
     }
 
-    return '<div class="kpi-card" style="border-color:' + borderCol + ';background:' + bgCol + '">'
+    return '<div class="kpi-card">'
       + '<div class="kpi-card-main">'
         + '<div class="kpi-card-left">'
-          + '<div class="kpi-card-cat">' + (k.cat||'') + '</div>'
+          + '<div class="kpi-card-cat" style="color:' + (isPlaceholder?'#F59E0B':pctColor) + '">' + (k.cat||'') + '</div>'
           + '<div class="kpi-card-title">' + (k.l||k.label||'') + '</div>'
           + '<div class="kpi-card-def">' + (k.def||'') + '</div>'
         + '</div>'
