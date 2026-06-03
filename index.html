@@ -9247,6 +9247,15 @@ function bbNewBrief() {
   var prog = document.getElementById('bb-progress-track');
   if (ind) ind.style.display = '';
   if (prog) prog.style.display = '';
+  // Check for deep-link restore (set by bbCheckUrlOnLoad on page load)
+  if (window._deepLinkBriefId) {
+    var _id = window._deepLinkBriefId;
+    window._deepLinkBriefId = null;
+    bbInit();
+    BB.step = 6;
+    setTimeout(function() { bbLoadBrief(_id); }, 200);
+    return; // skip new blank brief
+  }
   bbInit();
   BB.step = 6; // allow all steps
   bbGoStep(1);
@@ -9265,9 +9274,10 @@ function bbCheckUrlOnLoad() {
   var view   = params.get('view');
   var briefId = params.get('brief');
   if (view === 'brief') {
+    if (briefId) window._deepLinkBriefId = briefId; // signal to bbNewBrief
     setTimeout(function() {
       switchView('brief', document.querySelector('[data-view="brief"]'));
-      if (briefId) setTimeout(function() { bbLoadBrief(briefId); }, 400);
+      // switchView calls bbNewBrief which checks _deepLinkBriefId
     }, 900);
   }
 }
