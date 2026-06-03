@@ -2614,7 +2614,21 @@ function switchInner(brandId, secId, el) {
     }, 50);
   }
   if(secId === 'centres')   { setTimeout(function(){ if(typeof renderBrandCentres==='function') renderBrandCentres(brandId); }, 50); }
-  if(secId === 'budget')    { setTimeout(function(){ if(typeof renderBrandChannelMix==='function') renderBrandChannelMix(brandId); }, 300); }
+  if(secId === 'budget') {
+    // Clear immediately — prevents flash of stale content
+    var _budgetEl = document.getElementById(brandId + '-budget');
+    if (_budgetEl) {
+      // Keep the static header, clear the dynamic part
+      var _existingBar = _budgetEl.querySelector('.sh');
+      _budgetEl.innerHTML = '';
+      if (_existingBar) _budgetEl.appendChild(_existingBar);
+    }
+    // Render immediately if data available, else loadBrandChannels will trigger it
+    if (BRAND_CHANNELS_DATA && BRAND_CHANNELS_DATA[brandId] && BRAND_CHANNELS_DATA[brandId].length) {
+      if (typeof renderBrandChannelMix === 'function') renderBrandChannelMix(brandId);
+    }
+    // If data not loaded yet, loadBrandChannels callback handles the render
+  }
   if(secId === 'sites') { setTimeout(function(){ if(typeof renderBrandSites==='function') renderBrandSites(brandId); }, 50); }
   if(secId === 'kpis') { setTimeout(function(){ if(typeof renderBrandKPIs==='function') renderBrandKPIs(brandId);  }, 50); }
   var sec = document.getElementById(brandId+'-'+secId);
