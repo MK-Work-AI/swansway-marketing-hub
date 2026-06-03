@@ -125,14 +125,13 @@ html{overflow-y:scroll}body{font-family:var(--font-b);background:var(--surface);
 .brand-nav-to{font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--brand-color);margin-top:10px;opacity:0.8}
 
 /* ── BRAND DETAIL LAYOUT ── */
-.brand-hero{background:var(--ink);color:#fff;padding:24px 28px;border-radius:4px;margin-bottom:1.5rem;position:relative;overflow:hidden}
-.brand-hero::after{content:'';position:absolute;top:0;right:0;bottom:0;width:200px;background:linear-gradient(to left,rgba(255,255,255,0.03),transparent);pointer-events:none}
-.brand-hero-color{position:absolute;top:0;left:0;right:0;height:4px}
-.brand-hero-eyebrow{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;opacity:0.5;margin-bottom:8px}
-.brand-hero-name{font-family:var(--font-d);font-size:36px;font-weight:800;line-height:1;margin-bottom:6px;letter-spacing:-0.02em}
-.brand-hero-sites{font-size:13px;opacity:0.6;margin-bottom:14px}
-.brand-hero-tags{display:flex;flex-wrap:wrap;gap:5px}
-.brand-hero-tag{font-size:10px;padding:3px 10px;border:1px solid rgba(255,255,255,0.2);border-radius:2px;letter-spacing:0.04em}
+.brand-hero{background:var(--white);border:1.5px solid var(--border);border-left:5px solid var(--brand-col,var(--swansway));border-radius:8px;padding:22px 26px;margin-bottom:1.5rem}
+.brand-hero-eyebrow{font-family:var(--font-m);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px}
+.brand-hero-name{font-family:var(--font-d);font-size:32px;font-weight:800;line-height:1;margin-bottom:5px;letter-spacing:-0.02em;color:var(--ink)}
+.brand-hero-sites{font-size:13px;color:var(--ink-soft);margin-bottom:16px}
+.brand-hero-tags{display:flex;flex-wrap:wrap;gap:6px}
+.brand-hero-tag{font-size:11px;padding:4px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;color:var(--ink);font-family:var(--font-b);font-weight:600}
+.brand-hero-tag--accent{background:var(--brand-col,var(--swansway));color:#fff;border-color:transparent;opacity:0.9}
 
 /* ── TABS WITHIN BRAND ── */
 .inner-tabs{display:flex;gap:4px;margin-bottom:1.5rem;flex-wrap:wrap}
