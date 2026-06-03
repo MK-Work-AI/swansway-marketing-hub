@@ -2783,6 +2783,8 @@ function renderGroupChannels() {
       + (c.note ? '<div style="font-size:11px;color:var(--ink-faint);margin-top:2px">' + c.note + '</div>' : '')
       + '</div>';
   }).join('');
+  // Render chart after list — data is now available
+  if (typeof renderChannelChart === 'function') setTimeout(renderChannelChart, 50);
 }
 
 /* ── RENDER GROUP KPIs ── */
