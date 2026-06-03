@@ -6863,15 +6863,17 @@ async function bbSubmitBrief() {
   } catch(e) { alert('Error: ' + e.message); }
 }
 
-async function bbApproveBriefAndLaunch() {
-  if (!CB_CURRENT_USER) { showToast('Pick your name from the dropdown first ??', 'error'); return; }
+async function bbApproveBriefAndLaunch(briefId) {
+  var _briefId = briefId || window._lastSavedBriefId;
+  if (!_briefId) { showToast('Brief ID missing \u2014 try reloading', 'error'); return; }
+  if (!CB_CURRENT_USER) { showToast('Pick your name first', 'error'); return; }
   var perms = CB_PERMS[CB_CURRENT_USER] || {};
-  if (!perms.can_approve_all && !perms.can_approve_digital) { showToast('You don’t have permission to approve briefs', 'error'); return; }
-  if (!window._lastSavedBriefId) return;
+  if (!perms.can_approve_all && !perms.can_approve_digital) { showToast('You do not have permission to approve briefs', 'error'); return; }
+  window._lastSavedBriefId = _briefId;
   var anon = SUPABASE_ANON_KEY;
   var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
   try {
-    var r = await fetch(base+'/briefs?id=eq.'+window._lastSavedBriefId, {
+    var r = await fetch(base+'/briefs?id=eq.'+_briefId, {
       method:'PATCH',
       headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
       body:JSON.stringify({status:'approved',approved_by:CB_CURRENT_USER,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()})
@@ -6965,6 +6967,8 @@ async function bbRenderCampaignSection(briefData) {
   var el = document.getElementById('bb-campaign-section');
   if (!el) return;
   if (!briefData || !briefData.id) { el.style.display='none'; return; }
+  // Ensure _lastSavedBriefId is set so approve/launch buttons work
+  if (briefData.id) { window._lastSavedBriefId = briefData.id; window._lastSavedBriefTitle = briefData.title || ''; }
   await swEnsureUser();
   var brief = briefData;
   var perms = CB_PERMS[CB_CURRENT_USER] || {};
@@ -6999,7 +7003,7 @@ async function bbRenderCampaignSection(briefData) {
         + '<div class="bb-s6-card-pill" style="background:var(--accent)">Ready to launch</div>'
         + '<div class="bb-s6-card-title">' + (firstName ? firstName + ', this brief is waiting for you.' : 'Ready to launch.') + '</div>'
         + '<div class="bb-s6-card-sub">Approve it and the team will get their tasks automatically.</div>'
-        + '<button class="bb-s6-launch" onclick="bbApproveBriefAndLaunch()">🚀 LAUNCH CAMPAIGN</button>'
+        + '<button class="bb-s6-launch" onclick="bbApproveBriefAndLaunch()">\xf0\x9f\x9a\x80 LAUNCH CAMPAIGN</button>'
         + '<div class="bb-s6-launch-hint">Creates all 58 tasks and assigns them to the team</div>'
         + '</div>';
     } else {
