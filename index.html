@@ -2603,7 +2603,7 @@ function switchInner(brandId, secId, el) {
       // Ensure CB_CAMPAIGNS is loaded
       if (!CB_CAMPAIGNS || !CB_CAMPAIGNS.length) {
         var anon = SUPABASE_ANON_KEY, base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-        var rows = await fetch(base+'/campaigns?select=*&order=created_at.desc',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
+        var rows = await fetch(base+'/campaigns?select=*&order=created_at.desc',{headers:getAuthHeaders()}).then(function(r){return r.json();});
         if (Array.isArray(rows)) CB_CAMPAIGNS = rows;
       }
       // Ensure SB_BRIEFS_CACHE is loaded
@@ -2965,6 +2965,16 @@ function loadAdminConfig() {
     }).catch(function(e) { console.warn('Admin config exception:', e); });
 }
 
+/* ── AUTH HEADERS HELPER ──
+   Uses user JWT when signed in (authenticated role → RLS enforced).
+   Falls back to anon key when no session.                            */
+function getAuthHeaders(extra) {
+  var token = window.SB_ACCESS_TOKEN || SUPABASE_ANON_KEY;
+  var h = {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token};
+  if (extra) Object.assign(h, extra);
+  return h;
+}
+
 function applyAdminConfig(cfg) {
   if (!cfg) return;
   window._lastAdminCfg = cfg;  // Cache for re-application
@@ -3082,7 +3092,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     if (!window.SB_USER || !SB_USER.email) return;
     var anon = SUPABASE_ANON_KEY;
     var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-    var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+    var hdrs = getAuthHeaders();
     try {
       if (!Object.keys(CB_TEAM).length) {
         var t = await fetch(base+'/campaign_team?select=*&active=eq.true',{headers:hdrs}).then(r=>r.json());
@@ -3424,7 +3434,7 @@ async function bbLoadHeadroom() {
     var anon = SUPABASE_ANON_KEY;
     var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
     var rows = await fetch(base + '/brief_budget_commitments?year=eq.' + PLAN_YEAR + '&site_id=in.(' + sites.join(',') + ')&select=brief_id,site_id,month_index,amount', {
-      headers: {'apikey':anon,'Authorization':'Bearer '+anon}
+      headers: getAuthHeaders()
     }).then(function(r){ return r.json(); });
     if (Array.isArray(rows)) {
       var mSet = new Set(months.map(function(m){ return m.index; }));
@@ -4052,7 +4062,7 @@ async function calLoadFromSupabase() {
   var brandNameMap = {'audi':'Audi','vw':'Volkswagen','vwcv':'VW Commercial','seat':'SEAT','cupra':'CUPRA','landrover':'Land Rover','jaguar':'Jaguar','honda':'Honda','peugeot':'Peugeot','byd':'BYD','omoda':'OMODA/JAECOO','motormatch':'Motor Match'};
   try {
     var rows = await fetch(base + '/campaigns?select=id,title,brand_id,status,start_date,end_date,campaign_type,planned_budget,planned_sites,planned_objective,scope,created_by,brief_id&order=start_date', {
-      headers: {'apikey':anon,'Authorization':'Bearer '+anon}
+      headers: getAuthHeaders()
     }).then(function(r){ return r.json(); });
     if (!Array.isArray(rows)) return;
     var fromDB = rows.map(function(r) {
@@ -4070,7 +4080,7 @@ async function calLoadFromSupabase() {
         var ids = noDate.map(function(r){ return r.brief_id; }).filter(Boolean).join(',');
         if (!ids) throw new Error('no brief ids to fetch');
         var briefs = await fetch(base + '/briefs?id=in.(' + ids + ')&select=id,start_date,end_date,campaign_type,budget', {
-          headers: {'apikey':anon,'Authorization':'Bearer '+anon}
+          headers: getAuthHeaders()
         }).then(function(r){ return r.json(); });
         if (Array.isArray(briefs)) {
           briefs.forEach(function(br) {
@@ -4096,7 +4106,7 @@ async function calLoadFromSupabase() {
     var existingBriefIds = new Set();
     try {
       var briefRows = await fetch(base + '/briefs?select=id', {
-        headers: {'apikey':anon,'Authorization':'Bearer '+anon}
+        headers: getAuthHeaders()
       }).then(function(r){ return r.json(); });
       if (Array.isArray(briefRows)) briefRows.forEach(function(b){ existingBriefIds.add(b.id); });
     } catch(e) {}
@@ -5124,7 +5134,7 @@ function calAddEvent() {
       var anon = SUPABASE_ANON_KEY, base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
       await fetch(base + '/campaigns', {
         method:'POST',
-        headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+        headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),
         body: JSON.stringify([{brand_id:brand, title:name, status:'planned', start_date:start, end_date:end, campaign_type:ctype, planned_budget:budget, planned_objective:obj, scope:'brand', created_by:CB_CURRENT_USER||'marcus'}])
       });
       overlay.remove();
@@ -5713,7 +5723,7 @@ async function loadBriefCommitmentsForTracker() {
   var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
   try {
     var rows = await fetch(base + '/brief_budget_commitments?year=eq.' + PLAN_YEAR + '&select=site_id,month_index,amount', {
-      headers: {'apikey':anon,'Authorization':'Bearer '+anon}
+      headers: getAuthHeaders()
     }).then(function(r){ return r.json(); });
     BRIEF_COMMITMENTS = {};
     if (Array.isArray(rows)) {
@@ -5729,9 +5739,7 @@ async function loadSiteBudgets() {
   try {
     var resp = await fetch(SUPABASE_URL + '/rest/v1/site_budgets?select=*', {
       headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json'
+        ...getAuthHeaders({'Content-Type': 'application/json'})
       }
     });
     if (!resp.ok) {
@@ -5791,9 +5799,7 @@ async function loadSiteKPIs() {
   try {
     var resp = await fetch(SUPABASE_URL + '/rest/v1/site_kpis?select=*', {
       headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json'
+        ...getAuthHeaders({'Content-Type': 'application/json'})
       }
     });
     if (!resp.ok) { console.warn('loadSiteKPIs error:', resp.status); return; }
@@ -5923,9 +5929,7 @@ async function loadSiteContacts() {
   try {
     var resp = await fetch(SUPABASE_URL + '/rest/v1/site_contacts?select=*', {
       headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json'
+        ...getAuthHeaders({'Content-Type': 'application/json'})
       }
     });
     if (!resp.ok) {
@@ -5952,7 +5956,7 @@ var BRAND_KPIS_DATA = {};  // brand_id -> row
 async function loadBrandKPIs() {
   try {
     var resp = await fetch(SUPABASE_URL + '/rest/v1/brand_kpis?select=*', {
-      headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY}
+      headers: getAuthHeaders()
     });
     if (!resp.ok) {
       var errText = await resp.text();
@@ -6018,7 +6022,7 @@ async function loadBrandChannels() {
   console.log('loadBrandChannels: SUPABASE_URL=', SUPABASE_URL ? 'set' : 'MISSING', 'ANON_KEY=', SUPABASE_ANON_KEY ? 'set' : 'MISSING');
   try {
     var resp = await fetch(SUPABASE_URL + '/rest/v1/brand_channels?select=*&order=brand_id,sort_order', {
-      headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY}
+      headers: getAuthHeaders()
     });
     if (!resp.ok) return;
     var rows = await resp.json();
@@ -6165,7 +6169,7 @@ var CB_MY_TASKS_FILTER = false;
 async function cbLoad() {
   var anon = SUPABASE_ANON_KEY;
   var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+  var hdrs = getAuthHeaders();
   try {
     var results = await Promise.all([
       fetch(base+'/campaigns?select=*&order=created_at.desc',{headers:hdrs}).then(function(r){return r.json();}),
@@ -6279,7 +6283,7 @@ async function cbOpenCampaign(campaignId) {
   try {
     var anon=SUPABASE_ANON_KEY;
     var tasks=await fetch(CB_API+'/campaign_tasks?campaign_id=eq.'+campaignId+'&order=stage,task_order',{
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon}
+      headers:getAuthHeaders()
     }).then(function(r){return r.json();});
     CB_TASKS[campaignId]=Array.isArray(tasks)?tasks:[];
   } catch(e){CB_TASKS[campaignId]=[];}
@@ -6534,7 +6538,7 @@ async function cbUpdateTask(taskId,updates){
   try{
     var resp=await fetch(CB_API+'/campaign_tasks?id=eq.'+taskId,{
       method:'PATCH',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),
       body:JSON.stringify(updates)
     });
     if(!resp.ok) throw new Error(await resp.text());
@@ -6558,7 +6562,7 @@ async function cbCheckStageAdvance(campaignId){
   try{
     await fetch(CB_API+'/campaigns?id=eq.'+campaignId,{
       method:'PATCH',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),
       body:JSON.stringify({current_stage:newStage,updated_at:new Date().toISOString()})
     });
     CB_CAMPAIGNS=CB_CAMPAIGNS.map(function(x){return x.id===campaignId?Object.assign({},x,{current_stage:newStage}):x;});
@@ -6578,7 +6582,7 @@ async function cbAdvanceStage(campaignId){
   var anon=SUPABASE_ANON_KEY;
   var newStage=c.current_stage+1;
   try{
-    await fetch(CB_API+'/campaigns?id=eq.'+campaignId,{method:'PATCH',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({current_stage:newStage,updated_at:new Date().toISOString()})});
+    await fetch(CB_API+'/campaigns?id=eq.'+campaignId,{method:'PATCH',headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify({current_stage:newStage,updated_at:new Date().toISOString()})});
     CB_CAMPAIGNS=CB_CAMPAIGNS.map(function(x){return x.id===campaignId?Object.assign({},x,{current_stage:newStage}):x;});
     var updated=CB_CAMPAIGNS.find(function(x){return x.id===campaignId;});
     if(updated) cbRenderCampaignDetail(updated);
@@ -6591,7 +6595,7 @@ async function cbReopenStage(campaignId){
   var anon=SUPABASE_ANON_KEY;
   var newStage=c.current_stage-1;
   try{
-    await fetch(CB_API+'/campaigns?id=eq.'+campaignId,{method:'PATCH',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({current_stage:newStage,updated_at:new Date().toISOString()})});
+    await fetch(CB_API+'/campaigns?id=eq.'+campaignId,{method:'PATCH',headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify({current_stage:newStage,updated_at:new Date().toISOString()})});
     CB_CAMPAIGNS=CB_CAMPAIGNS.map(function(x){return x.id===campaignId?Object.assign({},x,{current_stage:newStage}):x;});
     var updated=CB_CAMPAIGNS.find(function(x){return x.id===campaignId;});
     if(updated) cbRenderCampaignDetail(updated);
@@ -6605,18 +6609,18 @@ async function cbNewCampaign(){
   try{
     var cr=await fetch(CB_API+'/campaigns',{
       method:'POST',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
+      headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
       body:JSON.stringify([{title:title.trim(),scope:'brand',status:'active',current_stage:1,created_by:CB_CURRENT_USER||'unknown',confirmed_channels:[]}])
     });
     if(!cr.ok) throw new Error(await cr.text());
     var newCamps=await cr.json();
     var newCamp=newCamps[0];
-    var templates=await fetch(CB_API+'/campaign_task_templates?select=*&order=stage,task_order',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
+    var templates=await fetch(CB_API+'/campaign_task_templates?select=*&order=stage,task_order',{headers:getAuthHeaders()}).then(function(r){return r.json();});
     if(Array.isArray(templates)&&templates.length){
       var taskRows=templates.map(function(t){
         return {campaign_id:newCamp.id,stage:t.stage,task_order:t.task_order,task_name:t.task_name,department:t.department,assigned_to:t.default_assignee,approver_scope:t.approver_scope,is_blocker:t.is_blocker,channel:t.channel,completed:false,approved:false,rejected:false,notes:''};
       });
-      await fetch(CB_API+'/campaign_tasks',{method:'POST',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(taskRows)});
+      await fetch(CB_API+'/campaign_tasks',{method:'POST',headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify(taskRows)});
     }
     CB_CAMPAIGNS.unshift(newCamp);
     await cbOpenCampaign(newCamp.id);
@@ -6643,7 +6647,7 @@ async function mtLoad() {
   if (!CB_CURRENT_USER) { mtRender([], []); return; }
   var anon = SUPABASE_ANON_KEY;
   var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+  var hdrs = getAuthHeaders();
   try {
     var results = await Promise.all([
       fetch(base+'/campaign_tasks?select=id,task_name,stage,campaign_id,campaigns(id,title,current_stage,brief_id)&assigned_to=eq.'+CB_CURRENT_USER+'&completed=eq.false&approved=eq.false&rejected=eq.false',{headers:hdrs}).then(function(r){return r.json();}),
@@ -6784,7 +6788,7 @@ async function bbSubmitBrief() {
   try {
     var r = await fetch('https://humitzrleflxnlnodpde.supabase.co/rest/v1/briefs?id=eq.' + window._lastSavedBriefId, {
       method: 'PATCH',
-      headers: {'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      headers: getAuthHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),
       body: JSON.stringify({status:'submitted', submitted_by: CB_CURRENT_USER||'', updated_at: new Date().toISOString()})
     });
     if (!r.ok) throw new Error(await r.text());
@@ -6812,7 +6816,7 @@ async function bbApproveBriefAndLaunch(briefId) {
   try {
     var r = await fetch(base+'/briefs?id=eq.'+_briefId, {
       method:'PATCH',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
+      headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
       body:JSON.stringify({status:'approved',approved_by:CB_CURRENT_USER,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()})
     });
     if (!r.ok) {
@@ -6846,13 +6850,13 @@ async function bbLaunchCampaignFromBrief(briefId, briefTitle, btnEl) {
   try {
     var brief = null;
     try {
-      var br = await fetch(base+'/briefs?id=eq.'+briefId+'&select=*',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
+      var br = await fetch(base+'/briefs?id=eq.'+briefId+'&select=*',{headers:getAuthHeaders()}).then(function(r){return r.json();});
       brief = Array.isArray(br) ? br[0] : br;
     } catch(e){}
 
     var cr = await fetch(base+'/campaigns',{
       method:'POST',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
+      headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
       body:JSON.stringify([{
         title:briefTitle,
         brief_id:briefId,
@@ -6868,7 +6872,7 @@ async function bbLaunchCampaignFromBrief(briefId, briefTitle, btnEl) {
     if (!cr.ok) throw new Error(await cr.text());
     var camp = (await cr.json())[0];
 
-    var tmpl = await fetch(base+'/campaign_task_templates?select=*&order=stage,task_order',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
+    var tmpl = await fetch(base+'/campaign_task_templates?select=*&order=stage,task_order',{headers:getAuthHeaders()}).then(function(r){return r.json();});
     if (Array.isArray(tmpl) && tmpl.length) {
       var cmap={'Paid Search (Google/Bing)':'paid_search','Display & Programmatic':'display','Email Marketing':'email','Social Organic':'social_organic','Meta (Facebook/Instagram)':'social_paid','Events & Showroom':'events','OOH & Print':'ooh_print','Manufacturer Co-op':'manufacturer_coop'};
       var chs=((brief&&(brief.confirmed_channels||brief.channels))||[]).map(function(c){return cmap[c]||c.toLowerCase().replace(/[^a-z]/g,'_');});
@@ -6878,11 +6882,11 @@ async function bbLaunchCampaignFromBrief(briefId, briefTitle, btnEl) {
         if(t.stage===1&&t.task_order===2)notes=((brief&&brief.start_date)?'Start: '+brief.start_date:'')+((brief&&brief.end_date)?' | End: '+brief.end_date:'');
         return{campaign_id:camp.id,stage:t.stage,task_order:t.task_order,task_name:t.task_name,department:t.department,assigned_to:t.default_assignee,approver_scope:t.approver_scope,is_blocker:t.is_blocker,channel:t.channel,completed:false,approved:false,rejected:false,notes:notes};
       });
-      await fetch(base+'/campaign_tasks',{method:'POST',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(rows)});
+      await fetch(base+'/campaign_tasks',{method:'POST',headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify(rows)});
     }
 
     // Mark brief as campaigned
-    await fetch(base+'/briefs?id=eq.'+briefId,{method:'PATCH',headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({status:'campaigned',updated_at:new Date().toISOString()})});
+    await fetch(base+'/briefs?id=eq.'+briefId,{method:'PATCH',headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify({status:'campaigned',updated_at:new Date().toISOString()})});
 
     // Update CB arrays
     if (typeof CB_CAMPAIGNS !== 'undefined') CB_CAMPAIGNS.unshift(camp);
@@ -6905,7 +6909,7 @@ async function bbLaunchCampaignFromBrief(briefId, briefTitle, btnEl) {
 
 async function bbViewCampaign(campaignId) {
   var anon = SUPABASE_ANON_KEY, base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-  var rows = await fetch(base+'/campaigns?id=eq.'+campaignId+'&select=*',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
+  var rows = await fetch(base+'/campaigns?id=eq.'+campaignId+'&select=*',{headers:getAuthHeaders()}).then(function(r){return r.json();});
   var camp = Array.isArray(rows) && rows[0];
   if (camp && camp.brief_id) { await bbLoadBrief(camp.brief_id); } else { showToast('Could not find brief for this campaign','error'); }
 }
@@ -6927,7 +6931,7 @@ async function bbRenderCampaignSection(briefData) {
   var firstName = me.name ? me.name.split(' ')[0] : '';
   var anon = SUPABASE_ANON_KEY;
   var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+  var hdrs = getAuthHeaders();
   var camps = await fetch(base+'/campaigns?brief_id=eq.'+brief.id+'&select=id,title,status,current_stage',{headers:hdrs}).then(function(r){return r.json();});
   var existingCamp = Array.isArray(camps) && camps.length ? camps[0] : null;
   el.style.display = 'block';
@@ -7138,7 +7142,7 @@ async function bbMarkTaskDone(taskId, campId, cardEl, taskNameEl) {
   try {
     var r = await fetch(base+'/campaign_tasks?id=eq.'+taskId, {
       method:'PATCH',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),
       body:JSON.stringify({completed:true,completed_at:new Date().toISOString(),completed_by:CB_CURRENT_USER})
     });
     if (!r.ok) throw new Error(await r.text());
@@ -7166,14 +7170,14 @@ async function bbAdvanceStage(campId, currentStage, section, camp, briefId) {
   try {
     var r = await fetch(base+'/campaigns?id=eq.'+campId, {
       method:'PATCH',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
+      headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
       body:JSON.stringify({current_stage:currentStage+1,updated_at:new Date().toISOString()})
     });
     if (!r.ok) throw new Error(await r.text());
     var updated = await r.json();
     var newCamp = Array.isArray(updated) ? updated[0] : updated;
     // Re-render stages
-    var tasks = await fetch(base+'/campaign_tasks?campaign_id=eq.'+campId+'&order=stage,task_order',{headers:{'apikey':anon,'Authorization':'Bearer '+anon}}).then(function(r){return r.json();});
+    var tasks = await fetch(base+'/campaign_tasks?campaign_id=eq.'+campId+'&order=stage,task_order',{headers:getAuthHeaders()}).then(function(r){return r.json();});
     if (typeof mtLoad === 'function') mtLoad();
     bbRenderStages(section, newCamp, briefId);
   } catch(e) { alert('Error advancing stage: '+e.message); }
@@ -7245,7 +7249,7 @@ async function bbOpenBriefPanel(briefId) {
   var anon = SUPABASE_ANON_KEY;
   var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
   var brief = await fetch(base+'/briefs?id=eq.'+briefId+'&select=*',{
-    headers:{'apikey':anon,'Authorization':'Bearer '+anon}
+    headers:getAuthHeaders()
   }).then(function(r){return r.json();}).then(function(d){return d[0];});
 
   if (!brief) { panel.innerHTML = '<div style="padding:24px">Brief not found</div>'; return; }
@@ -7343,7 +7347,7 @@ async function bbLoadNotes(taskId) {
   var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
   try {
     var notes = await fetch(base+'/campaign_task_notes?task_id=eq.'+taskId+'&order=created_at',{
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon}
+      headers:getAuthHeaders()
     }).then(function(r){return r.json();});
     var thread = document.getElementById('bb-notes-thread');
     if (!thread) return;
@@ -7379,7 +7383,7 @@ async function bbSubmitNote() {
   try {
     await fetch(base+'/campaign_task_notes', {
       method:'POST',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'},
+      headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),
       body:JSON.stringify({task_id:taskId,note_text:noteText,created_by:CB_CURRENT_USER,created_at:new Date().toISOString()})
     });
     input.value = '';
@@ -7401,7 +7405,7 @@ async function swEnsureUser() {
   SW_INIT_PROMISE = (async function() {
     var anon = SUPABASE_ANON_KEY;
     var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-    var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+    var hdrs = getAuthHeaders();
     try {
       // Load team + perms if needed
       if (!Object.keys(CB_TEAM).length) {
@@ -7477,7 +7481,7 @@ async function openCampaignFromBanner(campId, briefId) {
   var anon = SUPABASE_ANON_KEY;
   var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
   var brief = await fetch(base+'/briefs?id=eq.'+briefId+'&select=*',{
-    headers:{'apikey':anon,'Authorization':'Bearer '+anon}
+    headers:getAuthHeaders()
   }).then(function(r){return r.json();}).then(function(d){return d[0];});
   if (!brief) return;
   if (!window.SB_BRIEFS_CACHE) window.SB_BRIEFS_CACHE = [];
@@ -8084,6 +8088,7 @@ function sbInit() {
 
 function sbHandleSession(session) {
   SB_USER = session.user;
+  window.SB_ACCESS_TOKEN = session.access_token;
   showUserState(SB_USER);
   if(typeof loadBriefs === 'function')         loadBriefs();
   if(typeof loadBudgetActuals === 'function')  loadBudgetActuals();
@@ -8110,6 +8115,7 @@ function sbHandleSession(session) {
 
 function sbHandleSignOut() {
   SB_USER = null;
+  window.SB_ACCESS_TOKEN = null;
   showSignInButton();
   SB_BRIEFS_CACHE = [];
 }
@@ -8272,10 +8278,10 @@ async function bbSaveBrief() {
     if (data && data.id && BB.start_date && BB.end_date && BB.budget > 0) { bbSaveBudgetCommitments(data.id, title); }
     if (data && data.id && BB._calCampaignId) {
       var _a3 = SUPABASE_ANON_KEY, _b3 = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-      fetch(_b3+'/campaigns?id=eq.'+BB._calCampaignId, {method:'PATCH', headers:{'apikey':_a3,'Authorization':'Bearer '+_a3,'Content-Type':'application/json','Prefer':'return=minimal'}, body:JSON.stringify({status:'briefed',brief_id:data.id})}).catch(function(){});
+      fetch(_b3+'/campaigns?id=eq.'+BB._calCampaignId, {method:'PATCH', headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}), body:JSON.stringify({status:'briefed',brief_id:data.id})}).catch(function(){});
     }
     // Always load fresh team/perms/campaign state then render
-    var _anon2 = SUPABASE_ANON_KEY, _base2 = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1', _h2 = {'apikey':_anon2,'Authorization':'Bearer '+_anon2};
+    var _anon2 = SUPABASE_ANON_KEY, _base2 = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1', _h2 = getAuthHeaders();
     var _briefId2 = data ? data.id : null;
     Promise.all([
       fetch(_base2+'/campaign_team?select=*&active=eq.true',{headers:_h2}).then(function(r){return r.json();}),
@@ -8317,7 +8323,7 @@ async function bbSaveBrief() {
 async function bbSaveBudgetCommitments(briefId, briefTitle) {
   var anon = SUPABASE_ANON_KEY;
   var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=minimal'};
+  var hdrs = getAuthHeaders({'Content-Type':'application/json','Prefer':'return=minimal'});
   try {
     await fetch(base + '/brief_budget_commitments?brief_id=eq.' + briefId, { method:'DELETE', headers:hdrs });
     var months = bbGetCampaignMonths(BB.start_date, BB.end_date);
@@ -8602,7 +8608,7 @@ async function spLoad() {
   el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint);font-size:13px">Loading priorities…</div>';
   try {
     var rows = await fetch(SP_BASE + '/strategic_priorities?select=*&order=sort_order', {
-      headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY}
+      headers: getAuthHeaders()
     }).then(function(r){ return r.json(); });
     if (!Array.isArray(rows)) throw new Error('Bad response');
     SP_DATA = rows.filter(function(r){ return r.active !== false; });
@@ -8736,13 +8742,13 @@ async function spSave() {
     if (SP_EDITING_ID) {
       await fetch(SP_BASE + '/strategic_priorities?id=eq.' + SP_EDITING_ID, {
         method: 'PATCH',
-        headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal'},
+        headers: getAuthHeaders({'Content-Type': 'application/json', 'Prefer': 'return=minimal'}),
         body: JSON.stringify(payload)
       });
     } else {
       await fetch(SP_BASE + '/strategic_priorities', {
         method: 'POST',
-        headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal'},
+        headers: getAuthHeaders({'Content-Type': 'application/json', 'Prefer': 'return=minimal'}),
         body: JSON.stringify(payload)
       });
     }
@@ -8758,7 +8764,7 @@ async function spDelete(id) {
   try {
     await fetch(SP_BASE + '/strategic_priorities?id=eq.' + id, {
       method: 'DELETE',
-      headers: {'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY}
+      headers: getAuthHeaders()
     });
     spLoad();
   } catch(e) { alert('Error deleting: ' + e.message); }
@@ -8774,7 +8780,7 @@ async function bbEnterCampaignMode(brief) {
   // Load team/perms first
   var anon = SUPABASE_ANON_KEY;
   var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon};
+  var hdrs = getAuthHeaders();
 
   if (!Object.keys(CB_TEAM).length) {
     var t = await fetch(base+'/campaign_team?select=*&active=eq.true',{headers:hdrs}).then(function(r){return r.json();});
@@ -8996,7 +9002,7 @@ async function bbCampAdvance(campId, currentStage) {
   try {
     var r = await fetch(base+'/campaigns?id=eq.'+campId, {
       method:'PATCH',
-      headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
+      headers:getAuthHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
       body:JSON.stringify({current_stage:newStage,updated_at:new Date().toISOString()})
     });
     if (!r.ok) throw new Error(await r.text());
@@ -9507,7 +9513,7 @@ async function bbDeleteBrief(id) {
   if(!SB) return;
   var anon = SUPABASE_ANON_KEY;
   var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json'};
+  var hdrs = getAuthHeaders({'Content-Type':'application/json'});
   try {
     // Delete linked campaign tasks and campaign first
     var camps = await fetch(base+'/campaigns?brief_id=eq.'+id+'&select=id',{headers:hdrs}).then(function(r){return r.json();});
