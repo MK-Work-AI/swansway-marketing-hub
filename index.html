@@ -9236,6 +9236,27 @@ function bbNewBrief() {
     setTimeout(function() { bbLoadBrief(_id); }, 200);
     return; // skip new blank brief
   }
+  // Reset DOM inputs that bbInit doesn't clear
+  var _sd = document.getElementById('bb-start-date');
+  var _ed = document.getElementById('bb-end-date');
+  if (_sd) _sd.value = '';
+  if (_ed) _ed.value = '';
+  // Reset scope to brand-wide
+  document.querySelectorAll('.bb-scope-btn').forEach(function(b){ b.classList.remove('bb-selected'); });
+  var scopeBrand = document.getElementById('scope-brand');
+  if (scopeBrand) scopeBrand.classList.add('bb-selected');
+  var scopeSec = document.getElementById('bb-scope-section');
+  if (scopeSec) scopeSec.style.display = 'none';
+  var datesSec = document.getElementById('bb-dates-section');
+  if (datesSec) datesSec.style.display = 'none';
+  // Reset site selector
+  var siteSel = document.getElementById('bb-site-select');
+  if (siteSel) siteSel.value = '';
+  // Reset left sidebar
+  var sideTitle = document.getElementById('bb-side-brand');
+  if (sideTitle) sideTitle.textContent = '';
+  var sideDates = document.getElementById('bb-side-dates');
+  if (sideDates) sideDates.textContent = '';
   bbInit();
   BB.step = 6; // allow all steps
   bbGoStep(1);
