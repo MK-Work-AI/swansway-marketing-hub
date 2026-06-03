@@ -336,6 +336,7 @@ td strong{font-weight:600}
 .sp-bullet-body{flex:1;min-width:0}
 .sp-bullet-title{font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-0.01em}
 .sp-bullet-list{margin:0;padding-left:18px;color:var(--ink-soft);font-size:13px;line-height:1.7;margin-bottom:10px}
+.sp-card-bullets{margin:0;padding-left:18px;color:var(--ink-soft);font-size:13px;line-height:1.7}
 .sp-bullet-list li{margin-bottom:3px}
 .sp-bullet-actions{display:flex;gap:6px}
 .sp-card-edit{background:var(--surface);border:1px solid var(--border);color:var(--ink-soft);border-radius:4px;padding:3px 10px;font-size:11px;font-family:var(--font-b);cursor:pointer}
@@ -8619,26 +8620,28 @@ function spRender() {
     el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint);font-size:13px">No priorities yet. Hit <strong>+ Add priority</strong> to get started.</div>';
     return;
   }
-  el.innerHTML = '<div class="sp-list-inner">' + SP_DATA.map(function(p, i) {
+  el.innerHTML = SP_DATA.map(function(p, i) {
     var colors = ['#C8102E','#1A2E4A','#059669','#D97706','#7C3AED','#0891B2'];
     var col = colors[i % colors.length];
-    // Split description into bullet points on '. ' or '; '
+    // Split description into bullet points
     var sentences = spEsc(p.description).split(/\. |; /).filter(function(s){ return s.trim().length > 0; });
     var bullets = sentences.map(function(s){
       return '<li style="margin-bottom:4px">' + s.replace(/\.?$/, '') + '</li>';
     }).join('');
-    return '<div class="sp-bullet-item">'
-      + '<div class="sp-bullet-num" style="background:' + col + '">' + p.number + '</div>'
-      + '<div class="sp-bullet-body">'
-        + '<div class="sp-bullet-title">' + spEsc(p.title) + '</div>'
-        + '<ul class="sp-bullet-list">' + bullets + '</ul>'
-        + '<div class="sp-bullet-actions">'
+    return '<div class="sp-card">'
+      + '<div class="sp-card-top">'
+        + '<span class="sp-card-num" style="color:' + col + '">PRIORITY ' + String(p.number).padStart(2,'0') + '</span>'
+        + '<div class="sp-card-actions">'
           + '<button class="sp-card-edit" onclick="spOpenEdit(' + p.id + ')">Edit</button>'
-          + '<button class="sp-card-edit" onclick="spDelete(' + p.id + ')" style="background:rgba(200,16,46,0.15);color:var(--accent)">Delete</button>'
+          + '<button class="sp-card-edit" onclick="spDelete(' + p.id + ')" style="background:rgba(200,16,46,0.4)">Delete</button>'
         + '</div>'
       + '</div>'
+      + '<div class="sp-card-body">'
+        + '<div class="sp-card-title">' + spEsc(p.title) + '</div>'
+        + '<ul class="sp-card-bullets">' + bullets + '</ul>'
+      + '</div>'
     + '</div>';
-  }).join('') + '</div>';
+  }).join('');
 }
 
 function spEsc(s) {
