@@ -9458,9 +9458,24 @@ async function bbLoadBrief(id) {
   // Re-init and jump to step 5
   bbInit();
   BB.step = 6;
+  window._lastSavedBriefId = brief.id;
+  window._lastSavedBriefTitle = brief.title;
+
+  // For campaigned briefs — skip the setTimeout restore entirely, go straight to campaign mode
+  if (brief.status === 'campaigned') {
+    bbSetUrlBrief(brief.id);
+    var _s6c = document.getElementById('bb-step-6');
+    if (_s6c) _s6c.style.display = 'none';
+    var _sbc = document.getElementById('bb-save-bar');
+    if (_sbc) _sbc.style.display = 'none';
+    var _opc = document.getElementById('bb-output');
+    if (_opc) _opc.innerHTML = '';
+    bbEnterCampaignMode(brief);
+    return;
+  }
 
   // Set proposition
-  setTimeout(() => {
+  var _briefRestoreTimer = setTimeout(() => {
     const smpEl = document.getElementById('bb-smp');
     const mandEl = document.getElementById('bb-mandatories');
     const titleEl = document.getElementById('bb-brief-title');
@@ -9540,21 +9555,8 @@ async function bbLoadBrief(id) {
     }, 150);
   }, 100);
 
-  // After loading brief — route by status
-  if (brief.status === 'campaigned') {
-    // Launched: enter campaign mode immediately — no delay to avoid flash
-    window._lastSavedBriefId = brief.id;
-    window._lastSavedBriefTitle = brief.title;
-    bbSetUrlBrief(brief.id);
-    // Hide all brief wizard UI before entering campaign mode
-    var _s6 = document.getElementById('bb-step-6');
-    if (_s6) _s6.style.display = 'none';
-    var _sb = document.getElementById('bb-save-bar');
-    if (_sb) _sb.style.display = 'none';
-    var _op = document.getElementById('bb-output');
-    if (_op) _op.innerHTML = '';
-    await bbEnterCampaignMode(brief);
-  } else if (brief.status === 'submitted' || brief.status === 'approved') {
+  // After loading brief — route by status (campaigned handled above with early return)
+  if (brief.status === 'submitted' || brief.status === 'approved') {
     // Submitted/approved: go to Step 6 and show status card
     setTimeout(async function() {
       document.querySelectorAll('.bb-step').forEach(function(p){p.classList.remove('bb-active');});
