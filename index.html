@@ -2766,7 +2766,7 @@ function renderGroupChannels() {
       brandTags = '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">'
         + c.brands.map(function(b) {
           return '<span style="font-size:11px;background:' + c.color + '18;border:1px solid ' + c.color + '40;color:var(--ink);padding:2px 10px;border-radius:12px;font-family:var(--font-m)">'
-            + b.name + '<span style="color:var(--ink-soft);margin-left:4px">£' + b.gbp.toLocaleString() + '</span></span>';
+            + (function(n){ var m={'audi':'Audi','vw':'VW','landrover':'Land Rover','cupra':'CUPRA','peugeot':'Peugeot','byd':'BYD','omoda':'OMODA/JAECOO','vwcommercial':'VW Commercial','bmw':'BMW','mini':'MINI','hyundai':'Hyundai','kia':'Kia'}; return m[n.toLowerCase()]||n.charAt(0).toUpperCase()+n.slice(1); })(b.name) + '<span style="color:var(--ink-soft);margin-left:4px">£' + b.gbp.toLocaleString() + '</span></span>';
         }).join('') + '</div>';
     }
     return '<div class="ch-item">'
