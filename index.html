@@ -1616,7 +1616,7 @@ td strong{font-weight:600}
       <div class="bb-headline">What's the budget?</div>
       <div class="bb-desc">Be honest about what you can spend. The numbers will tell you what you'll get — and whether it's worth it.ber updates in real time.</div>
       <div class="bb-science" id="bb-science-box">
-        <div class="bb-science-eyebrow">?? What the data says</div>
+        <div class="bb-science-eyebrow"📊 What the data says</div>
         <div class="bb-science-text" id="bb-science-text">Select a brand and campaign type to see your reach estimate.</div>
       </div>
       <div class="bb-section-label">Set campaign budget</div>
@@ -1641,7 +1641,7 @@ td strong{font-weight:600}
       <div class="bb-desc">Get specific. The tighter the audience, the harder your budget works. Pick multiple segments and your CPL will climb.stimates are based on Swansway brand benchmarks from the playbook.</div>
       <div id="bb-step4-context" style="display:none"></div>
       <div class="bb-science">
-        <div class="bb-science-eyebrow">?? Byron Sharp says</div>
+        <div class="bb-science-eyebrow"📖 Byron Sharp says</div>
         <div class="bb-science-text"><strong>95% of your market is not buying right now.</strong> Focusing only on in-market buyers leaves 95% of future revenue untouched. Build mental availability across all three funnel stages — the brand recalled at the moment of purchase wins.</div>
       </div>
       <div class="bb-section-label">Select audiences (up to 3)</div>
@@ -5314,7 +5314,7 @@ function calBuildBrief(brandName, campaignName, campObj) {
         var banner = document.createElement('div');
         banner.id = 'bb-cal-banner';
         banner.style.cssText = 'background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#1D4ED8;display:flex;align-items:center;gap:8px';
-        banner.innerHTML = '<span style="font-size:15px">??</span><span>Pre-filled from: <strong>' + campaignName + '</strong>. Check each step then save.</span>';
+        banner.innerHTML = '<span style="font-size:15px">📋</span><span>Pre-filled from: <strong>' + campaignName + '</strong>. Check each step then save.</span>';
         saveBar.parentNode.insertBefore(banner, saveBar);
       }
     }, 400);
@@ -6674,8 +6674,8 @@ function mtRender(tasks, campaigns) {
   // Badge = task count
   if (badge) { badge.style.display = count > 0 ? 'flex' : 'none'; badge.textContent = count; }
   if (header) header.textContent = count > 0
-    ? 'Hi ' + first + ' — ' + count + ' task' + (count !== 1 ? 's' : '') + ' waiting for you ??'
-    : 'Hi ' + first + ' — all caught up ??';
+    ? 'Hi ' + first + ' — ' + count + ' task' + (count !== 1 ? 's' : '') + ' waiting for you 📋'
+    : 'Hi ' + first + ' — all caught up ✅';
   list.innerHTML = '';
   var SN = ['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'];
   // Show campaigns section first
@@ -6705,7 +6705,7 @@ function mtRender(tasks, campaigns) {
       list.appendChild(row);
     });
   } else if (!count) {
-    list.innerHTML = '<div style="padding:20px 18px;text-align:center;color:var(--ink-soft);font-size:14px">Nothing right now — nice work! ??</div>';
+    list.innerHTML = '<div style="padding:20px 18px;text-align:center;color:var(--ink-soft);font-size:14px">Nothing right now — 🎉 nice work!</div>';
   }
   // Individual tasks below campaigns
   tasks.forEach(function(t) {
@@ -7037,7 +7037,7 @@ function bbShowStageDetail(stageNum, allTasks, currentStage, container, camp, ca
   } else if (myTasks.length === 0 && isActive) {
     var allDone = document.createElement('div');
     allDone.className = 'sw-notice sw-notice-green';
-    allDone.innerHTML = '<span style="font-size:20px">??</span><div><strong>' + myFirst + ', you&#39;re all done this stage.</strong> The team is on it.</div>';
+    allDone.innerHTML = '<span style="font-size:20px">📋</span><div><strong>' + myFirst + ', you&#39;re all done this stage.</strong> The team is on it.</div>';
     container.appendChild(allDone);
   }
 
@@ -7062,11 +7062,11 @@ function bbShowStageDetail(stageNum, allTasks, currentStage, container, camp, ca
             '<span class="sw-task-name' + (task.is_blocker?' sw-task-blocker':'') + '">' + task.task_name + '</span>' +
             (task.is_blocker ? '<span class="sw-blocker-tag">BLOCKER</span>' : '') +
           '</div>' +
-          (task.notes ? '<div class="sw-task-note">?? ' + task.notes + '</div>' : '') +
+          (task.notes ? '<div class="sw-task-note"📋 ' + task.notes + '</div>' : '') +
         '</div>' +
         '<div class="sw-task-actions">' +
           (!done ? '<button class="sw-btn-complete" data-tid="' + task.id + '" data-cid="' + camp.id + '" onclick="bbMarkTaskDone(this.dataset.tid,this.dataset.cid)">✓ Done</button>' : '') +
-          '<button class="sw-btn-note" data-tid="' + task.id + '" data-tn="' + task.task_name.replace(/"/g,'') + '" onclick="bbOpenNotesPanel(this.dataset.tid,this.dataset.tn)">?? Note</button>' +
+          '<button class="sw-btn-note" data-tid="' + task.id + '" data-tn="' + task.task_name.replace(/"/g,'') + '" onclick="bbOpenNotesPanel(this.dataset.tid,this.dataset.tn)"> Note</button>' +
           (approved ? '<span class="sw-pill" style="background:#D1FAE5;color:#059669">✓ Approved</span>' : '') +
           (done && !approved ? '<span class="sw-pill" style="background:#FEF3C7;color:#92400E">⏳ Pending</span>' : '') +
         '</div>';
