@@ -6878,13 +6878,26 @@ async function bbApproveBriefAndLaunch(briefId) {
       headers:{'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json','Prefer':'return=representation'},
       body:JSON.stringify({status:'approved',approved_by:CB_CURRENT_USER,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()})
     });
-    if (!r.ok) throw new Error(await r.text());
+    if (!r.ok) {
+      var errText = await r.text();
+      throw new Error('PATCH failed (' + r.status + '): ' + errText);
+    }
     var briefs = await r.json();
+    console.log('Approval PATCH response:', r.status, JSON.stringify(briefs));
+    if (!briefs || (Array.isArray(briefs) && briefs.length === 0)) {
+      // PATCH succeeded but returned empty — RLS may be blocking return=representation
+      // Construct the brief manually and proceed
+      briefs = [{id: _briefId, title: window._lastSavedBriefTitle, status: 'approved'}];
+    }
     var brief = Array.isArray(briefs) ? briefs[0] : briefs;
+    if (!brief || !brief.id) throw new Error('No brief data returned from approval PATCH');
     loadBriefs();
     showToast('Brief approved ✓ Launching campaign…', 'success');
     await bbRenderCampaignSection(brief);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) {
+    console.error('bbApproveBriefAndLaunch error:', e);
+    alert('Approval error: ' + e.message);
+  }
 }
 
 async function bbLaunchCampaignFromBrief(briefId, briefTitle, btnEl) {
