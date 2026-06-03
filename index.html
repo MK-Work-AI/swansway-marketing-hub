@@ -1703,6 +1703,26 @@ td strong{font-weight:600}
 
 <script>
 var PLAN_YEAR = new Date().getFullYear();
+// Snapshot of original bb-left sidebar HTML — restored on bbNewBrief
+var BB_LEFT_ORIGINAL_HTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div class="bb-panel-eyebrow" style="margin-bottom:0">Live brief</div><button onclick="bbNewBrief()" style="font-family:var(--font-b);font-size:10px;font-weight:700;padding:3px 9px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:rgba(255,255,255,0.8);cursor:pointer">+ New</button></div>
+    <div class="bb-panel-brand" id="bbp-brand">SELECT BRAND</div>
+    <div class="bb-brief-row"><div class="bb-brief-label">Dates</div><div id="bbp-dates" class="bb-brief-empty">—</div></div>
+    <div class="bb-brief-row"><div class="bb-brief-label">Site</div><div id="bbp-site" class="bb-brief-empty">All sites</div></div>
+    <div class="bb-brief-row"><div class="bb-brief-label">Campaign type</div><div id="bbp-type" class="bb-brief-empty">—</div></div>
+    <div class="bb-brief-row"><div class="bb-brief-label">Budget</div><div id="bbp-budget" class="bb-brief-empty">—</div></div>
+    <div class="bb-brief-row"><div class="bb-brief-label">Duration</div><div id="bbp-duration" class="bb-brief-empty">—</div></div>
+    <div class="bb-brief-row"><div class="bb-brief-label">Audiences</div><div id="bbp-audiences" class="bb-brief-empty">—</div></div>
+    <div class="bb-brief-row"><div class="bb-brief-label">Objective</div><div id="bbp-objective" class="bb-brief-empty">—</div></div>
+    <div class="bb-brief-row"><div class="bb-brief-label">Proposition</div><div id="bbp-prop" class="bb-brief-empty">Not written yet</div></div>
+    <div class="bb-brief-row"><div class="bb-brief-label">Primary channel</div><div id="bbp-channel" class="bb-brief-empty">—</div></div>
+    <div class="bb-completeness">
+      <div class="bb-comp-score" id="bb-comp-score">0%</div>
+      <div class="bb-comp-label"><span>Brief completeness</span><span id="bb-comp-label">Incomplete</span></div>
+      <div class="bb-comp-track"><div class="bb-comp-fill" id="bb-comp-fill" style="width:0%"></div></div>
+      <div class="bb-health" id="bb-health"></div>
+    </div>
+
+  <!-- RIGHT: Step content -->`;
 /* ══════════════════════════════════════
    DATA LAYER
 ══════════════════════════════════════ */
@@ -9193,6 +9213,11 @@ var BB_COPY = {
 ════════════════════════════════════════════════════════════════ */
 
 function bbNewBrief() {
+  // Restore sidebar to original brief panel HTML (campaign mode overwrites it)
+  var _left = document.getElementById('bb-left');
+  if (_left && typeof BB_LEFT_ORIGINAL_HTML !== 'undefined') {
+    _left.innerHTML = BB_LEFT_ORIGINAL_HTML;
+  }
   if (window._bbCampModeActive) bbExitCampaignMode();
   BB.brand = null; BB.ctype = null; BB.budget = 5000; BB.duration = null;
   BB.audiences = []; BB.channels = []; BB.objective = null;
