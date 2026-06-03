@@ -7062,7 +7062,7 @@ function bbShowStageDetail(stageNum, allTasks, currentStage, container, camp, ca
             '<span class="sw-task-name' + (task.is_blocker?' sw-task-blocker':'') + '">' + task.task_name + '</span>' +
             (task.is_blocker ? '<span class="sw-blocker-tag">BLOCKER</span>' : '') +
           '</div>' +
-          (task.notes ? '<div class="sw-task-note"📋 ' + task.notes + '</div>' : '') +
+          (task.notes ? '<div class="sw-task-note">📋 ' + task.notes + '</div>' : '') +
         '</div>' +
         '<div class="sw-task-actions">' +
           (!done ? '<button class="sw-btn-complete" data-tid="' + task.id + '" data-cid="' + camp.id + '" onclick="bbMarkTaskDone(this.dataset.tid,this.dataset.cid)">✓ Done</button>' : '') +
