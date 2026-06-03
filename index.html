@@ -3265,8 +3265,15 @@ function bbGoStep(n) {
   if(n > BB.step && !bbCanGoTo(n)) return;
   if (n === 3) setTimeout(bbRenderBudgetIntel, 100);
   if (n === 5) setTimeout(bbRenderStep5Context, 100);
-  // If campaign mode is active, exit it first
-  if (window._bbCampModeActive) bbExitCampaignMode();
+  // Clear campaign mode display overrides without calling bbExitCampaignMode (avoids redirect to step 1)
+  if (window._bbCampModeActive) {
+    window._bbCampModeActive = false;
+    var _canvas = document.getElementById('bb-campaign-canvas');
+    if (_canvas) _canvas.style.display = 'none';
+    // Restore sidebar
+    var _left = document.getElementById('bb-left');
+    if (_left && typeof BB_LEFT_ORIGINAL_HTML !== 'undefined') _left.innerHTML = BB_LEFT_ORIGINAL_HTML;
+  }
   document.querySelectorAll('.bb-step').forEach(s=>{ s.classList.remove('bb-active'); s.style.display = ''; });
   const target = document.getElementById('bb-step-'+n);
   if(target) { target.classList.add('bb-active'); target.style.display = ''; }
@@ -9062,9 +9069,13 @@ function bbExitCampaignMode() {
   var canvas = document.getElementById('bb-campaign-canvas');
   if (canvas) canvas.style.display = 'none';
 
-  // Restore sidebar to brief panel state (not the origContent snapshot which was blank)
+  // Restore sidebar to original brief panel HTML
   var left = document.getElementById('bb-left');
-  if (left) delete left.dataset.origContent;
+  if (left && typeof BB_LEFT_ORIGINAL_HTML !== 'undefined') {
+    left.innerHTML = BB_LEFT_ORIGINAL_HTML;
+  } else if (left) {
+    delete left.dataset.origContent;
+  }
 
   // Go to step 1 — must reset inline display:none set by bbEnterCampaignMode
   document.querySelectorAll('.bb-step').forEach(function(s){
