@@ -2449,7 +2449,14 @@ function switchView(id, el) {
     const brand = BRANDS.find(b=>b.id===id);
     if(brand) renderBrand(brand);
   }
-  if(id === 'brief') bbInit();
+  if(id === 'brief') {
+    var _urlBriefId = new URLSearchParams(window.location.search).get('brief');
+    if (_urlBriefId) {
+      bbInit();
+    } else {
+      bbNewBrief();
+    }
+  }
   // Auto-load Q-plan, campaigns and KPIs when a brand page opens
   const brandForQplan = BRANDS.find(b=>b.id===id);
   if(brandForQplan) {
@@ -4167,8 +4174,20 @@ async function calLoadFromSupabase() {
     }
 
     // Always use DB — empty DB means empty calendar
-    BUILT_IN_CAMPAIGNS = fromDB;
-    console.log('Calendar: ' + fromDB.length + ' campaigns from DB');
+    // Fetch existing brief IDs to filter out orphaned campaigns
+    var existingBriefIds = new Set();
+    try {
+      var briefRows = await fetch(base + '/briefs?select=id', {
+        headers: {'apikey':anon,'Authorization':'Bearer '+anon}
+      }).then(function(r){ return r.json(); });
+      if (Array.isArray(briefRows)) briefRows.forEach(function(b){ existingBriefIds.add(b.id); });
+    } catch(e) {}
+    // Filter: keep campaigns that either have no brief link OR whose brief still exists
+    BUILT_IN_CAMPAIGNS = fromDB.filter(function(r) {
+      if (!r.brief_id) return true; // planned campaign, no brief
+      return existingBriefIds.has(r.brief_id); // only show if brief exists
+    });
+    console.log('Calendar: ' + fromDB.length + ' campaigns from DB (' + BUILT_IN_CAMPAIGNS.length + ' valid)');
   } catch(e) {
     console.warn('calLoadFromSupabase:', e);
   }
@@ -9511,8 +9530,32 @@ async function bbArchiveBrief(id) {
 async function bbDeleteBrief(id) {
   if(!confirm('Permanently delete this brief? This cannot be undone.')) return;
   if(!SB) return;
-  await SB.from('briefs').delete().eq('id', id);
-  loadBriefs();
+  var anon = SUPABASE_ANON_KEY;
+  var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
+  var hdrs = {'apikey':anon,'Authorization':'Bearer '+anon,'Content-Type':'application/json'};
+  try {
+    // Delete linked campaign tasks and campaign first
+    var camps = await fetch(base+'/campaigns?brief_id=eq.'+id+'&select=id',{headers:hdrs}).then(function(r){return r.json();});
+    if (Array.isArray(camps)) {
+      for (var i = 0; i < camps.length; i++) {
+        await fetch(base+'/campaign_tasks?campaign_id=eq.'+camps[i].id, {method:'DELETE',headers:hdrs});
+        await fetch(base+'/campaigns?id=eq.'+camps[i].id, {method:'DELETE',headers:hdrs});
+      }
+    }
+    // Delete the brief
+    await SB.from('briefs').delete().eq('id', id);
+    // If this was the currently loaded brief, reset to new
+    if (window._lastSavedBriefId === id) bbNewBrief();
+    loadBriefs();
+    // Reload calendar to remove deleted campaign
+    if (typeof calLoadFromSupabase === 'function') {
+      await calLoadFromSupabase();
+      if (typeof renderCrossCalendar === 'function') renderCrossCalendar();
+    }
+    showToast('Brief and linked campaign deleted', 'success');
+  } catch(e) {
+    showToast('Delete error: ' + e.message, 'error');
+  }
 }
 
 /* ── INIT ON PAGE LOAD ── */
