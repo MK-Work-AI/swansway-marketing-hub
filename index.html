@@ -2505,7 +2505,10 @@ function switchView(id, el) {
     const brand = BRANDS.find(b=>b.id===id);
     if(brand) renderBrand(brand);
   }
-  if(id === 'brief') bbNewBrief();
+  if(id === 'brief') {
+    // Only reset to new brief if not loading a specific brief (bbLoadBrief sets _bbLoadingBrief flag)
+    if (!window._bbLoadingBrief) bbNewBrief();
+  }
   // Auto-load Q-plan, campaigns and KPIs when a brand page opens
   const brandForQplan = BRANDS.find(b=>b.id===id);
   if(brandForQplan) {
@@ -9416,9 +9419,11 @@ async function bbLoadBrief(id) {
   const brief = SB_BRIEFS_CACHE.find(b=>b.id===id);
   if(!brief) return;
 
-  // Switch to brief builder view
+  // Switch to brief builder view — set flag so switchView doesn't reset to new brief
+  window._bbLoadingBrief = true;
   closeBriefsPanel();
   switchView('brief', document.querySelector('[data-view=brief]'));
+  window._bbLoadingBrief = false;
 
   // Restore state
   BB.brand       = BB_BRANDS.find(b=>b.id===brief.brand_id) || null;
