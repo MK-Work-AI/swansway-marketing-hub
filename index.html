@@ -2449,14 +2449,7 @@ function switchView(id, el) {
     const brand = BRANDS.find(b=>b.id===id);
     if(brand) renderBrand(brand);
   }
-  if(id === 'brief') {
-    var _urlBriefId = new URLSearchParams(window.location.search).get('brief');
-    if (_urlBriefId) {
-      bbInit();
-    } else {
-      bbNewBrief();
-    }
-  }
+  if(id === 'brief') bbNewBrief();
   // Auto-load Q-plan, campaigns and KPIs when a brand page opens
   const brandForQplan = BRANDS.find(b=>b.id===id);
   if(brandForQplan) {
