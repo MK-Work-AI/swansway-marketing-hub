@@ -234,7 +234,18 @@ td strong{font-weight:600}
 
 
 /* ── CHART CONTAINERS ── */
-.chart-wrap{background:var(--white);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:1.75rem}
+.channel-list{background:var(--white);border:1.5px solid var(--border);border-radius:8px;overflow:hidden}
+.ch-item{padding:16px 20px;border-bottom:1px solid var(--border)}
+.ch-item:last-child{border-bottom:none}
+.ch-item:hover{background:var(--surface)}
+.ch-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.ch-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.ch-name{font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--ink);flex:1}
+.ch-pct{font-family:var(--font-d);font-size:20px;font-weight:800;min-width:54px;text-align:right}
+.ch-budget{font-family:var(--font-m);font-size:12px;color:var(--ink-soft);min-width:52px;text-align:right}
+.channels-layout{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;margin-bottom:1.75rem}
+.chart-wrap{background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:20px;position:sticky;top:20px}
+@media(max-width:900px){.channels-layout{grid-template-columns:1fr}}
 .chart-title{font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px}
 .chart-canvas-wrap{position:relative;height:260px}
 .chart-legend{display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:14px}
@@ -987,11 +998,13 @@ td strong{font-weight:600}
   </div>
   <div class="metrics-row" id="channel-summary-cards"></div>
   <div class="sh"><div><div class="sh-title">Full Channel Breakdown</div></div></div>
-  <div class="channel-list" id="group-channel-list"></div>
-  <div class="chart-wrap">
-    <div class="chart-title">Budget split by channel</div>
-    <div class="chart-canvas-wrap"><canvas id="channelChart" role="img" aria-label="Channel budget pie chart"></canvas></div>
-    <div class="chart-legend" id="channelLegend"></div>
+  <div class="channels-layout">
+    <div class="channel-list" id="group-channel-list"></div>
+    <div class="chart-wrap">
+      <div class="chart-title">Budget split by channel</div>
+      <div class="chart-canvas-wrap"><canvas id="channelChart" role="img" aria-label="Channel budget pie chart"></canvas></div>
+      <div class="chart-legend" id="channelLegend"></div>
+    </div>
   </div>
 </div>
 
@@ -2756,12 +2769,12 @@ function renderGroupChannels() {
             + b.name + '<span style="color:var(--ink-soft);margin-left:4px">£' + b.gbp.toLocaleString() + '</span></span>';
         }).join('') + '</div>';
     }
-    return '<div style="padding:14px 0;border-bottom:1px solid var(--border)">'
-      + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">'
+    return '<div class="ch-item">'
+      + '<div class="ch-row">'
       + '<div style="width:10px;height:10px;border-radius:50%;background:' + c.color + ';flex-shrink:0"></div>'
-      + '<div style="font-family:var(--font-d);font-size:14px;font-weight:700;color:var(--ink);flex:1">' + c.n + '</div>'
-      + '<div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:' + c.color + ';min-width:50px;text-align:right">' + c.pct + '%</div>'
-      + '<div style="font-family:var(--font-m);font-size:13px;color:var(--ink-soft);min-width:60px;text-align:right">' + budgetVal + '</div>'
+      + '<div class="ch-name">' + c.n + '</div>'
+      + '<div class="ch-pct" style="color:' + c.color + '">' + c.pct + '%</div>'
+      + '<div class="ch-budget">' + budgetVal + '</div>'
       + '</div>'
       + '<div style="height:6px;background:var(--surface-2);border-radius:3px;margin-bottom:' + (brandTags || c.note ? '8px' : '0') + '">'
       + '<div style="height:6px;border-radius:3px;background:' + c.color + ';width:' + barWidth + '%;transition:width .6s ease"></div>'
@@ -2954,11 +2967,40 @@ function renderGroupBudgetChart() {
   document.getElementById('groupBudgetLegend').innerHTML=data.map(d=>`<div class="chart-legend-item"><div class="chart-legend-dot" style="background:${d.color}"></div>${d.label} ${d.value}%</div>`).join('');
 }
 
+var _channelChartInst = null;
 function renderChannelChart() {
-  const ctx = document.getElementById('channelChart');
-  if(!ctx||!window.Chart) return;
-  new Chart(ctx,{type:'doughnut',data:{labels:GROUP_CHANNELS.map(c=>c.n),datasets:[{data:GROUP_CHANNELS.map(c=>c.pct),backgroundColor:GROUP_CHANNELS.map(c=>c.color),borderWidth:2,borderColor:'#F4F2EF'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
-  document.getElementById('channelLegend').innerHTML=GROUP_CHANNELS.map(c=>`<div class="chart-legend-item"><div class="chart-legend-dot" style="background:${c.color}"></div>${c.n} ${c.pct}%</div>`).join('');
+  var canvas = document.getElementById('channelChart');
+  if (!canvas || !window.Chart) return;
+  if (!GROUP_CHANNELS || !GROUP_CHANNELS.length) return;
+  // Destroy existing instance to prevent Chart.js duplicate canvas error
+  if (_channelChartInst) { try { _channelChartInst.destroy(); } catch(e){} _channelChartInst = null; }
+  _channelChartInst = new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels: GROUP_CHANNELS.map(function(ch){ return ch.n; }),
+      datasets: [{
+        data: GROUP_CHANNELS.map(function(ch){ return ch.pct; }),
+        backgroundColor: GROUP_CHANNELS.map(function(ch){ return ch.color; }),
+        borderWidth: 3,
+        borderColor: '#F4F2EF'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx){ return ' ' + ctx.label + ': ' + ctx.parsed + '%'; } } }
+      }
+    }
+  });
+  var legendEl = document.getElementById('channelLegend');
+  if (legendEl) {
+    legendEl.innerHTML = GROUP_CHANNELS.map(function(ch){
+      return '<div class="chart-legend-item">'        + '<div class="chart-legend-dot" style="background:' + ch.color + '"></div>'        + '<span style="font-family:var(--font-b);font-size:12px;color:var(--ink)">' + ch.n + '</span>'        + '<span style="font-family:var(--font-m);font-size:12px;color:var(--ink-soft);margin-left:6px">' + ch.pct + '%</span>'        + '</div>';
+    }).join('');
+  }
 }
 
 function renderBrandKpiChart() {
