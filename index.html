@@ -328,6 +328,7 @@ td strong{font-weight:600}
 /* ── Strategic Priorities ── */
 .sp-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:2rem}
 /* ── Strategic priorities bullet list ── */
+.sp-bullet-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
 .sp-list-inner{display:flex;flex-direction:column;gap:0}
 .sp-bullet-item{display:flex;gap:0;border-bottom:1px solid var(--border);padding:20px 0;align-items:flex-start}
 .sp-bullet-item:last-child{border-bottom:none}
@@ -8663,15 +8664,29 @@ function spShowModal(heading, title, desc, num, saveFn) {
   overlay.className = 'sp-modal-overlay';
   overlay.id = 'sp-modal';
   overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  // Parse existing description into bullets
+  var existingBullets = desc ? desc.split(/\. |; /).filter(function(s){ return s.trim().length > 0; }) : [''];
+  var bulletsHtml = existingBullets.map(function(b, i) {
+    return '<div class="sp-bullet-row" id="sp-br-' + i + '">'
+      + '<input class="sp-field-input" style="flex:1;margin-bottom:0" placeholder="Bullet point..." value="' + spEsc(b.replace(/\.?$/, '').trim()) + '">'
+      + '<button onclick="spRemoveBullet(this)" style="background:none;border:none;color:var(--ink-faint);font-size:18px;cursor:pointer;padding:0 6px;flex-shrink:0" title="Remove">&times;</button>'
+    + '</div>';
+  }).join('');
+
   overlay.innerHTML = '<div class="sp-modal">'
     + '<div class="sp-modal-header">'
       + '<div class="sp-modal-title">' + heading + '</div>'
       + '<button class="sp-modal-close" onclick="document.getElementById(\'sp-modal\').remove()">&times;</button>'
     + '</div>'
     + '<div class="sp-modal-body">'
-      + '<div><div class="sp-field-label">Priority number</div><input class="sp-field-input" id="sp-f-num" type="number" min="1" max="20" value="' + num + '"></div>'
-      + '<div><div class="sp-field-label">Title</div><input class="sp-field-input" id="sp-f-title" placeholder="e.g. EV Transition Leadership" value="' + spEsc(title) + '"></div>'
-      + '<div><div class="sp-field-label">Description</div><textarea class="sp-field-textarea" id="sp-f-desc" placeholder="What does this priority mean for every campaign this year?">' + spEsc(desc) + '</textarea></div>'
+      + '<div style="display:flex;gap:12px">'
+        + '<div style="flex:0 0 80px"><div class="sp-field-label">Number</div><input class="sp-field-input" id="sp-f-num" type="number" min="1" max="20" value="' + num + '"></div>'
+        + '<div style="flex:1"><div class="sp-field-label">Title</div><input class="sp-field-input" id="sp-f-title" placeholder="e.g. EV Transition Leadership" value="' + spEsc(title) + '"></div>'
+      + '</div>'
+      + '<div><div class="sp-field-label" style="margin-top:14px">Bullet points <span style="font-weight:400;color:var(--ink-faint)">(one per line)</span></div>'
+        + '<div id="sp-bullets">' + bulletsHtml + '</div>'
+        + '<button onclick="spAddBullet()" style="margin-top:8px;background:none;border:1.5px dashed var(--border);border-radius:6px;width:100%;padding:8px;color:var(--ink-soft);font-family:var(--font-b);font-size:12px;cursor:pointer">+ Add bullet</button>'
+      + '</div>'
     + '</div>'
     + '<div class="sp-modal-footer">'
       + '<button class="btn btn-primary" style="flex:1" onclick="' + saveFn + '">Save priority</button>'
@@ -8681,12 +8696,38 @@ function spShowModal(heading, title, desc, num, saveFn) {
   document.body.appendChild(overlay);
 }
 
+function spAddBullet() {
+  var container = document.getElementById('sp-bullets');
+  if (!container) return;
+  var row = document.createElement('div');
+  row.className = 'sp-bullet-row';
+  row.innerHTML = '<input class="sp-field-input" style="flex:1;margin-bottom:0" placeholder="Bullet point..." value="">'
+    + '<button onclick="spRemoveBullet(this)" style="background:none;border:none;color:var(--ink-faint);font-size:18px;cursor:pointer;padding:0 6px;flex-shrink:0" title="Remove">&times;</button>';
+  container.appendChild(row);
+  row.querySelector('input').focus();
+}
+
+function spRemoveBullet(btn) {
+  var row = btn.closest('.sp-bullet-row');
+  var container = document.getElementById('sp-bullets');
+  if (container && container.querySelectorAll('.sp-bullet-row').length > 1) {
+    row.remove();
+  } else {
+    // Keep at least one row, just clear it
+    row.querySelector('input').value = '';
+  }
+}
+
 async function spSave() {
   var num   = parseInt(document.getElementById('sp-f-num').value) || 1;
   var title = document.getElementById('sp-f-title').value.trim();
-  var desc  = document.getElementById('sp-f-desc').value.trim();
-  if (!title) { alert('Please enter a title.'); return; }
-  if (!desc)  { alert('Please enter a description.'); return; }
+  // Collect bullets and join into description string
+  var bullets = Array.from(document.querySelectorAll('#sp-bullets .sp-bullet-row input'))
+    .map(function(inp){ return inp.value.trim(); })
+    .filter(function(v){ return v.length > 0; });
+  var desc = bullets.join('. ');
+  if (!title) { showToast('Please enter a title', 'error'); return; }
+  if (!desc)  { showToast('Please add at least one bullet point', 'error'); return; }
   var payload = { number: num, title: title, description: desc, year: PLAN_YEAR, sort_order: num, active: true, updated_at: new Date().toISOString() };
   try {
     if (SP_EDITING_ID) {
@@ -8704,7 +8745,7 @@ async function spSave() {
     }
     document.getElementById('sp-modal').remove();
     spLoad();
-  } catch(e) { alert('Error saving: ' + e.message); }
+  } catch(e) { showToast('Error saving: ' + e.message, 'error'); }
 }
 
 async function spDelete(id) {
