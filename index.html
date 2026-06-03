@@ -6564,7 +6564,7 @@ function cbBackToDashboard(){
 }
 
 async function cbCompleteTask(taskId){
-  if(!CB_CURRENT_USER){showToast('Pick your name from the dropdown first ??', 'error'); return; }
+  if(!CB_CURRENT_USER){showToast('Pick your name from the dropdown first 👆', 'error'); return; }
   // inline action — no confirm needed
   await cbUpdateTask(taskId,{completed:true,completed_by:CB_CURRENT_USER,completed_at:new Date().toISOString(),updated_at:new Date().toISOString()});
 }
@@ -7033,7 +7033,7 @@ function bbShowStageDetail(stageNum, allTasks, currentStage, container, camp, ca
   var myTasks    = stageTasks.filter(function(t){ return t.assigned_to === CB_CURRENT_USER; });
   var otherTasks = stageTasks.filter(function(t){ return t.assigned_to !== CB_CURRENT_USER; });
   var SN = ['Pre-Production','Production','Pre-Live Approval','Go Live','In-Flight','Close & Review'];
-  var SI = ['??','⚙️','✅','??','??','??'];
+  var SI = ['📋','⚙️','✅','🚀','📊','🏁'];
   var isActive = stageNum === currentStage;
   var isPast   = stageNum < currentStage;
   var me = CB_TEAM[CB_CURRENT_USER] || {};
