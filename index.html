@@ -2540,19 +2540,19 @@ function renderBrand(b) {
       </div>
     </div>
 
-    <div class="brand-hero">
-      <div class="brand-hero-color" style="background:${b.color}"></div>
+    <div class="brand-hero" style="--brand-col:${b.color};border-left-color:${b.color}">
+
       <div class="brand-hero-eyebrow">${b.segment} · ${PLAN_YEAR} Retail Marketing Plan</div>
-      <div class="brand-hero-name">${b.name}</div>
+      <div class="brand-hero-name" style="color:${b.color}">${b.name}</div>
       <div class="brand-hero-sites">${b.sitenames}</div>
       <div class="brand-hero-tags">
         <span class="brand-hero-tag">Budget: ${b.budget}</span>
         <span class="brand-hero-tag">New car target: ${b.newTarget}</span>
         <span class="brand-hero-tag">EV/hybrid target: ${b.evTarget}</span>
-        <span class="brand-hero-tag" style="border-color:${b.color}40;color:${b.color}aa">Q2: ${b.q2}</span>
+
+        ${b.q2 ? '<span class="brand-hero-tag brand-hero-tag--accent">Q2: ' + b.q2 + '</span>' : ''}
       </div>
     </div>
-
     <div class="inner-tabs" id="itabs-${b.id}">
       <button class="inner-tab active" onclick="switchInner('${b.id}','strategy',this)">Strategy</button>
         <button class="inner-tab" onclick="switchInner('${b.id}','sites',this)">Site Budget Breakdown</button>
