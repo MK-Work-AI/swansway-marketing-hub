@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Swansway Motor Group — 2026 Marketing Hub</title>
+<title>Swansway Motor Group — Marketing Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -796,11 +796,11 @@ td strong{font-weight:600}
     <div class="logo-wrap" style="display:flex;align-items:center;gap:14px">
       <img src="https://npfalcon.b-cdn.net/tenant_d9013b5a-4990-4f3e-beec-4e1fc85990eb/media/uploads/main-logo.svg" alt="Swansway Motor Group" style="height:46px;width:auto;object-fit:contain;filter:brightness(0) invert(1)">
       <div style="border-left:1px solid rgba(255,255,255,0.2);padding-left:14px">
-        <div style="font-family:var(--font-d);font-size:15px;font-weight:700;color:#fff;line-height:1.2;letter-spacing:-0.01em">Group Marketing Planner 2026</div>
+        <div style="font-family:var(--font-d);font-size:15px;font-weight:700;color:#fff;line-height:1.2;letter-spacing:-0.01em">Group Marketing Planner <span id="topbar-year"></span></div>
       </div>
     </div>
     <div class="topbar-meta">
-      <span class="topbar-pill" id="topbar-env-pill">Live 2026 Plan</span>
+      <span class="topbar-pill" id="topbar-env-pill">Live <span class="year-ref"></span> Plan</span>
       <button class="user-pill" id="user-pill" onclick="handleUserPillClick()" style="display:none">
         <div class="user-avatar" id="user-avatar">?</div>
         <span id="user-name">Loading…</span>
@@ -897,7 +897,7 @@ td strong{font-weight:600}
   <div class="metrics-row">
     <div class="metric" style="color:#1A2E4A"><div class="metric-label">Total brands</div><div class="metric-val">11</div><div class="metric-sub">Audi to OMODA/JAECOO</div></div>
     <div class="metric" style="color:#C8102E"><div class="metric-label">Dealership sites</div><div class="metric-val">30</div><div class="metric-sub">+ 5 Motor Match sites</div></div>
-    <div class="metric" style="color:#047857"><div class="metric-label">Group budget</div><div class="metric-val" id="group-budget-val">—</div><div class="metric-sub">Across all brands 2026</div></div>
+    <div class="metric" style="color:#047857"><div class="metric-label">Group budget</div><div class="metric-val" id="group-budget-val">—</div><div class="metric-sub">Across all brands <span class="year-ref"></span></div></div>
     <div class="metric" style="color:#7C3AED"><div class="metric-label">EV-focused spend</div><div class="metric-val">38%</div><div class="metric-sub">BYD, CUPRA, VW, OMODA</div></div>
   </div>
 
@@ -913,7 +913,7 @@ td strong{font-weight:600}
 
 
 <div class="view" id="view-priorities">
-  <div class="page-strip"><div><div class="page-title">2026 Strategic Priorities</div><div class="page-subtitle">Group-wide themes that run through every campaign</div></div><div class="action-row"><button class="btn btn-accent" onclick="spOpenAdd()">+ Add priority</button></div></div>
+  <div class="page-strip"><div><div class="page-title"><span class="year-ref"></span> Strategic Priorities</div><div class="page-subtitle">Group-wide themes that run through every campaign</div></div><div class="action-row"><button class="btn btn-accent" onclick="spOpenAdd()">+ Add priority</button></div></div>
   <div id="sp-list" class="sp-list"></div>
 </div>
 
@@ -952,7 +952,7 @@ td strong{font-weight:600}
 ============================================================ -->
 <div class="view" id="view-calendar">
   <div class="page-strip">
-    <div><div class="page-title">Group Campaign Calendar 2026</div><div class="page-subtitle">All 11 brands — plate changes, launches, events and seasonal moments</div></div>
+    <div><div class="page-title">Group Campaign Calendar <span class="year-ref"></span></div><div class="page-subtitle">All 11 brands — plate changes, launches, events and seasonal moments</div></div>
 
   </div>
   <div class="cal-grid" id="group-cal-grid"></div>
@@ -981,7 +981,7 @@ td strong{font-weight:600}
 ============================================================ -->
 <div class="view" id="view-kpis">
   <div class="page-strip">
-    <div><div class="page-title">Group KPI Framework 2026</div><div class="page-subtitle">Measures, targets and ownership across all 30 sites and 11 brands</div></div>
+    <div><div class="page-title">Group KPI Framework <span class="year-ref"></span></div><div class="page-subtitle">Measures, targets and ownership across all 30 sites and 11 brands</div></div>
 
   </div>
   <div class="sh"><div><div class="sh-title">Group-Level KPIs</div></div></div>
@@ -996,7 +996,7 @@ td strong{font-weight:600}
 
 <!-- CROSS-BRAND CALENDAR -->
 <div class="view" id="view-crosscal">
-  <div class="page-strip"><div><div class="page-title">Campaign Calendar 2026</div><div class="page-subtitle">All brands &middot; All campaigns</div></div><div class="action-row"><button class="btn btn-accent" onclick="calAddEvent()">+ Add campaign</button></div></div>
+  <div class="page-strip"><div><div class="page-title">Campaign Calendar <span class="year-ref"></span></div><div class="page-subtitle">All brands &middot; All campaigns</div></div><div class="action-row"><button class="btn btn-accent" onclick="calAddEvent()">+ Add campaign</button></div></div>
 
   <!-- Quarter navigation -->
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem">
@@ -1049,7 +1049,7 @@ td strong{font-weight:600}
         <li>Arnold Clark marketing &amp; positioning</li>
         <li>Lookers, Evans Halshaw &amp; Marshall Motors</li>
         <li>AutoTrader competitive landscape</li>
-        <li>UK automotive retail trends 2026</li>
+        <li>UK automotive retail trends <span class="year-ref"></span></li>
       </ol>
     </div>
 
@@ -1653,6 +1653,7 @@ td strong{font-weight:600}
 
 
 <script>
+var PLAN_YEAR = new Date().getFullYear();
 /* ══════════════════════════════════════
    DATA LAYER
 ══════════════════════════════════════ */
@@ -2491,7 +2492,7 @@ function renderBrand(b) {
 
     <div class="brand-hero">
       <div class="brand-hero-color" style="background:${b.color}"></div>
-      <div class="brand-hero-eyebrow">${b.segment} · 2026 Retail Marketing Plan</div>
+      <div class="brand-hero-eyebrow">${b.segment} · ${PLAN_YEAR} Retail Marketing Plan</div>
       <div class="brand-hero-name">${b.name}</div>
       <div class="brand-hero-sites">${b.sitenames}</div>
       <div class="brand-hero-tags">
@@ -2530,7 +2531,7 @@ function renderBrand(b) {
     </div>
 
     <div class="inner-section" id="${b.id}-campaigns">
-      <div class="sh"><div><div class="sh-title">Priority Campaigns 2026</div><div class="sh-sub">From admin calendar and Brief Builder</div></div><div class="action-row"><button class="btn btn-sm btn-accent" onclick="switchView('brief',document.querySelector('[data-view=brief]'))">+ New brief</button></div></div>
+      <div class="sh"><div><div class="sh-title">Priority Campaigns <span class="year-ref"></span></div><div class="sh-sub">From admin calendar and Brief Builder</div></div><div class="action-row"><button class="btn btn-sm btn-accent" onclick="switchView('brief',document.querySelector('[data-view=brief]'))">+ New brief</button></div></div>
       <div id="${b.id}-campaigns-list"><div style="padding:20px;text-align:center;color:var(--ink-faint);font-size:13px">Loading campaigns...</div></div>
     </div>
 
@@ -3418,7 +3419,7 @@ async function bbLoadHeadroom() {
   try {
     var anon = SUPABASE_ANON_KEY;
     var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
-    var rows = await fetch(base + '/brief_budget_commitments?year=eq.2026&site_id=in.(' + sites.join(',') + ')&select=brief_id,site_id,month_index,amount', {
+    var rows = await fetch(base + '/brief_budget_commitments?year=eq.' + PLAN_YEAR + '&site_id=in.(' + sites.join(',') + ')&select=brief_id,site_id,month_index,amount', {
       headers: {'apikey':anon,'Authorization':'Bearer '+anon}
     }).then(function(r){ return r.json(); });
     if (Array.isArray(rows)) {
@@ -4429,7 +4430,7 @@ function renderBudgetTracker() {
   var trueRemaining = totalPlanned - totalCommitted - totalActual;
   var pct = totalActual > 0 ? Math.round(totalActual/totalPlanned*100) : totalCommitted > 0 ? Math.round(totalCommitted/totalPlanned*100) : 0;
   metricsEl.innerHTML = [
-    {label:'Total planned 2026',  val:'&pound;' + (totalPlanned/1000000).toFixed(2) + 'M',                                        sub:'Across all brands',             color:'var(--swansway)'},
+    {label:'Total planned ' + PLAN_YEAR,  val:'&pound;' + (totalPlanned/1000000).toFixed(2) + 'M',                                        sub:'Across all brands',             color:'var(--swansway)'},
     {label:'Committed (briefs)',   val:totalCommitted > 0 ? '&pound;' + (totalCommitted/1000000).toFixed(2) + 'M' : '&pound;0',  sub:'From saved briefs',             color:'#D97706'},
     {label:'Actual spent',         val:totalActual > 0 ? '&pound;' + (totalActual/1000000).toFixed(2) + 'M' : '&pound;0',        sub:'Entered in site budgets',       color:'#059669'},
     {label:'Remaining headroom',   val:'&pound;' + (Math.max(0,trueRemaining)/1000000).toFixed(2) + 'M',                          sub:'Planned − committed − actual', color:'#6B7280'},
@@ -4523,7 +4524,7 @@ function budgetExportCSV() {
     rows.push(b.name + ',' + cells.join(',') + ',' + b.annual + ',' + brandActual);
   });
   var blob = new Blob([rows.join('\n')], {type:'text/csv'});
-  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'swansway-budget-2026.csv'; a.click();
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'swansway-budget-' + PLAN_YEAR + '.csv'; a.click();
 }
 
 function budgetImportCSV() {
@@ -4707,7 +4708,7 @@ async function competitorScan() {
       '',
       'CHANNEL MIX: ' + channelSummary,
       '',
-      'KEY 2026 TARGETS: ' + kpiSummary,
+      'KEY ' + PLAN_YEAR + ' TARGETS: ' + kpiSummary,
       '',
       'CURRENT STRATEGIC PRIORITIES:',
       '- Grow EV/PHEV to 35%+ of new sales mix (ZEV mandate compliance)',
@@ -5149,7 +5150,7 @@ function calShowCampaign(cJson) {
     var fmt = function(d){ return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear(); };
     dates = fmt(sd) + (c.end_date && c.end_date !== c.start_date ? ' \u2013 ' + fmt(ed) : '');
   } else {
-    dates = months[c.start] + (c.end !== c.start ? ' \u2013 ' + months[c.end] : '') + ' 2026';
+    dates = months[c.start] + (c.end !== c.start ? ' \u2013 ' + months[c.end] : '') + ' ' + PLAN_YEAR;
   }
 
   // Build modal using DOM to avoid all quote issues
@@ -5475,10 +5476,10 @@ function renderBrandKPIs(brandId) {
   hdr.style.cssText = 'margin-bottom:1.5rem';
   var htitle = document.createElement('div');
   htitle.style.cssText = 'font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px';
-  htitle.textContent = brand.name + ' KPI Framework 2026';
+  htitle.textContent = brand.name + ' KPI Framework ' + PLAN_YEAR + ';'
   var hsub = document.createElement('div');
   hsub.style.cssText = 'font-size:12px;color:var(--ink-soft)';
-  hsub.textContent = 'Targets from Admin \u2192 KPIs \u00b7 Actuals from Site KPIs \u00b7 Jan\u2013May 2026';
+  hsub.textContent = 'Targets from Admin \u2192 KPIs \u00b7 Actuals from Site KPIs \u00b7 Jan\u2013' + PLAN_YEAR + ';';
   hdr.appendChild(htitle); hdr.appendChild(hsub);
   el.appendChild(hdr);
 
@@ -5707,7 +5708,7 @@ async function loadBriefCommitmentsForTracker() {
   var anon = SUPABASE_ANON_KEY;
   var base = 'https://humitzrleflxnlnodpde.supabase.co/rest/v1';
   try {
-    var rows = await fetch(base + '/brief_budget_commitments?year=eq.2026&select=site_id,month_index,amount', {
+    var rows = await fetch(base + '/brief_budget_commitments?year=eq.' + PLAN_YEAR + '&select=site_id,month_index,amount', {
       headers: {'apikey':anon,'Authorization':'Bearer '+anon}
     }).then(function(r){ return r.json(); });
     BRIEF_COMMITMENTS = {};
@@ -8325,7 +8326,7 @@ async function bbSaveBudgetCommitments(briefId, briefTitle) {
     var rows = [];
     sites.forEach(function(sid) {
       months.forEach(function(m) {
-        rows.push({ brief_id:briefId, site_id:sid, brand_id:BB.brand.id, month_index:m.index, year:2026, amount:perMPS, brief_title:briefTitle });
+        rows.push({ brief_id:briefId, site_id:sid, brand_id:BB.brand.id, month_index:m.index, year:PLAN_YEAR, amount:perMPS, brief_title:briefTitle });
       });
     });
     await fetch(base + '/brief_budget_commitments', { method:'POST', headers:hdrs, body:JSON.stringify(rows) });
@@ -8679,7 +8680,7 @@ async function spSave() {
   var desc  = document.getElementById('sp-f-desc').value.trim();
   if (!title) { alert('Please enter a title.'); return; }
   if (!desc)  { alert('Please enter a description.'); return; }
-  var payload = { number: num, title: title, description: desc, year: 2026, sort_order: num, active: true, updated_at: new Date().toISOString() };
+  var payload = { number: num, title: title, description: desc, year: PLAN_YEAR, sort_order: num, active: true, updated_at: new Date().toISOString() };
   try {
     if (SP_EDITING_ID) {
       await fetch(SP_BASE + '/strategic_priorities?id=eq.' + SP_EDITING_ID, {
@@ -9483,6 +9484,10 @@ async function bbDeleteBrief(id) {
 
 /* ── INIT ON PAGE LOAD ── */
 document.addEventListener('DOMContentLoaded', () => {
+  // Set year references throughout the UI
+  document.querySelectorAll('.year-ref').forEach(function(el){ el.textContent = PLAN_YEAR; });
+  var tyEl = document.getElementById('topbar-year');
+  if (tyEl) tyEl.textContent = PLAN_YEAR;
   sbInit();
 });
 
