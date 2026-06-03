@@ -42,7 +42,7 @@ html{overflow-y:scroll}body{font-family:var(--font-b);background:var(--surface);
 .topbar-pill{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border:1px solid rgba(255,255,255,0.15);border-radius:2px;color:rgba(255,255,255,0.5)}
 
 .ai-link:hover{border-color:var(--accent);color:#fff}
-.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 2s infinite}
+
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.25}}
 
 /* ── BRAND NAV ── */
@@ -213,25 +213,25 @@ td strong{font-weight:600}
 
 .ai-prompt-btn:hover{background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.45);color:#fff}
 
-/* ── AI MODAL ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
-.modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--white);border-radius:6px;width:100%;max-width:680px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
-.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
-.modal-title{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
-.modal-close{font-size:20px;cursor:pointer;color:var(--ink-soft);border:none;background:none;line-height:1;padding:2px 6px}
-.modal-close:hover{color:var(--ink)}
-.modal-body{flex:1;overflow-y:auto;padding:20px}
-.modal-key-note{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--swansway);padding:14px 16px;border-radius:3px;font-size:12px;color:var(--ink-soft);line-height:1.65;margin-bottom:16px}
-.modal-key-note strong{color:var(--ink);font-weight:600}
-.prompt-list{display:flex;flex-direction:column;gap:6px}
-.prompt-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:3px;cursor:pointer;transition:all .2s}
-.prompt-row:hover{background:var(--surface-2);border-color:var(--border-med)}
-.prompt-icon{font-size:14px;flex-shrink:0}
-.prompt-text{font-size:12px;color:var(--ink);flex:1;line-height:1.45}
-.prompt-category{font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-faint);flex-shrink:0}
-.claude-link{display:block;text-align:center;margin-top:16px;padding:10px;background:var(--swansway);color:#fff;border-radius:3px;text-decoration:none;font-size:13px;font-weight:500;transition:background .2s}
-.claude-link:hover{background:var(--swansway-light)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* ── CHART CONTAINERS ── */
 .chart-wrap{background:var(--white);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:1.75rem}
@@ -890,7 +890,7 @@ td strong{font-weight:600}
   <div class="page-strip">
     <div class="page-strip-left"></div>
     <div class="action-row">
-      <button class="btn btn-accent" onclick="openAIModal('group')">&#9889; AI Strategy Prompts</button>
+
     </div>
   </div>
 
@@ -953,7 +953,7 @@ td strong{font-weight:600}
 <div class="view" id="view-calendar">
   <div class="page-strip">
     <div><div class="page-title">Group Campaign Calendar 2026</div><div class="page-subtitle">All 11 brands — plate changes, launches, events and seasonal moments</div></div>
-    <button class="btn btn-accent" onclick="openAIModal('calendar')">⚡ AI Prompts</button>
+
   </div>
   <div class="cal-grid" id="group-cal-grid"></div>
 </div>
@@ -964,7 +964,7 @@ td strong{font-weight:600}
 <div class="view" id="view-channels">
   <div class="page-strip">
     <div><div class="page-title">Group Channel Mix & Budget</div><div class="page-subtitle" id="channels-subtitle">Group budget allocation across all marketing channels</div></div>
-    <button class="btn btn-accent" onclick="openAIModal('channels')">⚡ AI Prompts</button>
+
   </div>
   <div class="metrics-row" id="channel-summary-cards"></div>
   <div class="sh"><div><div class="sh-title">Full Channel Breakdown</div></div></div>
@@ -982,7 +982,7 @@ td strong{font-weight:600}
 <div class="view" id="view-kpis">
   <div class="page-strip">
     <div><div class="page-title">Group KPI Framework 2026</div><div class="page-subtitle">Measures, targets and ownership across all 30 sites and 11 brands</div></div>
-    <button class="btn btn-accent" onclick="openAIModal('kpis')">⚡ AI Prompts</button>
+
   </div>
   <div class="sh"><div><div class="sh-title">Group-Level KPIs</div></div></div>
   <div style="display:flex;gap:16px;margin-bottom:1rem;align-items:center;flex-wrap:wrap;padding:10px 0">
@@ -1650,21 +1650,7 @@ td strong{font-weight:600}
 
 
 <!-- ── AI MODAL ── -->
-<div class="modal-overlay" id="modal-overlay" onclick="closeModalOnBg(event)">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title"><span class="ai-dot" style="width:8px;height:8px"></span> AI Strategy Prompts</div>
-      <button class="modal-close" onclick="closeModal()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-key-note">
-        <strong>How to use these prompts:</strong> This document works best alongside Claude.ai (claude.ai). Copy any prompt below and paste it into Claude — or click "Open in Claude" to go straight there. The prompts are pre-written for Swansway context so you'll get detailed, actionable answers immediately.
-      </div>
-      <div class="prompt-list" id="modal-prompt-list"></div>
-      <a href="https://claude.ai" target="_blank" class="claude-link">Open Claude.ai to use these prompts →</a>
-    </div>
-  </div>
-</div>
+
 
 <script>
 /* ══════════════════════════════════════
@@ -2499,7 +2485,7 @@ function renderBrand(b) {
       </div>
       <div class="action-row">
         <button class="btn" onclick="switchView('group',document.querySelector('[data-view=group]'))">← Group overview</button>
-        <button class="btn btn-accent" onclick="openAIModal('${b.id}')">⚡ AI Prompts</button>
+
       </div>
     </div>
 
@@ -2912,72 +2898,6 @@ function renderGroupKPIs() {
 
 
 /* ── AI MODAL ── */
-const MODAL_PROMPTS = {
-  group:[
-    {icon:'📊',cat:'Strategy',text:'Build a comprehensive Q3 2026 marketing strategy for Swansway Motor Group — which brands to prioritise, what channels to lead with, and what the key messages should be'},
-    {icon:'💰',cat:'Budget',text:'How should Swansway Motor Group allocate its marketing budget across 11 brands for maximum return on investment in 2026?'},
-    {icon:'⚡',cat:'EV',text:'Design a group-wide EV marketing strategy for Swansway — how to communicate electric and hybrid across BYD, CUPRA, VW, Peugeot and OMODA without confusing customers'},
-    {icon:'🏢',cat:'Fleet',text:'Build a cross-brand fleet proposition for Swansway Motor Group — how to package VW Commercial, Audi, Land Rover and Peugeot fleet offers for corporate buyers'},
-    {icon:'📅',cat:'Planning',text:'Write the Swansway Motor Group marketing team meeting agenda for the monthly brand review — what should be covered for all 11 brands?'},
-    {icon:'📋',cat:'Reporting',text:'Build a board-ready monthly marketing performance report template for Swansway Motor Group directors — covering all 11 brands and 30 sites'},
-    {icon:'🤝',cat:'Community',text:'What community sponsorship and partnership opportunities should Swansway pursue in 2026 across their North West, Midlands and North Wales locations?'},
-    {icon:'🎯',cat:'Quickwin',text:'What are the top 5 marketing quick wins Swansway Motor Group should implement immediately across all brands to increase leads this month?'},
-  ],
-  calendar:[
-    {icon:'📅',cat:'Planning',text:'Write a detailed March 2026 plate change campaign brief for all Swansway brands — channel plan, budget split, messaging and timeline'},
-    {icon:'🎪',cat:'Events',text:'What cross-brand event opportunities exist for Swansway in Q3 2026 — how could multiple brands collaborate on a single customer event?'},
-    {icon:'📊',cat:'Planning',text:'Build a full 12-month Swansway group marketing calendar in table format — all brands, all key dates, all campaigns'},
-  ],
-  channels:[
-    {icon:'💰',cat:'Budget',text:'How should Swansway optimise its manufacturer co-op budget — which brands have the most available and how to claim it effectively?'},
-    {icon:'📱',cat:'Social',text:'What should Swansway\'s group social media content calendar look like — how to manage 11 brand channels plus the group channel?'},
-    {icon:'🔍',cat:'SEO',text:'Write an SEO and Google Business Profile strategy for all 30 Swansway sites — how to dominate local search for each brand in each location'},
-  ],
-  kpis:[
-    {icon:'📊',cat:'Reporting',text:'Build a weekly KPI dashboard template for Swansway marketing leads — what to track, how to visualise it, and who gets what report'},
-    {icon:'⚠️',cat:'Analysis',text:'Which Swansway brands are most at risk of missing their 2026 targets and what corrective actions should be taken now?'},
-    {icon:'🎯',cat:'Strategy',text:'What should the Swansway marketing team\'s OKRs (objectives and key results) be for 2026 — group level and by brand?'},
-  ],
-};
-
-// Add brand prompts
-BRANDS.forEach(b => { MODAL_PROMPTS[b.id] = b.aiPrompts; });
-
-function openAIModal(context) {
-  const prompts = MODAL_PROMPTS[context] || MODAL_PROMPTS['group'];
-  const list = document.getElementById('modal-prompt-list');
-  list.innerHTML = prompts.map(p=>`
-    <div class="prompt-row" onclick="copyPrompt('${p.text.replace(/'/g,"\\'")}')">
-      <div class="prompt-icon">${p.icon}</div>
-      <div class="prompt-text">${p.text}</div>
-      <div class="prompt-category">${p.cat} · Copy</div>
-    </div>
-  `).join('');
-  document.getElementById('modal-overlay').classList.add('open');
-}
-
-function copyPrompt(text) {
-  navigator.clipboard.writeText(text).then(()=>{
-    // Visual feedback
-    event.currentTarget.style.background='#D1FAE5';
-    event.currentTarget.querySelector('.prompt-category').textContent='✓ Copied!';
-    setTimeout(()=>{
-      event.currentTarget.style.background='';
-      event.currentTarget.querySelector('.prompt-category').textContent=event.currentTarget.querySelector('.prompt-category').textContent.includes('✓')?'Copied → paste in Claude':'';
-    },2000);
-  }).catch(()=>{
-    // Fallback
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-  });
-}
-
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
-function closeModalOnBg(e) { if(e.target===document.getElementById('modal-overlay')) closeModal(); }
 
 /* ── CHARTS ── */
 function renderGroupBudgetChart() {
